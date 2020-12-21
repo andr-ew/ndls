@@ -1,5 +1,20 @@
 -- quad asyncronous tape looper for arc + grid in the style anaphora, anachronism, older things
 
+--[[
+
+REFACTOR
+
+arc layout:
+
+l s e p
+l s e p
+l s e p
+l s e p
+
+instead of the cycle / modulation stuff let's keep it simple and focus on pattern recording. modulation is more what wrlds is about. for the last ring position we can just go for a fine tune pitch control which should be fun
+
+--]]
+
 include 'lib/nest_/norns'
 include 'lib/nest_/grid'
 include 'lib/nest_/arc'
