@@ -16,7 +16,7 @@ voice params: vol, old, pan, bnd, cut, q, type, st, len, fade, rate
 - everything except rate can be mapped to any arc encoder
 - rate is fixed to the grid, regardless of scope
 - type is under cut alt, fade is under len alt
-- probably a runtime config, so must be test based
+- probably a runtime config, so must be text based
 
 ```
 --config.lua
