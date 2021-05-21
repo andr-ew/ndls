@@ -8,15 +8,19 @@ endless and/or noodles
 
 global -> local -> zoned
 
-voice params: vol, old, pan, bnd, cut, q, type, st, len, fade, rate
+voice params: vol, old, pan, bnd, cut, q, type, fade, rate, play
 
 - params can only have one scope at a time?
 - local+zoned show on the screen in track focus, one after another (visually tabbed in UI)
 - except for old, vol, q, bnd, global params detune across voices
-- everything except rate can be mapped to any arc encoder
-- rate is fixed to the grid, regardless of scope
+- everything except rate & play can be mapped to any arc encoder
+- rate & play is fixed to the grid, regardless of scope. dir is linked to rate scope
 - type is under cut alt, fade is under len alt
+- fixed zone params: st, len
+- fixed local params: alias, glide, send, return, tap, rec, channel (all grid only)
+- fixed global params: input mixing
 - probably a runtime config, so must be text based
+  - config data would be saved with `.pset` so paramsets always match up
   - alternatively hide/show params could probably get us there,, which means config could be in the params menu  
 
 ```
