@@ -17,7 +17,7 @@ voice params: vol, old, pan, bnd, cut, q, type, st, len, fade, rate
 - rate is fixed to the grid, regardless of scope
 - type is under cut alt, fade is under len alt
 - probably a runtime config, so must be text based
-  - alternatively hide/show could probably get us there,, which means config could be in the params menu  
+  - alternatively hide/show params could probably get us there,, which means config could be in the params menu  
 
 ```
 --config.lua
