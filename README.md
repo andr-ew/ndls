@@ -46,5 +46,6 @@ arc[4]='len'
 K1='old'
 
 channel_sets_input=true
+zones_share_loop_points=true
 
 ```
