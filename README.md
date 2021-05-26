@@ -8,7 +8,7 @@ endless and/or noodles
 
 global -> local -> zoned
 
-voice params: vol, old, pan, bnd, cut, q, type, fade, rate, play, volt
+voice params: vol, old, pan, bnd, cut, q, type, fade, rate, play, aliasing, volt
 
 - params can only have one scope at a time?
 - local+zoned show on the screen in track focus, one after another (visually tabbed in UI)
@@ -35,6 +35,7 @@ st='zoned'
 len='zoned'
 fade='local'
 rate='zoned'
+aliasing='global'
 volt='zoned'
 
 arc[1]='vol'
