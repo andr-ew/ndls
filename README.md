@@ -19,9 +19,7 @@ voice params: vol, old, pan, bnd, cut, q, type, fade, rate, play, volt
 - fixed zone params: st, len
 - fixed local params: alias, glide, send, return, tap, rec, channel (all grid only)
 - fixed global params: input mixing
-- probably a runtime config, so must be text based
-  - config data would be saved with `.pset` so paramsets always match up
-  - alternatively hide/show params could probably get us there,, which means config could be in the params menu  
+- text-based or params config ?
 
 ```
 --config.lua
@@ -50,3 +48,5 @@ channel_sets_input=true
 zones_share_loop_points=true
 
 ```
+
+- i'm leaning params system now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
