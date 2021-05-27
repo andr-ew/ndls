@@ -54,11 +54,8 @@ arc[3]='st'
 arc[4]='len'
 
 K1='old'
-
-channel_sets_input=true
-zones_share_loop_points=true
-
 ```
 
 - i'm leaning params system now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
 - pattern recorders are scope-androgenous. internally every param has its own `pattern_time` and the grid keys are "macro" controls. by default params have a local scope - when recording zoned params only, the pattern will take on a zoned scope so different patterns may play back in different zones. when pattern recording the metazone or another global param, the param takes on a global scope. mixed scope recordings will alias up to the highest scope.
+- `st` & `len` are special cases. in the zoned scope, values are shared across voices but unique per-zone. in the local scope, values are unique & fixed in separate slices. in the global scope values are still unique but they all share the same slice. 
