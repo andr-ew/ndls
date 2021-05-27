@@ -60,4 +60,4 @@ zones_share_loop_points=true
 ```
 
 - i'm leaning params system now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
-- pattern recorders are also scoped. internally every param has its own `pattern_time` and the grid keys are "macro" controls. by default params have a local scope - when recording zoned params only, the pattern will take on a zoned scope so different patterns may play back in different zones. when pattern recording the metazone or another global param, the param takes on a global scope. mixed scope recordings will alias up to the highest scope.
+- pattern recorders are scope-androgenous. internally every param has its own `pattern_time` and the grid keys are "macro" controls. by default params have a local scope - when recording zoned params only, the pattern will take on a zoned scope so different patterns may play back in different zones. when pattern recording the metazone or another global param, the param takes on a global scope. mixed scope recordings will alias up to the highest scope.
