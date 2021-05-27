@@ -8,8 +8,9 @@ endless and/or noodles
 
 global -> local -> zoned
 
-arc/screen params: vol, old, pan, bnd, cut, q, type, fade, play, aliasing, volt
-grid params: rate, rev, alias, rec, play, send, return, tape/disk
+**arc/screen params:** vol, old, pan, bnd, cut, q, type, fade, play, aliasing, volt
+
+**grid params:** rate, rev, alias, rec, play, send, return, tape/disk
 
 - params can only have one scope at a time?
 - local+zoned show on the screen in track focus, one after another (visually tabbed in UI)
