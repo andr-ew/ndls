@@ -3,8 +3,6 @@
 
 endless and/or noodles
 
-![documentation image](doc/ndls.png)
-
 ## configurable multiple param scoping
 
 global -> local -> zoned
