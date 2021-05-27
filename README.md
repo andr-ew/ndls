@@ -58,5 +58,4 @@ K1='old'
 
 - i'm leaning params system now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
 - pattern recorders are scope-androgenous. internally every param has its own `pattern_time` and the grid keys are "macro" controls. by default params have a local scope - when recording zoned params only, the pattern will take on a zoned scope so different patterns may play back in different zones. when pattern recording the metazone or another global param, the param takes on a global scope. mixed scope recordings will alias up to the highest scope.
-- `st` & `len` are special cases. in the zoned scope, values are shared across voices but unique per-zone. in the local scope, values are unique & fixed in separate slices. in the global scope all values are the same & in the same slice. 
-  - I'm also considering a "shared" scope where all voices are stuck in the first recording slice with thier own unique sub-slice
+- `st` & `len` are special cases. in the zoned scope, values are shared across voices but unique per-zone. in the local scope, values are unique & fixed in separate slices. in the global scope all values are the same & share the first slice.
