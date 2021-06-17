@@ -8,7 +8,7 @@ endless and/or noodles
 
 global -> local -> zoned
 
-**arc/screen params:** vol, old, pan, bnd, cut, q, type, fade, play, aliasing, volt
+**arc/screen params:** vol, old, pan, bnd, cut, q, type, fade, play, alias, aliasing, volt
 
 **grid params:** rate, rev, alias, rec, play, send, return, tape/disk
 
