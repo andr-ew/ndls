@@ -19,7 +19,7 @@ global -> local -> zoned
 - rate & play is fixed to the grid, regardless of scope. dir is linked to rate scope
 - type is under cut alt, fade is under len alt
 - fixed zone params: st, len
-- fixed local params: alias, glide, send, return, tap, rec, channel (all grid only)
+- fixed local params: glide, send, return, tap, rec, channel (all grid only)
 - fixed global params: input mixing
 - text-based or params config ?
 
