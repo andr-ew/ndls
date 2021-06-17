@@ -56,7 +56,8 @@ arc[4]='len'
 K1='old'
 ```
 
-- i'm leaning params system now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
+- i'm leaning params system for config now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
+  - so we'll do a `meta_param` type that creates the params for all scopes at load & hides the params of inactive scopes. the `meta_param` also hooks up to the `meta_pattern`s.
 - pattern recorders are scope-androgenous. internally every param has its own `pattern_time` and the grid keys are "macro" controls. by default params have a local scope - when recording zoned params only, the pattern will take on a zoned scope so different patterns may play back in different zones (the pattern is deep-copied into new zones, & thus may be cleared ot modified). when pattern recording the metazone or another global param, the param takes on a global scope. mixed scope recordings will alias up to the highest scope.
-  - will need some kind of `meta_pattern` object that creates & switches between `pattern_time` instances depending on the assumed scope.
+  - will need some kind of `meta_pattern` type that creates & switches between `pattern_time` instances depending on the assumed scope.
 - `st` & `len` are special cases. in the zoned scope, values are shared across voices but unique per-zone. in the local scope, values are unique & fixed in separate slices. in the global scope all values are the same & share the first slice.
