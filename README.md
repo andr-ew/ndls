@@ -8,7 +8,7 @@ endless and/or noodles
 
 global -> local -> zoned
 
-**arc/screen params:** vol, old, pan, bnd, cut, q, type, fade, play, alias, aliasing, volt
+**arc/screen params:** vol, old, pan, bnd, cut, q, type, fade, aliasing, volt
 
 **grid params:** rate, rev, alias, rec, play, send, return, tape/disk
 
@@ -19,7 +19,7 @@ global -> local -> zoned
 - rate & play is fixed to the grid, regardless of scope. dir is linked to rate scope
 - type is under cut alt, fade is under len alt
 - fixed zone params: st, len
-- fixed local params: glide, send, return, tap, rec, channel (all grid only)
+- fixed local params: play, alias, glide, send, return, tap, rec, channel (all grid only)
 - fixed global params: input mixing
 - text-based or params config ?
 
