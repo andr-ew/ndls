@@ -47,7 +47,7 @@ function mp:new(arg)
         add(arg.id)
     end
     
-    if (not arg.fixed) then o:set_scope(arg.scope) end
+    if (not arg.fixed) then o:set_scope(arg.scope) else o.scope = arg.scope end
 
     return o
 end
