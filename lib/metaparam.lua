@@ -5,11 +5,12 @@ function mp:new(arg)
     local o = setmetatable({}, { __index = self })
     
     local function slug(id) return string.gsub(id, ' ', '_') end
-    local function add(id)
+    local function add(aarg)
         local merge = {}
         for k,v in pairs(arg) do merge[k] = v end
-        merge.name = id
-        merge.id = slug(id)
+        for k,v in pairs(aarg) do merge[k] = v end
+        merge.name = aarg.id
+        merge.id = slug(aarg.id)
 
         params:add(merge)
     end
@@ -26,7 +27,12 @@ function mp:new(arg)
                 local id = arg.id +' '+ i +' zone '+ j
                 o.id.zone[i][j] = slug(id)
 
-                add(id)
+                add { 
+                    id = id, 
+                    action = function(v)
+                        if ndls.zone[i] == j then arg.action(i, v) end
+                    end
+                }
                 params:hide(o.id.zone[i][j])
             end
         end
@@ -37,19 +43,28 @@ function mp:new(arg)
         for i = 1, ndls.voices do
             local id = arg.id +' '+ i
             o.id.voice[i] = slug(id)
-            add(id)
+            add { 
+                id = id, 
+                action = function(v) arg.action(i, v) end
+            }
         end
     end
 
     --add global param
     if (not arg.fixed) or (arg.scope == 'global') then
         o.id.global = slug(arg.id)
-        add(arg.id)
+        add { id = id, action = arg.action_global }
     end
     
     if (not arg.fixed) then o:set_scope(arg.scope) else o.scope = arg.scope end
 
     return o
+end
+
+function mp:bang(scope, voice)
+    if (scope == nil) or (self.scope = scope) then
+        params:bang(self:get_id(voice))
+    end
 end
 
 function mp:set_scope(scope)
@@ -89,28 +104,9 @@ function mp:get_id(vc)
     else return self.id.zone[vc][ndls.zone[vc]] end
 end
 
-function mp:set(v, vc, silent, scope)
-    if (not scope) or (scope == self.scope) then
-        params:set(self:get_id(vc), v)
-    else
-        if self.scope == 'zone' and scope == 'voice' then
-            for i,w in ipairs(self.id.zone[vc]) do
-                params:set(w, v)
-            end
-        elseif self.scope == 'zone' and scope == 'global' then
-            for i,w in ipairs(self.id.zone) do
-                for j,x in ipairs(w) do
-                    params:set(x, v)
-                end
-            end
-        elseif self.scope == 'voice' and scope == 'global' then
-            for i,w in ipairs(self.id.voice) do
-                params:set(w, v)
-            end
-        else print('can set scope from '...self.scope..' to '..scope) end
-    end
-    
-    if not silent then metapatterns:watch(self, v) end
+function mp:set(v, vc)
+    params:set(self:get_id(vc), v)
+    metapatterns:watch(v, self:get_id(vc), vc, self.scope)
 end
 
 function mp:get(vc)
