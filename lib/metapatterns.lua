@@ -68,9 +68,13 @@ function metapattern:alloc()
         local i = ndls.zone[self.voice]
         if not self[i] then
             self[i] = pattern.new()
+            self[i].state = 0
         end
     else
-        if not self.global then self.global = pattern.new() end
+        if not self.global then 
+            self.global = pattern.new() 
+            self.global.state = 0
+        end
     end
 end
 
@@ -120,6 +124,97 @@ end
 
 for i = 1,8 do metapatterns[i] = metapattern:new() end
 
---TODO: _grid.toggle affordances bind to each metaparam. reference _grid.pattern functions but check metaparam rather than internal observer
+-- ++property metapattern
+_grid.metapattern = _grid.toggle {
+    lvl = {
+        0, ------------------ 0 empty
+        function(s, d) ------ 1 empty, recording, no playback
+            while true do
+                d(4)
+                clock.sleep(0.25)
+                d(0)
+                clock.sleep(0.25)
+            end
+        end,
+        4, ------------------ 2 filled, paused
+        15, ----------------- 3 filled, playback
+        function(s, d) ------ 4 filled, recording, playback
+            while true do
+                d(15)
+                clock.sleep(0.2)
+                d(0)
+                clock.sleep(0.2)
+            end
+        end,
+    },
+    edge = 'falling',
+    include = function(s) --limit range based on pattern clear state
+        local p = self.metapattern:pattern()
+
+        if p.count > 0 then
+            return { 2, 3 }
+        else
+            return { 0, 1 }
+        end
+    end,
+    value = function(s) return self.metapattern:pattern().state end
+    action = function(s, value, time, delta, add, rem, list, last)
+        local set, p, v, t, d
+
+        mp = self.metapattern
+        local p = self.metapattern:pattern()
+        t = time
+        d = delta
+        v = value
+        set = function(val) p.state = val end
+
+        local function stop_all()
+        end
+
+        if p then
+            if t > 0.5 then -- hold to clear
+                if s.stop then s:stop() end
+                mp:clear()
+                return set(0)
+            else
+                if p.count > 0 then
+                    if d < 0.3 then -- double-tap to overdub
+                        mp:resume()
+                        mp:set_overdub(1)
+                        return set(4)
+                    else
+                        if p.rec == 1 then --play pattern / stop recording
+                            mp:rec_stop()
+                            mp:start()
+                            return set(3)
+                        elseif p.overdub == 1 then --stop overdub
+                            mp:set_overdub(0)
+                            return set(3)
+                        else
+                            --clock.sleep(0.3)
+
+                            if v == 3 then --resume pattern
+                                -- if count == 1 then stop all patterns
+                                stop_all()
+
+                                mp:resume()
+                            elseif v == 2 then --pause pattern
+                                mp:stop() 
+                                if s.stop then s:stop() end
+                            end
+                        end
+                    end
+                else
+                    if v == 1 then --start recording new pattern
+                        -- if count == 1 then stop all patterns
+                        stop_all()
+
+                        mp:rec_start()
+                    end
+                end
+            end
+        end
+    end
+}
 
 return metapatterns
