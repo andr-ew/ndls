@@ -120,4 +120,6 @@ end
 
 for i = 1,8 do metapatterns[i] = metapattern:new() end
 
+--TODO: _grid.toggle affordances bind to each metaparam. reference _grid.pattern functions but check metaparam rather than internal observer
+
 return metapatterns

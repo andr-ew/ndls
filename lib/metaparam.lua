@@ -61,6 +61,7 @@ function mp:new(arg)
     return o
 end
 
+--TODO: bang the zone sope when changing zone
 function mp:bang(scope, voice)
     if (scope == nil) or (self.scope = scope) then
         params:bang(self:get_id(voice))
