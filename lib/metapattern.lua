@@ -63,17 +63,23 @@ function metapattern:pattern()
     return self[self.scope == 'zone' and ndls.zone[self.voice] or 'global']
 end
 
+local function process(arg)
+    params:set(arg.id, arg.v)
+end
+
 function metapattern:alloc()
     if self.scope == 'zone' then 
         local i = ndls.zone[self.voice]
         if not self[i] then
             self[i] = pattern.new()
             self[i].state = 0
+            self[i].process = process
         end
     else
         if not self.global then 
             self.global = pattern.new() 
             self.global.state = 0
+            self.global.process = process
         end
     end
 end
@@ -122,8 +128,6 @@ function metapatterns:watch(v, id, vc, scope)
     end
 end
 
-for i = 1,8 do metapatterns[i] = metapattern:new() end
-
 -- ++property metapattern
 _grid.metapattern = _grid.toggle {
     lvl = {
@@ -157,12 +161,12 @@ _grid.metapattern = _grid.toggle {
             return { 0, 1 }
         end
     end,
-    value = function(s) return self.metapattern:pattern().state end
+    value = function(s) return self.metapattern:pattern().state end,
     action = function(s, value, time, delta, add, rem, list, last)
-        local set, p, v, t, d
+        local set, mp, p, v, t, d
 
         mp = self.metapattern
-        local p = self.metapattern:pattern()
+        p = self.metapattern:pattern()
         t = time
         d = delta
         v = value
@@ -217,4 +221,4 @@ _grid.metapattern = _grid.toggle {
     end
 }
 
-return metapatterns
+return metapattern, metapatterns
