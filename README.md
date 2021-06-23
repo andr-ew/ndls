@@ -19,8 +19,9 @@ global -> local -> zoned
 - rate & play is fixed to the grid, regardless of scope. dir is linked to rate scope
 - type is under cut alt, fade is under len alt
 - fixed / non-metaparam
-    - zone: st, len
-    - local: play, alias, glide, send, return, tap, rec (all grid only, play/rec/alias has params)
+    - zone: st, len, tap
+    - local: play, alias, glide, send, return, rec (all grid only, play/rec/alias has params)
+        - rec is going to be a wierd mix of zone/local. the punch/clear should be zoned but the rec flag should be local for recorded zones
     - global: input mixing
 - text-based or params config ?
     - i'm leaning params system for config now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
