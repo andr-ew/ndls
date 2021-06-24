@@ -2,7 +2,10 @@ local mp = {}
 local tap = require 'tabutil'
 
 function mp:new(arg)
-    local o = setmetatable({}, { __index = self })
+    local o = setmetatable({}, { 
+        __index = self, 
+        __call = function(self, ...) self:new(...) end 
+    })
     
     local function slug(id) return string.gsub(id, ' ', '_') end
     local function add(aarg)
@@ -17,10 +20,10 @@ function mp:new(arg)
 
     o.id = { zone = {}, voice = {}, global = '' }
     o.spec = arg.controlspec
-    o.fixed = arg.fixed
+    o.scopes = arg.scopes
 
     --add always hidden zone params per-voice
-    if (not arg.fixed) or (arg.scope == 'zone') then
+    if tab.contains(o.scopes, 'zone') then
         for i = 1, ndls.voices do
             o.id.zone[i] = {}
             for j = 1, ndls.zones do
@@ -39,7 +42,7 @@ function mp:new(arg)
     end
 
     --add voice param per-voice
-    if (not arg.fixed) or (arg.scope == 'voice') then
+    if tab.contains(o.scopes, 'voice') then
         for i = 1, ndls.voices do
             local id = arg.id +' '+ i
             o.id.voice[i] = slug(id)
@@ -51,12 +54,17 @@ function mp:new(arg)
     end
 
     --add global param
-    if (not arg.fixed) or (arg.scope == 'global') then
+    if tab.contains(o.scopes, 'global') then
         o.id.global = slug(arg.id)
-        add { id = id, action = arg.action_global }
+        add { 
+            id = arg.id, 
+            action = arg.action_global or function(v) 
+                for i = 1, ndls.voices do arg.action(i, v) end
+            end 
+        }
     end
     
-    if (not arg.fixed) then o:set_scope(arg.scope) else o.scope = arg.scope end
+    if #o.scopes > 1 then o:set_scope(arg.scope) else o.scope = arg.scope end
 
     return o
 end
@@ -69,31 +77,31 @@ function mp:bang(scope, voice)
 end
 
 function mp:set_scope(scope)
-    self.scope = scope
+    if tab.contains(self.scopes, scope) then
+        self.scope = scope
 
-    --show/hide
-    local function set(scp, id)
-        if scp == scope then params:show(id)
-        else params:hide(id) end
-    end
+        --show/hide
+        local function set(scp, id)
+            if scp == scope then params:show(id)
+            else params:hide(id) end
+        end
 
-    for i,v in ipairs(self.id.voice) do
-        set('voice', v)
+        for i,v in ipairs(self.id.voice) do
+            set('voice', v)
+        end
+        set('global', id.global)
     end
-    set('global', id.global)
 end
 
-local scopes = { 'global', 'voice', 'zone' }
-local sepocs = tab.invert(ops)
-
 function mp:add_scope_param()
-    if not self.fixed then
+    if #self.scopes > 1 then
+        local sepocs = tab.invert(self.scopes)
         params:add {
             type = 'option', id = self.id.global + '_scope', 
             name = self.id.global,
-            options = scopes, default = sepocs[self.scope],
+            options = self.scopes, default = sepocs[self.scope],
             action = function(v)
-                self:set_scope(scopes[v])
+                self:set_scope(self.scopes[v])
             end
         }
     end

@@ -1,3 +1,6 @@
 [submodule "lib/nest"]
 	path = lib/nest
 	url = https://github.com/andr-ew/nest
+[submodule "lib/cartographer"]
+	path = lib/cartographer
+	url = https://github.com/andr-ew/cartographer

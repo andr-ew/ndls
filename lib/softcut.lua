@@ -121,18 +121,17 @@ sc.zone = {
 sc.punch_in = {
     --indexed by zone
     { recording = false, recorded = false, manual = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {}, big = false },
-
-    update_play = function(s, buf)
+    update_play = function(s, z)
+        local buf = z
         sc.lvlmx[buf].play = s[buf].play
         sc.lvlmx:update(buf)
     end,
-    big = function(s, n, v)
-        local buf = sc.buf[n]
+    big = function(s, z, v)
+        local buf = z
         if v > 0.2 then s[buf].big = true end
     end,
-    toggle = function(s, n, v)
-        local buf = sc.buf[n]
-        local i = buf
+    toggle = function(s, z, v)
+        local buf = z
 
         if n ~= buf then
             sc.oldmx[n].rec = v; sc.oldmx:update(n)
@@ -145,9 +144,8 @@ sc.punch_in = {
             sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
 
             s[buf].manual = false
-            wrms.preset:set('manual '..buf, s[buf].manual)
-
             s[buf].recording = true
+
         elseif s[buf].recording then
             sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
             s[buf].play = 1; s:update_play(buf)
@@ -157,12 +155,11 @@ sc.punch_in = {
             s[buf].recorded = true
             s[buf].big = true
             s[buf].recording = false
-
-            wrms.gfx:wake(buf)
         end
     end,
-    manual = function(s, n)
-        local buf = sc.buf[n]
+    manual = function(s, z)
+        local buf = z
+
         if not s[buf].recorded then
             reg.blank[buf]:set_length(s.delay_size)
             reg.rec[buf]:set_length(1, 'fraction')
@@ -177,16 +174,16 @@ sc.punch_in = {
             wrms.gfx:wake(buf)
         end
     end,
-    untap = function(s, n)
-        local buf = sc.buf[n]
+    untap = function(s, z)
+        local buf = z
 
         s[buf].tap_buf = {}
         if s[buf].tap_clock then clock.cancel(s[buf].tap_clock) end
         s[buf].tap_clock = nil
         s[buf].tap_blink = 0
     end,
-    tap = function(s, n, t)
-        local buf = sc.buf[n]
+    tap = function(s, z, t)
+        local buf = z
 
         if t < 1 and t > 0 then
             table.insert(s[buf].tap_buf, t)
@@ -209,9 +206,9 @@ sc.punch_in = {
             end)
         else s:untap(n) end
     end,
-    clear = function(s, n)
-        local buf = sc.buf[n]
-        local i = buf * 2
+    clear = function(s, z)
+        local buf = z
+        local i = buf
 
         s[buf].play = 0; s:update_play(buf)
         reg.rec[buf]:position(0)
@@ -223,14 +220,12 @@ sc.punch_in = {
         s[buf].recording = false
         s[buf].big = false
         s[buf].manual = false
-        s:untap(n)
+        s:untap(z)
 
         reg.rec[buf]:set_length(1, 'fraction')
         for j = 1,2 do
             reg.play[buf][j]:set_length(0)
         end
-            
-        wrms.gfx:sleep(buf)
     end,
     save = function(s)
         local data = {}
