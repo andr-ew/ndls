@@ -8,21 +8,21 @@ endless and/or noodles
 
 global -> local -> zoned
 
-**arc/screen params:** vol, old, pan, bnd, cut, q, type, fade, aliasing, volt
+**arc/screen metaparams:** vol, old, pan, bnd, cut, q, type, fade, aliasing, volt
 
-**grid params:** rate, rev, alias, rec, play, send, return, tape/disk
+**grid metaparams:** rate, rev, alias, play, tape/disk (no global)
 
-- params can only have one scope at a time?
+**fixed metaparams:**
+    - zone: st, len, tap
+    - local: alias, glide, send, return, rec (all grid only, play/rec/alias has params)
+        - rec is going to be a wierd mix of zone/local. the punch/clear should be zoned but the rec flag should be local for recorded zones
+    - global: input mixing
+
 - local+zoned show on the screen in track focus, one after another (visually tabbed in UI)
 - except for old, vol, q, bnd, global params detune across voices
 - everything except rate & play can be mapped to any arc encoder
 - rate & play is fixed to the grid, regardless of scope. dir is linked to rate scope
 - type is under cut alt, fade is under len alt
-- fixed / non-metaparam
-    - zone: st, len, tap
-    - local: play, alias, glide, send, return, rec (all grid only, play/rec/alias has params)
-        - rec is going to be a wierd mix of zone/local. the punch/clear should be zoned but the rec flag should be local for recorded zones
-    - global: input mixing
 - text-based or params config ?
     - i'm leaning params system for config now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
     - so we'll do a `meta_param` type that creates the params for all scopes at load & hides the params of inactive scopes. the `meta_param` also hooks up to the `meta_pattern`s.
