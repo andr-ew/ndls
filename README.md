@@ -8,15 +8,19 @@ endless and/or noodles
 
 global -> local -> zoned
 
-**arc/screen metaparams:** vol, old, pan, bnd, cut, q, type, fade, aliasing, volt
+#### arc/screen metaparams:
+vol, old, pan, bnd, cut, q, type, fade, aliasing, volt
 
-**grid metaparams:** rate, rev, alias, play, tape/disk (no global)
+#### grid metaparams:
+rate, rev, alias, play, tape/disk (no global)
 
-**fixed metaparams:**
-    - zone: st, len, tap
-    - local: alias, glide, send, return, rec (all grid only, play/rec/alias has params)
-        - rec is going to be a wierd mix of zone/local. the punch/clear should be zoned but the rec flag should be local for recorded zones
-    - global: input mixing
+#### fixed metaparams:
+- zone: st, len, tap
+- local: alias, glide, send, return, rec (all grid only, play/rec/alias has params)
+    - rec is going to be a wierd mix of zone/local. the punch/clear should be zoned but the rec flag should be local for recorded zones
+- global: input mixing
+
+-------------
 
 - local+zoned show on the screen in track focus, one after another (visually tabbed in UI)
 - except for old, vol, q, bnd, global params detune across voices
