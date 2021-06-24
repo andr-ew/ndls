@@ -1,11 +1,8 @@
-local mp = {}
+local mp = setmetatable({}, { __call = function(self, ...) self:new(...) end })
 local tap = require 'tabutil'
 
 function mp:new(arg)
-    local o = setmetatable({}, { 
-        __index = self, 
-        __call = function(self, ...) self:new(...) end 
-    })
+    local o = setmetatable({}, { __index = self })
     
     local function slug(id) return string.gsub(id, ' ', '_') end
     local function add(aarg)

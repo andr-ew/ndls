@@ -10,12 +10,16 @@ local sc = {
         end
     },
     lvlmx = {
-        { vol = 1, play = 0, send = 1, pan = 0 },         
+        { vol = 1, play = 0, send = 1 },         
         update = function(s, n)
-            local v, p = s[n].vol * s[n].play, s[n].pan
-            softcut.level(n, v * ((p > 0) and 1 - p or 1))
+            local v = s[n].vol * s[n].play
+            softcut.level(n, v)
             --send
         end
+    },
+    panmx = {
+        { pan = 0 },
+        update = function(s, n) softcut.pan(n, util.clamp(s[n].pan, -1, 1)) end
     },
     oldmx = {
         { old = 1, rec = 0 },
@@ -25,7 +29,7 @@ local sc = {
         end
     },
     ratemx = {
-            { oct = 1, bnd = 1, dir = 1, rate = 1 },
+            { oct = 1, bnd = 0, dir = 1, rate = 1 },
             update = function(s, n)
                 s[n].rate = 2^s[n].oct * 2^(s[n].bnd) * s[n].dir
                 sc.send('rate', n, s[n].rate)
@@ -35,6 +39,18 @@ local sc = {
         { 1, 1 }, --lvl L, lvl R
         update = function(s, n)
             for i = 1,2 do softcut.level_input_cut(i, n, s[n][i]) end
+        end
+    },
+    aliasmx = {
+        { alias = 0, aliasing = 1 },
+        update = function(s, n)
+            if s[n].alias == 1 then
+                softcut.pre_filter_dry(n, 1)
+                softcut.pre_filter_lp(n, 0)
+            else
+                softcut.pre_filter_dry(n, 0)
+                softcut.pre_filter_lp(n, 1)
+            end
         end
     }
 }

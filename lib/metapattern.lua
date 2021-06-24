@@ -1,5 +1,7 @@
 local pattern = require 'pattern_time'
 
+--TODO: watch/process slice start & len
+
 function pattern:resume()
     if self.count > 0 then
         self.prev_time = util.time()
