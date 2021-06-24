@@ -1,10 +1,12 @@
-local mp = setmetatable({}, { __call = function(self, ...) self:new(...) end })
+local metaparams = {}
+
+local metaparam = setmetatable({}, { __call = function(self, ...) self:new(...) end })
 local tap = require 'tabutil'
 
-function mp:new(arg)
+function metaparam:new(arg)
     local o = setmetatable({}, { __index = self })
     
-    local function slug(id) return string.gsub(id, ' ', '_') end
+    local function slug(id) return string.gsub(string.gsub(id, ' ', '_'), '/', '-') end
     local function add(aarg)
         local merge = {}
         for k,v in pairs(arg) do merge[k] = v end
@@ -63,17 +65,19 @@ function mp:new(arg)
     
     if #o.scopes > 1 then o:set_scope(arg.scope) else o.scope = arg.scope end
 
+    --todo store mps numerically, add id lookup table
+    metaparams[arg.id] = o
     return o
 end
 
 --TODO: bang zone scope params when changing zone
-function mp:bang(scope, voice)
+function metaparam:bang(scope, voice)
     if (scope == nil) or (self.scope = scope) then
         params:bang(self:get_id(voice))
     end
 end
 
-function mp:set_scope(scope)
+function metaparam:set_scope(scope)
     if tab.contains(self.scopes, scope) then
         self.scope = scope
 
@@ -90,7 +94,7 @@ function mp:set_scope(scope)
     end
 end
 
-function mp:add_scope_param()
+function metaparam:add_scope_param()
     if #self.scopes > 1 then
         local sepocs = tab.invert(self.scopes)
         params:add {
@@ -104,19 +108,19 @@ function mp:add_scope_param()
     end
 end
 
-function mp:get_id(vc)
+function metaparam:get_id(vc)
     if self.scope == 'global' then return self.id.global
     elseif self.scope == 'voice' then return self.id.voice[vc]
     else return self.id.zone[vc][ndls.zone[vc]] end
 end
 
-function mp:set(v, vc)
+function metaparam:set(v, vc)
     params:set(self:get_id(vc), v)
     metapatterns:watch(v, self:get_id(vc), vc, self.scope)
 end
 
-function mp:get(vc)
+function metaparam:get(vc)
     return params_get(self:get_id(vc))
 end
 
-return mp
+return metaparam, metaparams

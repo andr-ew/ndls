@@ -138,6 +138,7 @@ sc.punch_in = {
     --indexed by zone
     { recording = false, recorded = false, manual = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {}, big = false },
     update_play = function(s, z)
+        --TODO this probably needs to set the metaparam
         local buf = z
         sc.lvlmx[buf].play = s[buf].play
         sc.lvlmx:update(buf)
