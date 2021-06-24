@@ -9,7 +9,7 @@ endless and/or noodles
 global -> local -> zoned
 
 #### arc/screen metaparams:
-vol, old, pan, bnd, cut, q, type, fade, aliasing, volt
+vol, old, pan, bnd, cut, q, type, aliasing, volt
 
 #### grid metaparams:
 rate, rev, alias, play, tape/disk (no global)
@@ -26,7 +26,7 @@ rate, rev, alias, play, tape/disk (no global)
 - except for old, vol, q, bnd, global params detune across voices
 - everything except rate & play can be mapped to any arc encoder
 - rate & play is fixed to the grid, regardless of scope. dir is linked to rate scope
-- type is under cut alt, fade is under len alt
+- type is under cut alt ?
 - text-based or params config ?
     - i'm leaning params system for config now bc there's a natural coupling of scoping/mapping & save state. so under the hood all three scopes would be available at once w/ the interfaces basically hidden/shown based on the configuration params
     - so we'll do a `meta_param` type that creates the params for all scopes at load & hides the params of inactive scopes. the `meta_param` also hooks up to the `meta_pattern`s.
@@ -49,7 +49,6 @@ q='local'
 type='zoned'
 st='zoned'
 len='zoned'
-fade='local'
 volt='zoned'
 
 rate='zoned'
