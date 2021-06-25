@@ -110,6 +110,11 @@ mparams:add {
     action = function(v) sc.lvlmx[i].play = v; sc.lvlmx:update(i) end
 }
 mparams:add {
+    id = 'rec',
+    type = 'binary', behavior = 'toggle', scopes = some, scope = 'voice',
+    action = function(v) sc.oldmx[i].rec = v; sc.oldmx:update(i) end
+}
+mparams:add {
     id = 'alias', 
     type = 'binary', behavior = 'toggle', scopes = some, scope = 'voice',
     action = function(i, v)
@@ -140,15 +145,13 @@ function rate:set_scope(scope)
 end
 mparams:add {
     id = 'send',
-    type = 'binary', behavior = 'toggle', scopes = { 'voice' },
-    action = function(i, v)
-    end
+    type = 'binary', behavior = 'toggle', scopes = { 'voice' }, default = 1,
+    action = function(i, v) sendmx[i].send = v; sendmx:update() end
 }
 mparams:add {
     id = 'return',
     type = 'binary', behavior = 'toggle', scopes = { 'voice' },
-    action = function(i, v)
-    end
+    action = function(i, v) sendmx[i].ret = v; sendmx:update() end
 }
 
 --add metaparam params

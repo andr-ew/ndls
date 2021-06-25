@@ -9,24 +9,39 @@ local sc = {
             s[n].rel = reg.rec:phase_relative(n*2, v, 'fraction')
         end
     },
+    sendmx = {
+        { vol = 1, old = 1, send = 1, ret = 0 },
+        update = function(s)
+            for dst = 1, voices do
+                for src = 1,voices do if src ~= dst then
+                    softcut.level_cut_cut(
+                        src, dst, 
+                          s[src].vol  * s[dst].old 
+                        * s[src].send * s[dst].ret
+                    )
+                end end
+            end
+        end
+    },
     lvlmx = {
         { vol = 1, play = 0, send = 1 },         
         update = function(s, n)
             local v = s[n].vol * s[n].play
             softcut.level(n, v)
-            --send
+            sc.sendmx[n].vol = v
         end
-    },
-    panmx = {
-        { pan = 0 },
-        update = function(s, n) softcut.pan(n, util.clamp(s[n].pan, -1, 1)) end
     },
     oldmx = {
         { old = 1, rec = 0 },
         update = function(s, n)
             sc.send('rec_level', n, s[n].rec)
             sc.send('pre_level', n, (s[n].rec == 0) and 1 or s[n].old)
+            sc.sendmx[n].old = s[n].old
         end
+    },
+    panmx = {
+        { pan = 0 },
+        update = function(s, n) softcut.pan(n, util.clamp(s[n].pan, -1, 1)) end
     },
     ratemx = {
             { oct = 1, bnd = 0, dir = 1, rate = 1 },
@@ -134,7 +149,7 @@ sc.zone = {
     end
 }
         
-sc.punch_in = {
+sc.loop = {
     --indexed by zone
     { recording = false, recorded = false, manual = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {}, big = false },
     update_play = function(s, z)
@@ -147,33 +162,57 @@ sc.punch_in = {
         local buf = z
         if v > 0.2 then s[buf].big = true end
     end,
-    toggle = function(s, z, v)
+    punch_in = function(s, z)
         local buf = z
 
-        if n ~= buf then
-            sc.oldmx[n].rec = v; sc.oldmx:update(n)
-        elseif s[buf].recorded then
-            sc.oldmx[buf].rec = v; sc.oldmx:update(buf)
-        elseif v == 1 then
-            reg.blank[buf]:set_length(16777216 / 48000 / 2)
-            reg.rec[buf]:punch_in()
+        reg.blank[buf]:set_length(16777216 / 48000 / 2) --wrong
+        reg.rec[buf]:punch_in()
 
-            sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
+        sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
 
-            s[buf].manual = false
-            s[buf].recording = true
-
-        elseif s[buf].recording then
-            sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
-            s[buf].play = 1; s:update_play(buf)
-        
-            reg.rec[buf]:punch_out()
-
-            s[buf].recorded = true
-            s[buf].big = true
-            s[buf].recording = false
-        end
+        s[buf].manual = false
+        s[buf].recording = true
     end,
+    punch_out = function(s, z)
+        local buf = z
+
+        sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
+        s[buf].play = 1; s:update_play(buf)
+    
+        reg.rec[buf]:punch_out()
+
+        s[buf].recorded = true
+        s[buf].big = true
+        s[buf].recording = false
+    end,
+    
+    -- toggle = function(s, z, v)
+    --     local buf = z
+
+    --     if n ~= buf then
+    --         sc.oldmx[n].rec = v; sc.oldmx:update(n)
+    --     elseif s[buf].recorded then
+    --         sc.oldmx[buf].rec = v; sc.oldmx:update(buf)
+    --     elseif v == 1 then
+    --         reg.blank[buf]:set_length(16777216 / 48000 / 2)
+    --         reg.rec[buf]:punch_in()
+
+    --         sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
+
+    --         s[buf].manual = false
+    --         s[buf].recording = true
+
+    --     elseif s[buf].recording then
+    --         sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
+    --         s[buf].play = 1; s:update_play(buf)
+        
+    --         reg.rec[buf]:punch_out()
+
+    --         s[buf].recorded = true
+    --         s[buf].big = true
+    --         s[buf].recording = false
+    --     end
+    -- end,
     manual = function(s, z)
         local buf = z
 
@@ -267,7 +306,7 @@ sc.punch_in = {
 for i = 2, zones do
     sc.punch_in[i] = {}
     for l,v in pairs(sc.punch_in[1]) do
-        sc.punch_in[i][i][l] = v
+        sc.loop[i][l] = v
     end
 end
 
