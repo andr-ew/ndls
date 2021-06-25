@@ -1,80 +1,17 @@
-local metaparams = {}
-
-local metaparam = setmetatable({}, { __call = function(self, ...) self:new(...) end })
 local tap = require 'tabutil'
+
+local metaparam = {}
 
 function metaparam:new(arg)
     local o = setmetatable({}, { __index = self })
     
-    local function slug(id) return string.gsub(string.gsub(id, ' ', '_'), '/', '-') end
-    local function add(aarg)
-        local merge = {}
-        for k,v in pairs(arg) do merge[k] = v end
-        for k,v in pairs(aarg) do merge[k] = v end
-        merge.name = aarg.id
-        merge.id = slug(aarg.id)
-
-        params:add(merge)
-    end
-
     o.id = { zone = {}, voice = {}, global = '' }
     o.spec = arg.controlspec
-    o.scopes = arg.scopes
+    o.scopes = arg.scope
+    o.arg = arg
+    o.no_scope_param = arg.no_scope_param
 
-    --add always hidden zone params per-voice
-    if tab.contains(o.scopes, 'zone') then
-        for i = 1, ndls.voices do
-            o.id.zone[i] = {}
-            for j = 1, ndls.zones do
-                local id = arg.id +' '+ i +' zone '+ j
-                o.id.zone[i][j] = slug(id)
-
-                add { 
-                    id = id, 
-                    action = function(v)
-                        if ndls.zone[i] == j then arg.action(i, v) end
-                    end
-                }
-                params:hide(o.id.zone[i][j])
-            end
-        end
-    end
-
-    --add voice param per-voice
-    if tab.contains(o.scopes, 'voice') then
-        for i = 1, ndls.voices do
-            local id = arg.id +' '+ i
-            o.id.voice[i] = slug(id)
-            add { 
-                id = id, 
-                action = function(v) arg.action(i, v) end
-            }
-        end
-    end
-
-    --add global param
-    if tab.contains(o.scopes, 'global') then
-        o.id.global = slug(arg.id)
-        add { 
-            id = arg.id, 
-            action = arg.action_global or function(v) 
-                for i = 1, ndls.voices do arg.action(i, v) end
-            end 
-        }
-    end
-    
-    if #o.scopes > 1 then o:set_scope(arg.scope) else o.scope = arg.scope end
-
-    --todo store mps numerically, add id lookup table
-    metaparams[arg.id] = o
     return o
-end
-
---TODO: bang zone scope params when changing zone
-function metaparam:bang(scope, voice)
-    if (scope == nil) or (self.scope = scope) then
-        params:bang(self:get_id(voice))
-    end
 end
 
 function metaparam:set_scope(scope)
@@ -94,8 +31,68 @@ function metaparam:set_scope(scope)
     end
 end
 
+function metaparam:add_params()
+    local o = self
+
+    local function slug(id) return string.gsub(string.gsub(id, ' ', '_'), '/', '-') end
+    local function add(aarg)
+        local merge = {}
+        for k,v in pairs(o.arg) do merge[k] = v end
+        for k,v in pairs(aarg) do merge[k] = v end
+        merge.name = aarg.id
+        merge.id = slug(aarg.id)
+
+        params:add(merge)
+    end
+
+    --add always hidden zone params per-voice
+    if tab.contains(o.scopes, 'zone') then
+        for i = 1, ndls.voices do
+            o.id.zone[i] = {}
+            for j = 1, ndls.zones do
+                local id = o.arg.id +' '+ i +' zone '+ j
+                o.id.zone[i][j] = slug(id)
+
+                add { 
+                    id = id, 
+                    action = function(v)
+                        if ndls.zone[i] == j then o.arg.action(i, v) end
+                    end
+                }
+                params:hide(o.id.zone[i][j])
+            end
+        end
+    end
+
+    --add voice param per-voice
+    if tab.contains(o.scopes, 'voice') then
+        for i = 1, ndls.voices do
+            local id = o.arg.id +' '+ i
+            o.id.voice[i] = slug(id)
+            add { 
+                id = id, 
+                action = function(v) o.arg.action(i, v) end
+            }
+        end
+    end
+
+    --add global param
+    if tab.contains(o.scopes, 'global') then
+        o.id.global = slug(o.arg.id)
+        add { 
+            id = o.arg.id, 
+            action = o.arg.action_global or function(v) 
+                for i = 1, ndls.voices do o.arg.action(i, v) end
+            end 
+        }
+    end
+    
+    local scope = o.arg.scope or o.scopes[1]
+    if #o.scopes > 1 then o:set_scope(scope) else o.scope = scope end
+end
+
 function metaparam:add_scope_param()
-    if #self.scopes > 1 then
+    if #self.scopes > 1 and not self.no_scope_param then
         local sepocs = tab.invert(self.scopes)
         params:add {
             type = 'option', id = self.id.global + '_scope', 
@@ -116,11 +113,37 @@ end
 
 function metaparam:set(v, vc)
     params:set(self:get_id(vc), v)
-    metapatterns:watch(v, self:get_id(vc), vc, self.scope)
+    mpats:watch(v, self:get_id(vc), vc, self.scope)
 end
 
 function metaparam:get(vc)
     return params_get(self:get_id(vc))
 end
 
-return metaparam, metaparams
+--TODO: bang zone scope params when changing zone
+function metaparam:bang(scope, voice)
+    if (scope == nil) or (self.scope = scope) then
+        params:bang(self:get_id(voice))
+    end
+end
+
+local metaparams = { id = {}, ordered = {} }
+
+function metaparams:add(arg)
+    local mp = metaparam:new(arg)
+    self.id[arg.id] = mp
+    table.insert(self.ordered, mp)
+    return mp
+end
+
+function metaparams:add_params(groupname)
+    if groupname then params:add_group(groupname, #self.ordered)
+    for i,v in ipairs(self.ordered) do v:add_params() end
+end
+
+function metaparams:add_scope_params(groupname)
+    if groupname then params:add_group(groupname, #self.ordered)
+    for i,v in ipairs(self.ordered) do v:add_scope_param() end
+end
+
+return metaparams, metaparam

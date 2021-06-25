@@ -1,6 +1,6 @@
 local pattern = require 'pattern_time'
 
---TODO: watch/process slice start & len
+--TODO: watch/process slice start & len, rec
 
 function pattern:resume()
     if self.count > 0 then
@@ -223,4 +223,4 @@ _grid.metapattern = _grid.toggle {
     end
 }
 
-return metapattern, metapatterns
+return metapatterns, metapattern
