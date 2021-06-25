@@ -105,21 +105,25 @@ mparams:add {
 
 --  mp: grid
 mparams:add {
+    id = 'alias', 
+    type = 'binary', behavior = 'toggle', scopes = { 'voice' },
+    action = function(i, v)
+        sc.aliasmx[i].aliasing = v; sc.aliasmx:update(i)
+    end
+}
+--  record & play flags only for when the loop in current zone is recorded
+--      when not recorded, bind punch_in toggle for zone (0 for play)
+--      when not playing, bind rec to punch in toggle
+--      will need second param for mapping rec
+mparams:add {
     id = 'play',
     type = 'binary', behavior = 'toggle', scopes = some, scope = 'voice',
     action = function(v) sc.lvlmx[i].play = v; sc.lvlmx:update(i) end
 }
 mparams:add {
     id = 'rec',
-    type = 'binary', behavior = 'toggle', scopes = some, scope = 'voice',
+    type = 'binary', behavior = 'toggle', scopes = { 'voice' }, hidden = true,
     action = function(v) sc.oldmx[i].rec = v; sc.oldmx:update(i) end
-}
-mparams:add {
-    id = 'alias', 
-    type = 'binary', behavior = 'toggle', scopes = some, scope = 'voice',
-    action = function(i, v)
-        sc.aliasmx[i].aliasing = v; sc.aliasmx:update(i)
-    end
 }
 local rate = mparams:add {
     id = 'rate',

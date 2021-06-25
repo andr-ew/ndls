@@ -149,7 +149,7 @@ sc.zone = {
     end
 }
         
-sc.loop = {
+sc.punch_in = {
     --indexed by zone
     { recording = false, recorded = false, manual = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {}, big = false },
     update_play = function(s, z)
@@ -162,72 +162,50 @@ sc.loop = {
         local buf = z
         if v > 0.2 then s[buf].big = true end
     end,
-    punch_in = function(s, z)
+    toggle = function(s, z, v)
         local buf = z
 
-        reg.blank[buf]:set_length(16777216 / 48000 / 2) --wrong
-        reg.rec[buf]:punch_in()
-
-        sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
-
-        s[buf].manual = false
-        s[buf].recording = true
-    end,
-    punch_out = function(s, z)
-        local buf = z
-
-        sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
-        s[buf].play = 1; s:update_play(buf)
-    
-        reg.rec[buf]:punch_out()
-
-        s[buf].recorded = true
-        s[buf].big = true
-        s[buf].recording = false
-    end,
-    
-    -- toggle = function(s, z, v)
-    --     local buf = z
-
-    --     if n ~= buf then
-    --         sc.oldmx[n].rec = v; sc.oldmx:update(n)
-    --     elseif s[buf].recorded then
-    --         sc.oldmx[buf].rec = v; sc.oldmx:update(buf)
-    --     elseif v == 1 then
-    --         reg.blank[buf]:set_length(16777216 / 48000 / 2)
-    --         reg.rec[buf]:punch_in()
-
-    --         sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
-
-    --         s[buf].manual = false
-    --         s[buf].recording = true
-
-    --     elseif s[buf].recording then
-    --         sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
-    --         s[buf].play = 1; s:update_play(buf)
+        -- if n ~= buf then
+        --     sc.oldmx[n].rec = v; sc.oldmx:update(n)
+        -- elseif s[buf].recorded then
+        --     sc.oldmx[buf].rec = v; sc.oldmx:update(buf)
         
-    --         reg.rec[buf]:punch_out()
+        if v == 1 then
+            --reg.blank[buf]:set_length(16777216 / 48000 / 2) --wrong
+            reg.rec[buf]:punch_in()
 
-    --         s[buf].recorded = true
-    --         s[buf].big = true
-    --         s[buf].recording = false
-    --     end
-    -- end,
+            sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
+
+            s[buf].manual = false
+            s[buf].recording = true
+
+        elseif s[buf].recording then
+            sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
+            s[buf].play = 1; s:update_play(buf)
+        
+            reg.rec[buf]:punch_out()
+
+            s[buf].recorded = true
+            s[buf].big = true
+            s[buf].recording = false
+        end
+    end,
+    get = function(s, z)
+        return s[z].recording and 1 or 0
+    end,
     manual = function(s, z)
         local buf = z
 
         if not s[buf].recorded then
-            reg.blank[buf]:set_length(s.delay_size)
+            --reg.blank[buf]:set_length(s.delay_size)
             reg.rec[buf]:set_length(1, 'fraction')
             
             s[buf].manual = true
-            wrms.preset:set('manual '..buf, s[buf].manual)
 
             sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
             s[buf].play = 1; s:update_play(buf)
 
             s[buf].recorded = true
-            wrms.gfx:wake(buf)
         end
     end,
     untap = function(s, z)
@@ -306,7 +284,7 @@ sc.loop = {
 for i = 2, zones do
     sc.punch_in[i] = {}
     for l,v in pairs(sc.punch_in[1]) do
-        sc.loop[i][l] = v
+        sc.punch_in[i][l] = v
     end
 end
 

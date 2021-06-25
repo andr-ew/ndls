@@ -5,7 +5,7 @@ local metaparam = {}
 function metaparam:new(arg)
     local o = setmetatable({}, { __index = self })
     
-    o.id = { zone = {}, voice = {}, global = '' }
+    o.id = { zone = {}, voice = {}, global = nil }
     o.spec = arg.controlspec
     o.scopes = arg.scope
     o.arg = arg
@@ -29,6 +29,11 @@ function metaparam:set_scope(scope)
         end
         set('global', id.global)
     end
+end
+
+function metaparam:hide()
+    if self.id.global then params:hide(self.id.global)
+    for i,v in ipairs(self.id.voice) do params:hide(v) end
 end
 
 function metaparam:add_params()
@@ -89,6 +94,7 @@ function metaparam:add_params()
     
     local scope = o.arg.scope or o.scopes[1]
     if #o.scopes > 1 then o:set_scope(scope) else o.scope = scope end
+    if o.arg.hidden then self:hide() end
 end
 
 function metaparam:add_scope_param()
@@ -121,6 +127,7 @@ function metaparam:get(vc)
 end
 
 --TODO: bang zone scope params when changing zone
+--TODO: copy zone data from last zone when entering a blank zone
 function metaparam:bang(scope, voice)
     if (scope == nil) or (self.scope = scope) then
         params:bang(self:get_id(voice))
