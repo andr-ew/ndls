@@ -1,7 +1,10 @@
 -- endless and/or noodles
 
+function r() norns.script.load(norns.script.state) end
+
 --external libs
 include 'ndls/lib/nest/core'
+include 'ndls/lib/nest/norns'
 include 'ndls/lib/nest/grid'
 include 'ndls/lib/nest/arc'
 include 'ndls/lib/nest/txt'
@@ -16,15 +19,13 @@ cr = include 'ndls/lib/crow'                    --crow utilities
 
 for i = 1,8 do mpats[i] = mpat:new() end
 
---add params using the metaparams abstraction
-
 local all = { 'zone', 'voice', 'global' }
 local some = { 'zone', 'voice' }
 
---  mp: screen/arc
+--add params using the metaparams abstraction
 mparams:add { 
     id = 'vol', 
-    controlspec = cs.def { default = 1, max = 2 },
+    type = 'control', controlspec = cs.def { default = 1, max = 2 },
     scopes = all, scope = 'voice',
     action = function(i, v)
         sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
@@ -102,8 +103,6 @@ mparams:add {
         cr.outmx[i] = v; cr.outmx:update(i)
     end
 }
-
---  mp: grid
 mparams:add {
     id = 'alias', 
     type = 'binary', behavior = 'toggle', scopes = { 'voice' },
@@ -165,4 +164,95 @@ mparams:add_scope_params('scopes')
 params:add_separator('ndls')
 mparams:add_params()
 
---TODO: nest_
+local shaded = { 4, 15 }
+local zone = ndls.zone
+
+ndls_ = nest_ { grid = nest_ {} }
+
+--128 grid interface
+ndls_.grid[128] = nest_ {
+    voice = nest_(4):each(function(n) 
+        local top, bottom = n, n + 4
+        return nest_ {
+            rec = _grid.toggle {
+                x = 1, y = bottom, 
+                value = function(s) end,
+                action = function(s, v) end
+            },
+            play = _grid.toggle {
+                x = 2, y = bottom, lvl = shaded,
+                value = function(s) end,
+                action = function(s, v) 
+                    --TODO tape stop slew for t > ?
+                end
+            },
+            tap = _grid.trigger {
+                x = 3, y = bottom, selected = 1,
+                lvl = function() 
+                    return sc.punch_in[zone[i]].tap_blink*11 + 4 
+                end,
+                action = function(s, v, t, dt) 
+                    --if not recorded then punch_in:manual() end
+                    sc.punchwin:tap(zone[n], dt) 
+                end
+            },
+            alias = _grid.toggle {
+                x = 4, y = bottom,
+            } :bind(mparams.id['alias'], n),
+            send = _grid.toggle {
+                x = 5, y = bottom,
+            } :bind(mparams.id['send'], n),
+            ret = _grid.toggle {
+                x = 6, y = bottom, lvl = shaded,
+            } :bind(mparams.id['return'], n),
+            zone = _grid.number {
+                x = { 7, 15 }, y = bottom, fingers = { 1, 1 },
+            } :bind(zone, n),
+            copy = _grid.trigger {
+                x = { 7, 15 }, y = bottom, z = 2, fingers = { 2, 5 }, edge = 'falling',
+                lvl = { 0,
+                    function(s, draw)
+                        draw(4); clock.sleep(0.1)
+                        draw(0); clock.sleep(0.1)
+                        draw(4); clock.sleep(0.1)
+                        draw(0)
+                    end
+                },
+                action = function(s, v, t, d, add, _, list)
+                    --if #list > 2 then ndls.copy(src, dst, true)
+                    --else ndls.copy(src, dst) end
+                end
+            },
+            tape_disk = _grid.toggle {
+                x = 5, y = top,
+            } :bind(mparams.id['tape/disk'], n),
+            rev = _grid.rev {
+                x = 6, y = top, edge = 'falling', lvl = shaded,
+                value = function() return mparams.id.rev:get(n) end,
+                action = function(s, v, t)
+                    --sc.slewmx:update(n, t)
+                    mparams.id.rev:set(v, n)
+                end
+            },
+            rate = _grid.number {
+                x = { 7, 15 }, y = top,
+                value = function() return mparams.id.rate:get(n) end,
+                action = function(s, v, t)
+                    --sc.slewmx:update(n, t)
+                    mparams.id.rate:set(v, n)
+                end
+            },
+            phase = _grid.affordance {
+                x = { 7, 15 }, y = top, z = -1,
+                --value = function() return math.floor(sc.phase[n].rel * ndls.zones) end,
+                redraw = function(s, g)
+                    g:led(s.x[1] + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1])), s.y, 4)
+                end
+            }
+        }
+    end)
+}
+
+function init()
+    ndls_:init()
+end

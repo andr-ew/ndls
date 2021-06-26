@@ -7,7 +7,8 @@ function metaparam:new(arg)
     
     o.id = { zone = {}, voice = {}, global = nil }
     o.spec = arg.controlspec
-    o.scopes = arg.scope
+    o.scopes = arg.scopes
+    o.scope = arg.scope
     o.arg = arg
     o.no_scope_param = arg.no_scope_param
 
@@ -27,19 +28,20 @@ function metaparam:set_scope(scope)
         for i,v in ipairs(self.id.voice) do
             set('voice', v)
         end
-        set('global', id.global)
+        if self.id.global then set('global', self.id.global) end
     end
 end
 
 function metaparam:hide()
-    if self.id.global then params:hide(self.id.global)
+    if self.id.global then params:hide(self.id.global) end
     for i,v in ipairs(self.id.voice) do params:hide(v) end
 end
+
+local function slug(id) return string.gsub(string.gsub(id, ' ', '_'), '/', '-') end
 
 function metaparam:add_params()
     local o = self
 
-    local function slug(id) return string.gsub(string.gsub(id, ' ', '_'), '/', '-') end
     local function add(aarg)
         local merge = {}
         for k,v in pairs(o.arg) do merge[k] = v end
@@ -55,7 +57,7 @@ function metaparam:add_params()
         for i = 1, ndls.voices do
             o.id.zone[i] = {}
             for j = 1, ndls.zones do
-                local id = o.arg.id +' '+ i +' zone '+ j
+                local id = o.arg.id ..' '.. i ..' zone '.. j
                 o.id.zone[i][j] = slug(id)
 
                 add { 
@@ -72,7 +74,7 @@ function metaparam:add_params()
     --add voice param per-voice
     if tab.contains(o.scopes, 'voice') then
         for i = 1, ndls.voices do
-            local id = o.arg.id +' '+ i
+            local id = o.arg.id ..' '.. i
             o.id.voice[i] = slug(id)
             add { 
                 id = id, 
@@ -99,10 +101,10 @@ end
 
 function metaparam:add_scope_param()
     if #self.scopes > 1 and not self.no_scope_param then
-        local sepocs = tab.invert(self.scopes)
+        local sepocs = tab.invert(self.arg.scopes)
         params:add {
-            type = 'option', id = self.id.global + '_scope', 
-            name = self.id.global,
+            type = 'option', id = slug(self.arg.id .. '_scope'), 
+            name = self.arg.id,
             options = self.scopes, default = sepocs[self.scope],
             action = function(v)
                 self:set_scope(self.scopes[v])
@@ -129,7 +131,7 @@ end
 --TODO: bang zone scope params when changing zone
 --TODO: copy zone data from last zone when entering a blank zone
 function metaparam:bang(scope, voice)
-    if (scope == nil) or (self.scope = scope) then
+    if (scope == nil) or (self.scope == scope) then
         params:bang(self:get_id(voice))
     end
 end
@@ -143,13 +145,19 @@ function metaparams:add(arg)
     return mp
 end
 
-function metaparams:add_params(groupname)
-    if groupname then params:add_group(groupname, #self.ordered)
+function metaparams:add_params()
+    --if groupname then params:add_group(groupname, #self.ordered) end
     for i,v in ipairs(self.ordered) do v:add_params() end
 end
 
 function metaparams:add_scope_params(groupname)
-    if groupname then params:add_group(groupname, #self.ordered)
+    local n = 0 --11
+    for i,v in ipairs(self.ordered) do 
+        if #v.scopes > 1 and not v.no_scope_param then n = n + 1 end 
+    end
+    print(n, #self.ordered)
+
+    if groupname then params:add_group(groupname, n) end
     for i,v in ipairs(self.ordered) do v:add_scope_param() end
 end
 

@@ -132,6 +132,7 @@ sc.send = function(command, ...)
     softcut[command](...)
 end
 
+--TODO slewmx (tape/disk)
 sc.slew = function(n, t)
     local st = (2 + (math.random() * 0.5)) * (t or 0)
     sc.send('rate_slew_time', n, st)
@@ -277,6 +278,8 @@ sc.punch_in = {
                 if sc.buf[i]==i then params:delta('clear '..i) end
             end
         end
+    end,
+    copy = function(s, src, dst)
     end
 }
 

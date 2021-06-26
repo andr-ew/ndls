@@ -1,6 +1,6 @@
 local pattern = require 'pattern_time'
 
---TODO: watch/process slice start & len, rec
+--TODO: watch/process slice start & len, zone
 
 function pattern:resume()
     if self.count > 0 then
