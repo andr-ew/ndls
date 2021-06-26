@@ -125,7 +125,7 @@ function metaparam:set(v, vc)
 end
 
 function metaparam:get(vc)
-    return params_get(self:get_id(vc))
+    return params:get(self:get_id(vc))
 end
 
 --TODO: bang zone scope params when changing zone
