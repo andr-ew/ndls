@@ -128,11 +128,15 @@ function metaparam:get(vc)
     return params:get(self:get_id(vc))
 end
 
---TODO: bang zone scope params when changing zone
---TODO: copy zone data from last zone when entering a blank zone
-function metaparam:bang(scope, voice)
+function metaparam:bang(voice, scope)
     if (scope == nil) or (self.scope == scope) then
         params:bang(self:get_id(voice))
+    end
+end
+
+function metaparam:copy(voice, src, dst)
+    if self.scope = 'zone' then
+        params:set(self.id.zone[voice][dst], params:get(self.id.zone[voice][src]))
     end
 end
 
@@ -159,6 +163,14 @@ function metaparams:add_scope_params(groupname)
 
     if groupname then params:add_group(groupname, n) end
     for i,v in ipairs(self.ordered) do v:add_scope_param() end
+end
+
+function metaparams:bang(voice, scope)
+    for i,v in ipairs(self.ordered) do v:bang(voice, scope) end
+end
+
+function metaparams:copy(voice, src, dst)
+    for i,v in ipairs(self.ordered) do v:copy(voice, src, dst) end
 end
 
 return metaparams, metaparam

@@ -159,36 +159,32 @@ sc.punch_in = {
         sc.lvlmx[buf].play = s[buf].play
         sc.lvlmx:update(buf)
     end,
-    big = function(s, z, v)
+    -- big = function(s, z, v)
+    --     local buf = z
+    --     if v > 0.2 then s[buf].big = true end
+    -- end,
+    set = function(s, z, v)
         local buf = z
-        if v > 0.2 then s[buf].big = true end
-    end,
-    toggle = function(s, z, v)
-        local buf = z
+        if not s[buf].recorded then
+            if v == 1 then
+                --reg.blank[buf]:set_length(16777216 / 48000 / 2) --wrong
+                reg.rec[buf]:punch_in()
 
-        -- if n ~= buf then
-        --     sc.oldmx[n].rec = v; sc.oldmx:update(n)
-        -- elseif s[buf].recorded then
-        --     sc.oldmx[buf].rec = v; sc.oldmx:update(buf)
-        
-        if v == 1 then
-            --reg.blank[buf]:set_length(16777216 / 48000 / 2) --wrong
-            reg.rec[buf]:punch_in()
+                sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
 
-            sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
+                s[buf].manual = false
+                s[buf].recording = true
 
-            s[buf].manual = false
-            s[buf].recording = true
+            elseif s[buf].recording then
+                sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
+                s[buf].play = 1; s:update_play(buf)
+            
+                reg.rec[buf]:punch_out()
 
-        elseif s[buf].recording then
-            sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
-            s[buf].play = 1; s:update_play(buf)
-        
-            reg.rec[buf]:punch_out()
-
-            s[buf].recorded = true
-            s[buf].big = true
-            s[buf].recording = false
+                s[buf].recorded = true
+                s[buf].big = true
+                s[buf].recording = false
+            end
         end
     end,
     get = function(s, z)
@@ -197,6 +193,7 @@ sc.punch_in = {
     manual = function(s, z)
         local buf = z
 
+        --TODO caller sets mparam.rec high
         if not s[buf].recorded then
             --reg.blank[buf]:set_length(s.delay_size)
             reg.rec[buf]:set_length(1, 'fraction')
