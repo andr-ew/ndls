@@ -144,6 +144,7 @@ sc.zone = {
     1, 2, 3, 4, --[voice] = zone
     update = function(s, n)
         cartographer.assign(reg.play[s[n]], n)
+        sc.punch_in:update_play(s[n])
     end
 }
         
