@@ -6,15 +6,19 @@ ndls.zones = 9 --zone count
 ndls.zone =  { --active zone
     1, 2, 3, 4,
     entered = {},
-    set = function(s, n, z)
+    set = function(s, z, n)
         if not s.entered[n][z] then
             mparams:copy(n, s[n], z)
             s.entered[n][z] = true
         else mparams:bang(n, 'zone') end
+        sc.zone[n] = z; sc.zone:update(n)
         s[n] = z
     end,
     get = function(s, n)
         return s[n]
+    end,
+    init = function(s)
+        for n = 1,ndls.voices do sc.zone:update(n) end
     end,
     copy = function(src, dst, range)
        --copy punch_in, region, set entered false for all voices

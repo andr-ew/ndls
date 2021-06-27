@@ -116,7 +116,7 @@ end
 function metaparam:get_id(vc)
     if self.scope == 'global' then return self.id.global
     elseif self.scope == 'voice' then return self.id.voice[vc]
-    else return self.id.zone[vc][ndls.zone[vc]] end
+    elseif self.scope == 'zone' then return self.id.zone[vc][ndls.zone[vc]] end
 end
 
 function metaparam:set(v, vc)
@@ -129,13 +129,18 @@ function metaparam:get(vc)
 end
 
 function metaparam:bang(voice, scope)
-    if (scope == nil) or (self.scope == scope) then
-        params:bang(self:get_id(voice))
+    local function b(v)
+        if (scope == nil) or (self.scope == scope) then
+            params:bang(self:get_id(v))
+        end
     end
+
+    if voice then b(voice)
+    else for i = 1,ndls.voices do b(i) end end
 end
 
 function metaparam:copy(voice, src, dst)
-    if self.scope = 'zone' then
+    if self.scope == 'zone' then
         params:set(self.id.zone[voice][dst], params:get(self.id.zone[voice][src]))
     end
 end

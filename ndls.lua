@@ -41,7 +41,7 @@ mparams:add {
 }
 mparams:add {
     id = 'pan', 
-    type = 'control', controlspec = cs.def { min = -1, max = 1 },
+    type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0 },
     scopes = all, scope = 'global',
     action = function(i, v)
         sc.panmx[i].pan = v; sc.panmx:update(i)
@@ -55,7 +55,7 @@ mparams:add {
 }
 mparams:add {
     id = 'bnd', 
-    type = 'control', controlspec = cs.def { min = -1, max = 1 },
+    type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0 },
     scopes = all, scope = 'voice',
     action = function(i, v) sc.ratemx[i].bnd = v; sc.ratemx:update(i) end
 }
@@ -77,7 +77,7 @@ mparams:add {
     id = 'q',
     type = 'control', controlspec = cs.def { default = 0.4 }, scopes = all, scope = 'voice',
     action = function(i, v)
-        sc.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
+        softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
     end
 }
 local types = { 'dry', 'lp', 'hp', 'bp' } 
@@ -98,7 +98,7 @@ mparams:add {
 }
 mparams:add {
     id = 'volt', 
-    type = 'control', controlspec = cs.new { min = -5, max = 5 }, scopes = all, scope = 'zone',
+    type = 'control', controlspec = cs.def { min = -5, max = 5 }, scopes = all, scope = 'zone',
     action = function(i, v)
         cr.outmx[i] = v; cr.outmx:update(i)
     end
@@ -194,7 +194,7 @@ grid_[128] = function(varibright)
                             if v == 1 then sc.punch_in:set(z, 1)
                             else 
                                 sc.punch_in:set(z, 0)
-                                mparams.id['play']:set(n, 1)
+                                mparams.id['play']:set(1, n)
                             end
                         else
                             if sc.punch_in[z].play == 0 and v == 1 then
@@ -230,7 +230,7 @@ grid_[128] = function(varibright)
                     end,
                     action = function(s, v, t, dt) 
                         --TODO if not recorded then punch_in:manual() end
-                        sc.punchwin:tap(ndls.zone[n], dt) 
+                        sc.punch_in:tap(ndls.zone[n], dt) 
                     end
                 },
                 alias = _grid.toggle {
@@ -281,6 +281,7 @@ grid_[128] = function(varibright)
                         mparams.id.rate:set(v - 8, n)
                     end
                 },
+                --[[
                 phase = _grid.affordance {
                     x = { 7, 15 }, y = top, z = -1,
                     --value = function() return math.floor(sc.phase[n].rel * ndls.zones) end,
@@ -288,9 +289,10 @@ grid_[128] = function(varibright)
                         --TODO if not recorded then lvl = 0 
                         g:led(s.x[1] + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1])), s.y, 4)
 
-                        return true --return a dirty flag to redraw every frame
+                        --return true --return a dirty flag to redraw every frame
                     end
                 }
+                --]]
             }
         end)
     }
@@ -302,5 +304,8 @@ ndls_ = nest_ {
 }
 
 function init()
+    sc.setup()
+    mparams:bang()
     ndls_:init()
+    ndls.zone:init()
 end

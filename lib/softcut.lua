@@ -104,16 +104,13 @@ sc.setup = function()
         softcut.level_input_cut(2, i, 1)
         
         sc.slew(i, 0.2)
-    end
-    for i = 1, 2 do
-        local l, r = i*2 - 1, i*2
         
         softcut.phase_quant(i*2 - 1, 1/60)
         
         --adjust punch_in time quantum based on rate
-        reg.rec[i].rate_callback = function() 
-            return sc.ratemx[i].rate
-        end
+        -- reg.rec[i].rate_callback = function() 
+        --     return sc.ratemx[i].rate
+        -- end
     end
 
     softcut.event_position(function(i, ph)
@@ -155,9 +152,11 @@ sc.punch_in = {
     { recording = false, recorded = false, manual = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {}, big = false },
     update_play = function(s, z)
         --TODO this probably needs to set the metaparam
-        local buf = z
-        sc.lvlmx[buf].play = s[buf].play
-        sc.lvlmx:update(buf)
+        
+        for n,v in ipairs(sc.zone) do if v == z then 
+            sc.lvlmx[n].play = s[z].play
+            sc.lvlmx:update(n)
+        end end
     end,
     -- big = function(s, z, v)
     --     local buf = z
@@ -255,9 +254,7 @@ sc.punch_in = {
         s:untap(z)
 
         reg.rec[buf]:set_length(1, 'fraction')
-        for j = 1,2 do
-            reg.play[buf][j]:set_length(0)
-        end
+        reg.play[buf]:set_length(0)
     end,
     save = function(s)
         local data = {}
