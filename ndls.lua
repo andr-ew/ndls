@@ -139,7 +139,8 @@ mparams:add {
 local rate = mparams:add {
     id = 'rate',
     type = 'number', min = -7, max = 2, default = 0, scopes = some, scope = 'zone',
-    action = function(i, v) sc.ratemx[i].oct = v; sc.ratemx:update(i) end
+    action = function(i, v) 
+        sc.ratemx[i].oct = v; sc.ratemx:update(i) end
 }
 local rev = mparams:add {
     id = 'rev',

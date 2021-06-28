@@ -176,7 +176,6 @@ end
 
 function metaparams:init()
     for i,v in ipairs(self.ordered) do 
-        print(v.arg.id, v.persistent)
         if v.persistent then v:bang() end
     end
 end
