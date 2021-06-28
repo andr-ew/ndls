@@ -24,9 +24,9 @@ local sc = {
         end
     },
     lvlmx = {
-        { vol = 1, play = 0, send = 1 },         
+        { vol = 1, play = 0, recorded = 0, send = 1 },         
         update = function(s, n)
-            local v = s[n].vol * s[n].play
+            local v = s[n].vol * s[n].play * s[n].recorded
             softcut.level(n, v)
             sc.sendmx[n].vol = v
         end
@@ -152,10 +152,8 @@ sc.punch_in = {
     --indexed by zone
     { recording = false, recorded = false, manual = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {}, big = false },
     update_play = function(s, z)
-        --TODO this probably needs to set the metaparam
-        
         for n,v in ipairs(sc.zone) do if v == z then 
-            sc.lvlmx[n].play = s[z].play
+            sc.lvlmx[n].recorded = s[z].play
             sc.lvlmx:update(n)
         end end
     end,

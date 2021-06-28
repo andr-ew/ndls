@@ -123,8 +123,8 @@ mparams:add {
     id = 'play',
     type = 'binary', behavior = 'toggle', scopes = some, scope = 'voice',
     action = function(i, v) 
-        local z = ndls.zone[i]
-        sc.punch_in[z].play = v; sc.punch_in:update_play(z)
+        --sc.punch_in[z].play = v; sc.punch_in:update_play(z)
+        sc.lvlmx[i].play = v; sc.lvlmx:update(i)
     end
 }
 local rate = mparams:add {
@@ -184,7 +184,9 @@ grid_[128] = function(varibright)
                     x = 1, y = bottom, 
                     value = function(s) 
                         local z = ndls.zone[n]
-                        if not sc.punch_in[z].recorded then return sc.punch_in:get(z)
+                        if not sc.punch_in[z].recorded then 
+                            return sc.punch_in:get(z) --wrong state
+                            --TODO set rec flag here instead of in punch_in
                         else return mparams.id['rec']:get(n) end
                     end,
                     action = function(s, v) 
