@@ -223,13 +223,13 @@ grid_[128] = function(varibright)
                     end
                 },
                 alias = _grid.toggle {
-                    x = 4, y = bottom,
+                    x = 4, y = bottom, lvl = mid,
                 } :bind(mparams.id['alias'], n),
                 send = _grid.toggle {
                     x = 5, y = bottom, lvl = shaded,
                 } :bind(mparams.id['send'], n),
                 ret = _grid.toggle {
-                    x = 6, y = bottom, lvl = shaded,
+                    x = 6, y = bottom,
                 } :bind(mparams.id['return'], n),
                 zone = _grid.number {
                     x = { 7, 15 }, y = bottom, fingers = { 1, 1 },
@@ -295,6 +295,7 @@ ndls_ = nest_ {
 function init()
     sc.setup()
     mparams:init()
+    for i = 1,2 do mparams.id.rate:set(-1, i*2) end
     ndls_:init()
     ndls.zone:init()
 end
