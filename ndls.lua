@@ -110,14 +110,23 @@ mparams:add {
         sc.aliasmx[i].aliasing = v; sc.aliasmx:update(i)
     end
 }
---  record & play flags only for when the loop in current zone is recorded
---      when not recorded, bind punch_in toggle for zone (0 for play)
---      when not playing, bind rec to punch in toggle
---      will need second param for mapping rec
 mparams:add {
     id = 'rec',
     type = 'binary', behavior = 'toggle', scopes = { 'voice' }, hidden = true,
-    action = function(i, v) sc.oldmx[i].rec = v; sc.oldmx:update(i) end
+    persistent = false,
+    action = function(n, v)
+        sc.oldmx[n].rec = v; sc.oldmx:update(n) 
+
+        local z = ndls.zone[n]
+        if not sc.punch_in[z].recorded then
+            sc.punch_in:set(z, v)
+            if v==0 then 
+                mparams.id['play']:set(1, n) end --double play culprit
+        elseif sc.lvlmx[n].play == 0 and v == 1 then
+            sc.punch_in:clear(z)
+            sc.punch_in:set(z, 1)
+        end
+    end
 }
 mparams:add {
     id = 'play',
@@ -182,30 +191,7 @@ grid_[128] = function(varibright)
             return nest_ {
                 rec = _grid.toggle {
                     x = 1, y = bottom, 
-                    value = function(s) 
-                        local z = ndls.zone[n]
-                        if not sc.punch_in[z].recorded then 
-                            return sc.punch_in:get(z) --wrong state
-                            --TODO set rec flag here instead of in punch_in
-                        else return mparams.id['rec']:get(n) end
-                    end,
-                    action = function(s, v) 
-                        local z = ndls.zone[n]
-                        
-                        if not sc.punch_in[z].recorded then
-                            if v == 1 then sc.punch_in:set(z, 1)
-                            else 
-                                sc.punch_in:set(z, 0)
-                                mparams.id['play']:set(1, n)
-                            end
-                        else
-                            if sc.punch_in[z].play == 0 and v == 1 then
-                                sc.punch_in:clear(z)
-                                sc.punch_in:set(z, 1)
-                            else mparams.id['rec']:set(v, n) end
-                        end
-                    end
-                },
+                } :bind(mparams.id['rec'], n),
                 play = _grid.toggle {
                     x = 2, y = bottom, lvl = shaded,
                     value = function(s) 
@@ -217,7 +203,7 @@ grid_[128] = function(varibright)
                         --TODO tape stop/start slew for t > ?
                         local z = ndls.zone[n]
 
-                        if not sc.punch_in[z].recorded then
+                        if sc.punch_in[z].recording then
                             if v == 1 then 
                                 sc.punch_in:set(z, 0)
                                 mparams.id['rec']:set(1, n)
@@ -307,7 +293,7 @@ ndls_ = nest_ {
 
 function init()
     sc.setup()
-    mparams:bang()
+    mparams:init()
     ndls_:init()
     ndls.zone:init()
 end

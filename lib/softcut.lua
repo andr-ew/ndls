@@ -90,6 +90,7 @@ sc.setup = function()
     audio.level_cut(1)
     audio.level_adc_cut(1)
 
+    --TODO input from single channel
     for i = 1, voices do
         softcut.enable(i, 1)
         softcut.rec(i, 1)
@@ -143,7 +144,7 @@ end
 sc.zone = {
     1, 2, 3, 4, --[voice] = zone
     update = function(s, n)
-        cartographer.assign(reg.play[s[n]], n)
+        cartographer.assign(reg.play[s[n]], n) --TODO don't reassign if zone matches
         sc.punch_in:update_play(s[n])
     end
 }
@@ -168,13 +169,13 @@ sc.punch_in = {
                 --reg.blank[buf]:set_length(16777216 / 48000 / 2) --wrong
                 reg.rec[buf]:punch_in()
 
-                sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
+                --sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
 
                 s[buf].manual = false
                 s[buf].recording = true
 
             elseif s[buf].recording then
-                sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
+                --sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
                 s[buf].play = 1; s:update_play(buf)
             
                 reg.rec[buf]:punch_out()
@@ -198,7 +199,7 @@ sc.punch_in = {
             
             s[buf].manual = true
 
-            sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
+            --sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
             s[buf].play = 1; s:update_play(buf)
 
             s[buf].recorded = true

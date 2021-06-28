@@ -11,6 +11,7 @@ function metaparam:new(arg)
     o.scope = arg.scope
     o.arg = arg
     o.no_scope_param = arg.no_scope_param
+    o.persistent = arg.persistent or (arg.persistent==nil)
 
     return o
 end
@@ -131,7 +132,7 @@ end
 function metaparam:bang(voice, scope)
     local function b(v)
         if (scope == nil) or (self.scope == scope) then
-            params:bang(self:get_id(v))
+            params:lookup_param(self:get_id(v)):bang()
         end
     end
 
@@ -164,7 +165,6 @@ function metaparams:add_scope_params(groupname)
     for i,v in ipairs(self.ordered) do 
         if #v.scopes > 1 and not v.no_scope_param then n = n + 1 end 
     end
-    print(n, #self.ordered)
 
     if groupname then params:add_group(groupname, n) end
     for i,v in ipairs(self.ordered) do v:add_scope_param() end
@@ -172,6 +172,13 @@ end
 
 function metaparams:bang(voice, scope)
     for i,v in ipairs(self.ordered) do v:bang(voice, scope) end
+end
+
+function metaparams:init()
+    for i,v in ipairs(self.ordered) do 
+        print(v.arg.id, v.persistent)
+        if v.persistent then v:bang() end
+    end
 end
 
 function metaparams:copy(voice, src, dst)

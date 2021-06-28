@@ -7,11 +7,12 @@ ndls.zone =  { --active zone
     1, 2, 3, 4,
     entered = {},
     set = function(s, z, n)
-        print(s.entered[n][z])
+        --[[
         if not s.entered[n][z] then
             mparams:copy(n, s[n], z)
             s.entered[n][z] = true
         else mparams:bang(n, 'zone') end --TODO not wrk usually
+        --]]
 
         sc.zone[n] = z; sc.zone:update(n)
         s[n] = z
