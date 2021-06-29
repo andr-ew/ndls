@@ -308,8 +308,30 @@ end
 
 g = grid.connect()
 ndls_ = nest_ {
-    grid = grid_[128](true):connect({ g = g }, 60)
+    grid = grid_[128](true):connect { g = g }
 }
+grid_redraw = function() end
+--ndls_.grid.devs.g.dirty
+
+local ph = { 0,0,0,0 }
+clock.run(function()
+    while true do
+        clock.sleep(1/60)
+        
+        g:all(0)
+
+        for n = 1,ndls.voices do 
+            softcut.query_position(n)
+            if sc.lvlmx[n].play == 1 then
+                g:led(7 - 1 + math.ceil(sc.phase[n].rel * (15 - 7 + 1)), n, 4)
+            end 
+        end
+
+        if true then ndls_.grid:draw('g') end
+
+        g:refresh()
+    end
+end)
 
 function init()
     sc.setup()
