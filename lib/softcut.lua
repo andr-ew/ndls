@@ -6,7 +6,7 @@ local sc = {
         { rel = 0, abs = 0 },
         set = function(s, n, v)
             s[n].abs = v
-            s[n].rel = reg.rec:phase_relative(n*2, v, 'fraction')
+            s[n].rel = reg.rec:phase_relative(n, v, 'fraction')
         end
     },
     sendmx = {
@@ -106,8 +106,6 @@ sc.setup = function()
         
         sc.slew(i, 0.2)
         
-        softcut.phase_quant(i*2 - 1, 1/60)
-        
         --adjust punch_in time quantum based on rate
         -- reg.rec[i].rate_callback = function() 
         --     return sc.ratemx[i].rate
@@ -115,7 +113,9 @@ sc.setup = function()
     end
 
     softcut.event_position(function(i, ph)
-        sc.phase:set(i, ph)
+        if i <= ndls.voices then
+            sc.phase:set(i, ph) 
+        end
     end)
 end
 
@@ -235,7 +235,7 @@ sc.punch_in = {
                     clock.sleep(avg*0.5)
                 end
             end)
-        else s:untap(n) end
+        else s:untap(z) end
     end,
     clear = function(s, z)
         local buf = z
