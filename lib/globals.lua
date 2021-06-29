@@ -2,6 +2,7 @@ local ndls = {}
 
 ndls.voices = 4
 ndls.zones = 9 --zone count
+ndls._phase = {}
 
 ndls.zone =  { --active zone
     1, 2, 3, 4,

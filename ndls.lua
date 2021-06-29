@@ -232,10 +232,12 @@ grid_[128] = function(varibright)
                     x = 6, y = bottom,
                 } :bind(mparams.id['return'], n),
                 zone = _grid.number {
-                    x = { 7, 15 }, y = bottom, fingers = { 1, 1 },
+                    x = { 7, 15 }, y = bottom, 
+                    --TODO if not tape/disk then sc.slew(0)
                 } :bind(zone, n),
                 copy = _grid.trigger {
                     x = { 7, 15 }, y = bottom, z = 2, fingers = { 2, 5 }, edge = 'falling',
+                    enabled = false,
                     lvl = { 0,
                         function(s, draw)
                             draw(mid); clock.sleep(0.1)
@@ -251,7 +253,7 @@ grid_[128] = function(varibright)
                     end
                 },
                 tape_disk = _grid.toggle {
-                    x = 5, y = top,
+                    x = 5, y = top, lvl = mid,
                 } :bind(mparams.id['tape/disk'], n),
                 rev = _grid.toggle {
                     x = 6, y = top, edge = 'falling', lvl = shaded,
@@ -285,17 +287,51 @@ grid_[128] = function(varibright)
             }
         end)
     }
+
+    --for n = 1,ndls.voices do
+    --    --gotta add it down here for the z property to work :/
+    --    n_.voice[n].phase = _grid.number {
+    --        x = { 7, 15 }, y = top, input = false, lvl = mid, z = 2,
+    --        enabled = function() return sc.lvlmx[n].play == 1 end
+    --    }
+    --    ndls._phase[n] = n_.voice[n].phase
+    --end
+    -- return n_
 end
 
 --putting it all together
+
+g = grid.connect()
 ndls_ = nest_ {
-    grid = grid_[128](true):connect { g = grid.connect() }
+    grid = grid_[128](true):connect { g = g }
 }
+grid_redraw = function() end
+--ndls_.grid.devs.g.dirty
+
+local ph = { 0,0,0,0 }
+clock.run(function()
+    while true do
+        clock.sleep(1/60)
+        
+        g:all(0)
+
+        for n = 1,ndls.voices do 
+            softcut.query_position(n)
+            if sc.lvlmx[n].play == 1 then
+                g:led(7 - 1 + math.ceil(sc.phase[n].rel * (15 - 7 + 1)), n, 4)
+            end 
+        end
+
+        if true then ndls_.grid:draw('g') end
+
+        g:refresh()
+    end
+end)
 
 function init()
     sc.setup()
     mparams:init()
-    for i = 1,2 do mparams.id.rate:set(-1, i*2) end
+    for i = 1,2 do mparams.id.rate:set(-1, i+2) end
     ndls_:init()
     ndls.zone:init()
 end
