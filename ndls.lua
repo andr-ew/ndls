@@ -284,7 +284,7 @@ grid_[128] = function(varibright)
                 return sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded 
             end,
             redraw = function(s, v, g)
-                softcut.query_position(n)
+                --softcut.query_position(n)
                 g:led(s.x[1] - 1 + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1] + 1)), s.y, 4)
 
                 return true --return a dirty flag to redraw every frame

@@ -110,13 +110,20 @@ sc.setup = function()
         -- reg.rec[i].rate_callback = function() 
         --     return sc.ratemx[i].rate
         -- end
+        softcut.phase_quant(i, 1/40)
     end
 
-    softcut.event_position(function(i, ph)
+    -- softcut.event_position(function(i, ph)
+    --     if i <= ndls.voices then
+    --         sc.phase:set(i, ph) 
+    --     end
+    -- end)
+    softcut.event_phase(function(i, ph)
         if i <= ndls.voices then
             sc.phase:set(i, ph) 
         end
     end)
+    softcut.poll_start_phase()
 end
 
 -- scoot = function()
