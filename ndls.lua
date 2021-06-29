@@ -187,98 +187,108 @@ grid_[128] = function(varibright)
     local mid = varibright and 4 or 15
 
     local n_ = nest_ {
-        voice = nest_(4):each(function(n) 
-            local top, bottom = n, n + 4
-            return nest_ {
-                rec = _grid.toggle {
-                    x = 1, y = bottom, 
-                } :bind(mparams.id['rec'], n),
-                play = _grid.toggle {
-                    x = 2, y = bottom, lvl = shaded,
-                    value = function(s) 
-                        local z = ndls.zone[n]
-                        if not sc.punch_in[z].recorded then return 0
-                        else return mparams.id['play']:get(n) end
-                    end,
-                    action = function(s, v) 
-                        --TODO tape stop/start slew for t > ?
-                        local z = ndls.zone[n]
-
-                        if sc.punch_in[z].recording then
-                            if v == 1 then 
-                                sc.punch_in:set(z, 0)
-                                mparams.id['rec']:set(1, n)
-                            end
-                        else mparams.id['play']:set(v, n) end
-                    end
-                },
-                tap = _grid.trigger {
-                    x = 3, y = bottom, selected = 1,
-                    lvl = function() 
-                        return sc.punch_in[ndls.zone[n]].tap_blink*11 + 4 
-                    end,
-                    action = function(s, v, t, dt) 
-                        --TODO if not recorded then punch_in:manual() end
-                        sc.punch_in:tap(ndls.zone[n], dt) 
-                    end
-                },
-                alias = _grid.toggle {
-                    x = 4, y = bottom, lvl = mid,
-                } :bind(mparams.id['alias'], n),
-                send = _grid.toggle {
-                    x = 5, y = bottom, lvl = shaded,
-                } :bind(mparams.id['send'], n),
-                ret = _grid.toggle {
-                    x = 6, y = bottom,
-                } :bind(mparams.id['return'], n),
-                zone = _grid.number {
-                    x = { 7, 15 }, y = bottom, 
-                    --TODO if not tape/disk then sc.slew(0)
-                } :bind(zone, n),
-                copy = _grid.trigger {
-                    x = { 7, 15 }, y = bottom, z = 2, fingers = { 2, 5 }, edge = 'falling',
-                    enabled = false,
-                    lvl = { 0,
-                        function(s, draw)
-                            draw(mid); clock.sleep(0.1)
-                            draw(0); clock.sleep(0.1)
-                            draw(mid); clock.sleep(0.1)
-                            draw(0)
+        top = nest_ {
+            voice = nest_(4):each(function(n) 
+                local top = n
+                return nest_ {
+                    tape_disk = _grid.toggle {
+                        x = 5, y = top, lvl = mid,
+                    } :bind(mparams.id['tape/disk'], n),
+                    rev = _grid.toggle {
+                        x = 6, y = top, edge = 'falling', lvl = shaded,
+                        value = function() return mparams.id.rev:get(n) end,
+                        action = function(s, v, t)
+                            --sc.slewmx:update(n, t)
+                            --might want lower limit on slew
+                            mparams.id.rev:set(v, n)
                         end
                     },
-                    action = function(s, v, t, d, add, _, list)
-                        --TODO
-                        --if #list > 2 then ndls.copy(src, dst, true)
-                        --else ndls.copy(src, dst) end
-                    end
-                },
-                tape_disk = _grid.toggle {
-                    x = 5, y = top, lvl = mid,
-                } :bind(mparams.id['tape/disk'], n),
-                rev = _grid.toggle {
-                    x = 6, y = top, edge = 'falling', lvl = shaded,
-                    value = function() return mparams.id.rev:get(n) end,
-                    action = function(s, v, t)
-                        --sc.slewmx:update(n, t)
-                        --might want lower limit on slew
-                        mparams.id.rev:set(v, n)
-                    end
-                },
-                rate = _grid.number {
-                    x = { 7, 15 }, y = top,
-                    value = function() return mparams.id.rate:get(n) + 8 end,
-                    action = function(s, v, t)
-                        --sc.slewmx:update(n, t)
-                        mparams.id.rate:set(v - 8, n)
-                    end
-                },
-            }
-        end)
+                    rate = _grid.number {
+                        x = { 7, 15 }, y = top,
+                        value = function() return mparams.id.rate:get(n) + 8 end,
+                        action = function(s, v, t)
+                            --sc.slewmx:update(n, t)
+                            mparams.id.rate:set(v - 8, n)
+                        end
+                    },
+                }
+            end)
+        },
+        bottom = nest_ {
+            voice = nest_(4):each(function(n) 
+                --local top, bottom = n, n + 4
+                local bottom = n + 4
+                return nest_ {
+                    rec = _grid.toggle {
+                        x = 1, y = bottom, 
+                    } :bind(mparams.id['rec'], n),
+                    play = _grid.toggle {
+                        x = 2, y = bottom, lvl = shaded,
+                        value = function(s) 
+                            local z = ndls.zone[n]
+                            if not sc.punch_in[z].recorded then return 0
+                            else return mparams.id['play']:get(n) end
+                        end,
+                        action = function(s, v) 
+                            --TODO tape stop/start slew for t > ?
+                            local z = ndls.zone[n]
+
+                            if sc.punch_in[z].recording then
+                                if v == 1 then 
+                                    sc.punch_in:set(z, 0)
+                                    mparams.id['rec']:set(1, n)
+                                end
+                            else mparams.id['play']:set(v, n) end
+                        end
+                    },
+                    tap = _grid.trigger {
+                        x = 3, y = bottom, selected = 1,
+                        lvl = function() 
+                            return sc.punch_in[ndls.zone[n]].tap_blink*11 + 4 
+                        end,
+                        action = function(s, v, t, dt) 
+                            --TODO if not recorded then punch_in:manual() end
+                            sc.punch_in:tap(ndls.zone[n], dt) 
+                        end
+                    },
+                    alias = _grid.toggle {
+                        x = 4, y = bottom, lvl = mid,
+                    } :bind(mparams.id['alias'], n),
+                    send = _grid.toggle {
+                        x = 5, y = bottom, lvl = shaded,
+                    } :bind(mparams.id['send'], n),
+                    ret = _grid.toggle {
+                        x = 6, y = bottom,
+                    } :bind(mparams.id['return'], n),
+                    zone = _grid.number {
+                        x = { 7, 15 }, y = bottom, 
+                        --TODO if not tape/disk then sc.slew(0)
+                    } :bind(zone, n),
+                    copy = _grid.trigger {
+                        x = { 7, 15 }, y = bottom, z = 2, fingers = { 2, 5 }, edge = 'falling',
+                        enabled = false,
+                        lvl = { 0,
+                            function(s, draw)
+                                draw(mid); clock.sleep(0.1)
+                                draw(0); clock.sleep(0.1)
+                                draw(mid); clock.sleep(0.1)
+                                draw(0)
+                            end
+                        },
+                        action = function(s, v, t, d, add, _, list)
+                            --TODO
+                            --if #list > 2 then ndls.copy(src, dst, true)
+                            --else ndls.copy(src, dst) end
+                        end
+                    },
+                }
+            end)
+        }
     }
 
     for n = 1,ndls.voices do
         --gotta add it down here for the z property to work :/
-        n_.voice[n].phase = _grid.affordance {
+        n_.top.voice[n].phase = _grid.affordance {
             x = { 1, 16 }, y = n, z = 2,
             enabled = function() 
                 return sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded 
