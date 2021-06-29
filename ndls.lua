@@ -203,13 +203,11 @@ grid_[128] = function(varibright)
                     action = function(s, v) 
                         --TODO tape stop/start slew for t > ?
                         local z = ndls.zone[n]
+                        if v==1 and sc.punch_in[z].recording then
+                            sc.punch_in:set(z, 0)
+                        end 
 
-                        if sc.punch_in[z].recording then
-                            if v == 1 then 
-                                sc.punch_in:set(z, 0)
-                                mparams.id['rec']:set(1, n)
-                            end
-                        else mparams.id['play']:set(v, n) end
+                        mparams.id['play']:set(v, n)
                     end
                 },
                 tap = _grid.trigger {
@@ -284,7 +282,6 @@ grid_[128] = function(varibright)
                 return sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded 
             end,
             redraw = function(s, v, g)
-                --softcut.query_position(n)
                 g:led(s.x[1] - 1 + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1] + 1)), s.y, 4)
 
                 return true --return a dirty flag to redraw every frame
