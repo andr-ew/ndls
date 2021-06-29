@@ -131,9 +131,13 @@ mparams:add {
 mparams:add {
     id = 'play',
     type = 'binary', behavior = 'toggle', scopes = some, scope = 'voice',
-    action = function(i, v) 
-        --sc.punch_in[z].play = v; sc.punch_in:update_play(z)
-        sc.lvlmx[i].play = v; sc.lvlmx:update(i)
+    action = function(n, v) 
+        local z = ndls.zone[n]
+        if v==1 and sc.punch_in[z].recording then
+            sc.punch_in:set(z, 0)
+        end 
+
+        sc.lvlmx[n].play = v; sc.lvlmx:update(n)
     end
 }
 local rate = mparams:add {
@@ -196,18 +200,15 @@ grid_[128] = function(varibright)
                 play = _grid.toggle {
                     x = 2, y = bottom, lvl = shaded,
                     value = function(s) 
-                        local z = ndls.zone[n]
-                        if not sc.punch_in[z].recorded then return 0
+                        if not sc.punch_in[ndls.zone[n]].recorded then return 0
                         else return mparams.id['play']:get(n) end
                     end,
                     action = function(s, v) 
                         --TODO tape stop/start slew for t > ?
-                        local z = ndls.zone[n]
-                        if v==1 and sc.punch_in[z].recording then
-                            sc.punch_in:set(z, 0)
-                        end 
-
-                        mparams.id['play']:set(v, n)
+                        
+                        if sc.punch_in[ndls.zone[n]].recorded 
+                            or sc.punch_in[ndls.zone[n]].recording 
+                        then mparams.id['play']:set(v, n) end
                     end
                 },
                 tap = _grid.trigger {
@@ -257,7 +258,7 @@ grid_[128] = function(varibright)
                     x = 6, y = top, edge = 'falling', lvl = shaded,
                     value = function() return mparams.id.rev:get(n) end,
                     action = function(s, v, t)
-                        --sc.slewmx:update(n, t)
+                        --TODO sc.slewmx:update(n, t)
                         --might want lower limit on slew
                         mparams.id.rev:set(v, n)
                     end
