@@ -306,29 +306,32 @@ end
 
 --putting it all together
 
-g = grid.connect()
 ndls_ = nest_ {
-    grid = grid_[128](true):connect { g = g }
+    grid = grid_[128](true)
 }
-grid_redraw = function() end
---ndls_.grid.devs.g.dirty
 
-local ph = { 0,0,0,0 }
+g = grid.connect()
+ndls_.grid.top:connect { g = g }
+ndls_.grid.bottom:connect { g = g }
+grid_redraw = function() end
+g.key = function(...)
+    ndls_.grid.top:process('g', {...}, {})
+    ndls_.grid.bottom:process('g', {...}, {})
+end
+
 clock.run(function()
     while true do
         clock.sleep(1/60)
-        
-        g:all(0)
 
-        for n = 1,ndls.voices do 
-            softcut.query_position(n)
-            if sc.lvlmx[n].play == 1 then
-                g:led(7 - 1 + math.ceil(sc.phase[n].rel * (15 - 7 + 1)), n, 4)
-            end 
+        for x = 1,16 do for y = 1,4 do g:led(x, y, 0) end end
+        ndls_.grid.top:draw('g') 
+
+        if ndls_.grid.bottom.devs.g.dirty then 
+            for x = 1,16 do for y = 5,8 do g:led(x, y, 0) end end
+            ndls_.grid.bottom:draw('g') 
         end
-
-        if true then ndls_.grid:draw('g') end
-
+        
+        --if fresh then g:refresh() end
         g:refresh()
     end
 end)
