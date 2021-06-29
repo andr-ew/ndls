@@ -186,7 +186,7 @@ grid_[128] = function(varibright)
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
 
-    return nest_ {
+    local n_ = nest_ {
         voice = nest_(4):each(function(n) 
             local top, bottom = n, n + 4
             return nest_ {
@@ -272,61 +272,32 @@ grid_[128] = function(varibright)
                         mparams.id.rate:set(v - 8, n)
                     end
                 },
-                --[[
-                phase = _grid.affordance {
-                    x = { 7, 15 }, y = top, z = -1,
-                    --value = function() return math.floor(sc.phase[n].rel * ndls.zones) end,
-                    redraw = function(s, v, g)
-                        --TODO if not recorded then lvl = 0 
-                        g:led(s.x[1] + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1])), s.y, 4)
-
-                        --return true --return a dirty flag to redraw every frame
-                    end
-                }
-                --]]
             }
         end)
     }
 
-    --for n = 1,ndls.voices do
-    --    --gotta add it down here for the z property to work :/
-    --    n_.voice[n].phase = _grid.number {
-    --        x = { 7, 15 }, y = top, input = false, lvl = mid, z = 2,
-    --        enabled = function() return sc.lvlmx[n].play == 1 end
-    --    }
-    --    ndls._phase[n] = n_.voice[n].phase
-    --end
-    -- return n_
+    for n = 1,ndls.voices do
+        --gotta add it down here for the z property to work :/
+        n_.voice[n].phase = _grid.affordance {
+            x = { 7, 15 }, y = top, z = 2,
+            enabled = function() return sc.lvlmx[n].play == 1 end,
+            redraw = function(s, v, g)
+                softcut.query_position(n)
+                g:led(s.x[1] - 1 + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1] + 1)), s.y, 4)
+
+                return true --return a dirty flag to redraw every frame
+            end
+        }
+    end
+    return n_
 end
 
 --putting it all together
 
 g = grid.connect()
 ndls_ = nest_ {
-    grid = grid_[128](true):connect { g = g }
+    grid = grid_[128](true):connect({ g = g }, 60)
 }
-grid_redraw = function() end
---ndls_.grid.devs.g.dirty
-
-local ph = { 0,0,0,0 }
-clock.run(function()
-    while true do
-        clock.sleep(1/60)
-        
-        g:all(0)
-
-        for n = 1,ndls.voices do 
-            softcut.query_position(n)
-            if sc.lvlmx[n].play == 1 then
-                g:led(7 - 1 + math.ceil(sc.phase[n].rel * (15 - 7 + 1)), n, 4)
-            end 
-        end
-
-        if true then ndls_.grid:draw('g') end
-
-        g:refresh()
-    end
-end)
 
 function init()
     sc.setup()
