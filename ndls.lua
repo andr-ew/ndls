@@ -279,8 +279,10 @@ grid_[128] = function(varibright)
     for n = 1,ndls.voices do
         --gotta add it down here for the z property to work :/
         n_.voice[n].phase = _grid.affordance {
-            x = { 7, 15 }, y = top, z = 2,
-            enabled = function() return sc.lvlmx[n].play == 1 end,
+            x = { 1, 16 }, y = n, z = 2,
+            enabled = function() 
+                return sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded 
+            end,
             redraw = function(s, v, g)
                 softcut.query_position(n)
                 g:led(s.x[1] - 1 + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1] + 1)), s.y, 4)
