@@ -186,7 +186,7 @@ local zone = ndls.zone
 grid_ = {}
 
 --128 grid interface
-grid_[128] = function(varibright)
+grid_[128] = function(varibright, arc)
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
 
@@ -271,6 +271,17 @@ grid_[128] = function(varibright)
                         mparams.id.rate:set(v - 8, n)
                     end
                 },
+                view = arc and _grid.affordance {
+                     x = { 12, 15 }, y = { 1, 4 }, held = {}, vertical = true, lvl = 15,
+                     value = {
+                         { 0, 0, 0, 0 },
+                         { 1, 1, 1, 1 },
+                         { 0, 0, 0, 0 },
+                         { 0, 0, 0, 0 }
+                     },
+                     handler = function(s, x, y, z)
+                     end
+                }
             }
         end)
     }
