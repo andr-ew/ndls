@@ -272,15 +272,37 @@ grid_[128] = function(varibright, arc)
                     end
                 },
                 view = arc and _grid.affordance {
-                     x = { 12, 15 }, y = { 1, 4 }, held = {}, vertical = true, lvl = 15,
-                     value = {
-                         { 0, 0, 0, 0 },
-                         { 1, 1, 1, 1 },
-                         { 0, 0, 0, 0 },
-                         { 0, 0, 0, 0 }
-                     },
-                     handler = function(s, x, y, z)
-                     end
+                    x = { 12, 15 }, y = { 1, 4 }, held = {}, vertical = true, lvl = 15,
+                    value = {
+                        { 0, 0, 0, 0 },
+                        { 1, 1, 1, 1 },
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+                    handler = function(s, x, y, z) 
+                        if z == 1 then
+                            table.insert(s.held, { x = x - s.x[1], y = y - s.y[1] })
+                        else
+                            if #s.held > 1 then
+                                if s.held[1].x == s.held[2].x then s.vertical = true
+                                elseif s.held[1].y == s.held[2].y then s.vertical = false end
+                            else
+                                for i = 0,3 do --y
+                                    for j = 0,3 do --x 
+                                        -- bugs looove lines like this !
+                                        s.v[i + 1][j + 1] = (s.vertical and x == j) and 1 or ((not s.vertical and y == i) and 1 or 0)
+                                    end 
+                                end
+                            end
+             
+                            for i,v in ipairs(s.held) do
+                                if v.x == x - s.x[1] and v.y == y - s.y[1] then table.remove(s.held, i) end
+                            end
+                        end
+                    end,
+                    redraw = function(s) 
+                        for i = 0,3 do for j = 0,3 do s.g:led(s.x[1] + j, s.y[1] + i, s.v[i + 1][j + 1] * s.lvl) end end
+                    end
                 }
             }
         end)
