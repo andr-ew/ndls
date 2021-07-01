@@ -110,7 +110,7 @@ sc.setup = function()
         -- reg.rec[i].rate_callback = function() 
         --     return sc.ratemx[i].rate
         -- end
-        softcut.phase_quant(i, 1/40)
+        softcut.phase_quant(i, 1/100)
     end
 
     -- softcut.event_position(function(i, ph)

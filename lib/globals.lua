@@ -1,5 +1,6 @@
 local ndls = {}
 
+--TODO 6 voices for 256 grid
 ndls.voices = 4
 ndls.zones = 9 --zone count
 ndls._phase = {}
@@ -17,6 +18,9 @@ ndls.zone =  { --active zone
         else mparams:bang(n, 'zone') end
 
         sc.zone[n] = z; sc.zone:update(n)
+
+        arc_redraw()
+        redraw()
     end,
     get = function(s, n)
         return s[n]

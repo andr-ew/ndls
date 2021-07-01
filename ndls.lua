@@ -1,4 +1,14 @@
+-- ndls
+--
+-- -- - -- --- -  ---- -- - ---  -- - - ---
+-- -- - --- - --- - -- - --- - - - - - ---
+--  --- --- -- - ---- -- - - -- - --- -----
+-- -   --- - -- -- -- - -   -- - -- --- --
+--
 -- endless and/or noodles
+-- 
+-- version 0.1.0 @andrew
+--
 
 function r() norns.script.load(norns.script.state) end
 
@@ -80,11 +90,12 @@ mparams:add {
         softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
     end
 }
-local types = { 'dry', 'lp', 'hp', 'bp' } 
+local types = { 'lp', 'bp', 'hp', 'dry' } 
 mparams:add {
     id = 'type', 
-    type = 'option', options = types, scopes = all, scope = 'voice',
+    type = 'option', options = types, scopes = all, scope = 'zone',
     action = function(i, v)
+        print(types[v], v)
         for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
         softcut['post_filter_'..types[v]](i, 1)
     end
@@ -120,12 +131,14 @@ mparams:add {
         local z = ndls.zone[n]
         if not sc.punch_in[z].recorded then
             sc.punch_in:set(z, v)
-            if v==0 then 
-                mparams.id['play']:set(1, n) end --double play culprit
+            if v==0 then mparams.id['play']:set(1, n) end
         elseif sc.lvlmx[n].play == 0 and v == 1 then
+            --TODO reset mparams
             sc.punch_in:clear(z)
             sc.punch_in:set(z, 1)
         end
+        
+        arc_redraw()
     end
 }
 mparams:add {
@@ -138,6 +151,8 @@ mparams:add {
         end 
 
         sc.lvlmx[n].play = v; sc.lvlmx:update(n)
+
+        arc_redraw()
     end
 }
 local rate = mparams:add {
@@ -182,16 +197,17 @@ params:add_separator('ndls')
 mparams:add_params()
 
 local zone = ndls.zone
-
-grid_ = {}
+local alt = false
 
 --128 grid interface
+grid_ = {}
 grid_[128] = function(varibright, arc)
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
+    local mid2 = varibright and 8 or 15
 
     local n_ = nest_ {
-        voice = nest_(4):each(function(n) 
+        voice = nest_(ndls.voices):each(function(n) 
             local top, bottom = n, n + 4
             return nest_ {
                 rec = _grid.toggle {
@@ -222,7 +238,7 @@ grid_[128] = function(varibright, arc)
                     end
                 },
                 alias = _grid.toggle {
-                    x = 4, y = bottom, lvl = mid,
+                    x = 4, y = bottom, lvl = mid2,
                 } :bind(mparams.id['alias'], n),
                 send = _grid.toggle {
                     x = 5, y = bottom, lvl = shaded,
@@ -252,7 +268,7 @@ grid_[128] = function(varibright, arc)
                     end
                 },
                 tape_disk = _grid.toggle {
-                    x = 5, y = top, lvl = mid,
+                    x = 5, y = top, lvl = mid2
                 } :bind(mparams.id['tape/disk'], n),
                 rev = _grid.toggle {
                     x = 6, y = top, edge = 'falling', lvl = shaded,
@@ -273,6 +289,7 @@ grid_[128] = function(varibright, arc)
                 },
             }
         end),
+        --TODO support no arc & arc2
         view = arc and _grid.affordance {
             x = { 1, 4 }, y = { 1, 4 }, held = {}, vertical = false, lvl = 15,
             persistent = false,
@@ -309,7 +326,10 @@ grid_[128] = function(varibright, arc)
                 for i = 0,3 do for j = 0,3 do 
                     g:led(s.x[1] + j, s.y[1] + i, s.v[i + 1][j + 1] * s.lvl) 
                 end end
-            end
+            end,
+            action = function() arc_redraw() end
+        } or _grid.toggle {
+
         }
     }
 
@@ -321,7 +341,7 @@ grid_[128] = function(varibright, arc)
                 return sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded 
             end,
             redraw = function(s, v, g)
-                g:led(s.x[1] - 1 + math.ceil(sc.phase[n].rel * (s.x[2] - s.x[1] + 1)), s.y, 4)
+                g:led(s.x[1] + util.round(sc.phase[n].rel * (s.x[2] - s.x[1])), s.y, 8)
 
                 return true --return a dirty flag to redraw every frame
             end
@@ -330,17 +350,177 @@ grid_[128] = function(varibright, arc)
     return n_
 end
 
---putting it all together
+--arc interface
+arc_ = function(map)
+    local rsens = 1/1000
 
-g = grid.connect()
+    local _a = {
+        vol = function(x, y)
+            return _arc.number {
+                sens = 0.25, max = 1.5, cycle = 1.5,
+                enabled = function(s) return ndls_.grid.view.value[y][x] == 1 end,
+                n = function(s) return tonumber(ndls_.grid.view.vertical and y or x) end,
+            } :bind(mparams.id.vol, y)
+        end,
+        cut = function(x, y) 
+            return nest_ {
+                cut = _arc.affordance {
+                    n = function(s) return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    sens = 0.25, x = { 42, 24+64 }, controlspec = cs.new(),
+                    output = _output {
+                        redraw = function(s, v, a)
+                            local vv = math.floor(v*(s.x[2] - s.x[1])) + s.x[1]
+                            local t = mparams.id.type:get(y)
+                            for x = s.x[1], s.x[2] do
+                                a:led(
+                                    s.p_.n, 
+                                    (x - 1) % 64 + 1, 
+                                    t==1 and (               --lp
+                                        (x < vv) and 4
+                                        or (x == vv) and 15
+                                        or 0
+                                    )
+                                    or t==2 and (            --bp
+                                        util.clamp(
+                                            15 - math.abs(x - vv)*3,
+                                        0, 15)
+                                    )
+                                    or t==3 and (            --hp
+                                        (x < vv) and 0
+                                        or (x == vv) and 15
+                                        or 4
+                                    )
+                                    or t==4 and 4            --dry
+                                )
+                            end
+                        end
+                    },
+                    input = _arc.control.input {
+                        enabled = function() return not alt end
+                    },
+                } :bind(mparams.id.cut, y),
+                type = _arc.option {
+                    n = function(s) return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    options = #types, sens = 1/32, --output = false,
+                    x = { 27, 41 }, lvl = 12,
+                    enabled = function() return alt end,
+                    value = mparams.id.type:get(y),
+                    action = function(s, v) 
+                        mparams.id.type:set(v//1, y) 
+                    end
+                },
+                enabled = function(s) return ndls_.grid.view.value[y][x] == 1 end
+            }
+        end,
+        st = function(x, y)
+            return nest_ {
+                d = _arc.delta {
+                    n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    output = _output(),
+                    action = function(s, v)
+                        if alt then reg.play:delta_start(y, v * rsens) 
+                        else reg.play:delta_startend(y, v * rsens * 2) end
+                    end
+                },
+                ph = _arc.affordance {
+                    n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    x = { 33, 64+32 }, lvl = { 4, 15 }, input = false,
+                    redraw = function(s, v, a)
+                        local st = s.x[1] + math.ceil(
+                            reg.play:get_start(y, 'fraction')*(s.x[2] - s.x[1] + 2)
+                        )
+                        local en = s.x[1] - 1 + math.ceil(
+                            reg.play:get_end(y, 'fraction')*(s.x[2] - s.x[1] + 2)
+                        )
+                        local ph = s.x[1] + util.round(
+                            sc.phase[y].rel * (s.x[2] - s.x[1])
+                        )
+                        local show = sc.lvlmx[y].play == 1 
+                            and sc.punch_in[ndls.zone[y]].recorded
+                        for x = st,en do
+                            a:led(s.p_.n, (x - 1) % 64 + 1, s.lvl[(x==ph and show) and 2 or 1])
+                        end
+                        -- a:led(s.p_.n, (st - 1) % 64 + 1, s.lvl[2])
+                        -- a:led(s.p_.n, (en - 1) % 64 + 1, s.lvl[2])
+
+                        return true --return a dirty flag to redraw every frame
+                    end
+                },
+                enabled = function(s) return ndls_.grid.view.value[y][x] == 1 end,
+            }
+        end,
+        len = function(x, y)
+            return nest_ {
+                d = _arc.delta {
+                    n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    output = _output(),
+                    action = function(s, v)
+                        if alt then reg.play:delta_start(y, v * rsens) 
+                        else reg.play:delta_length(y, v * rsens) end
+                    end
+                },
+                st = _arc.number {
+                    n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    input = false, lvl = function() return alt and 15 or 4 end,
+                    value = function() return reg.play:get_start(y, 'fraction') end
+                },
+                ['end'] = _arc.number {
+                    n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    input = false, lvl = function() return alt and 4 or 15 end,
+                    value = function() return reg.play:get_end(y, 'fraction') end
+                },
+                ph = _arc.affordance {
+                    n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
+                    x = { 33, 64+32 }, lvl = 4, input = false,
+                    redraw = function(s, v, a)
+                        a:led(s.p_.n, (
+                            (
+                                s.x[1] + util.round(
+                                    sc.phase[y].rel * (s.x[2] - s.x[1])
+                                )
+                            ) - 1
+                        ) % 64 + 1, s.lvl)
+
+                        return true --return a dirty flag to redraw every frame
+                    end,
+                    enabled = function() 
+                        return sc.lvlmx[y].play == 1 and sc.punch_in[ndls.zone[y]].recorded 
+                    end,
+                },
+                enabled = function(s) return ndls_.grid.view.value[y][x] == 1 end,
+            }
+        end,
+    }
+    return nest_(ndls.voices):each(function(y) 
+        return nest_(#map):each(function(x)
+            return _a[map[x]] and _a[map[x]](x, y)
+        end)
+    end)
+end
+
+--screen interface
+screen_ = nest_ {
+    alt = _key.momentary {
+        n = 1, action = function(s, v) 
+            alt = v==1 
+            arc_redraw()
+        end
+    }
+}
+
+--putting it all together
 ndls_ = nest_ {
-    grid = grid_[128](true, 4):connect({ g = g }, 60)
+    grid = grid_[128](true, 4):connect({ g = grid.connect() }, 60),
+    arc = arc_ { 'vol', 'cut', 'st', 'len' } :connect({ a = arc.connect() }, 60),
+    screen = screen_:connect {
+        key = key, enc = enc, screen = screen
+    }
 }
 
 function init()
     sc.setup()
+    ndls.zone:init()
     mparams:init()
     for i = 1,2 do mparams.id.rate:set(-1, i+2) end
     ndls_:init()
-    ndls.zone:init()
 end
