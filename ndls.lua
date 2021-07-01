@@ -341,6 +341,7 @@ grid_[128] = function(varibright, arc)
                 return sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded 
             end,
             redraw = function(s, v, g)
+                --TODO consider showing play region phase
                 g:led(s.x[1] + util.round(sc.phase[n].rel * (s.x[2] - s.x[1])), s.y, 8)
 
                 return true --return a dirty flag to redraw every frame

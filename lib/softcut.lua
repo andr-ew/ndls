@@ -170,6 +170,7 @@ sc.punch_in = {
     --     if v > 0.2 then s[buf].big = true end
     -- end,
     set = function(s, z, v)
+        --TODO minimum length for rec zone
         local buf = z
         if not s[buf].recorded then
             if v == 1 then
