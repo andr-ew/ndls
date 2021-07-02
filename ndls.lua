@@ -95,7 +95,6 @@ mparams:add {
     id = 'type', 
     type = 'option', options = types, scopes = all, scope = 'zone',
     action = function(i, v)
-        print(types[v], v)
         for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
         softcut['post_filter_'..types[v]](i, 1)
     end
@@ -118,7 +117,7 @@ mparams:add {
     id = 'alias', 
     type = 'binary', behavior = 'toggle', scopes = { 'voice' },
     action = function(i, v)
-        sc.aliasmx[i].aliasing = v; sc.aliasmx:update(i)
+        sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
     end
 }
 mparams:add {
@@ -130,12 +129,12 @@ mparams:add {
 
         local z = ndls.zone[n]
         if not sc.punch_in[z].recorded then
-            sc.punch_in:set(z, v)
+            sc.punch_in:set(n, z, v)
             if v==0 then mparams.id['play']:set(1, n) end
         elseif sc.lvlmx[n].play == 0 and v == 1 then
             --TODO reset mparams
             sc.punch_in:clear(z)
-            sc.punch_in:set(z, 1)
+            sc.punch_in:set(n, z, 1)
         end
         
         arc_redraw()
@@ -147,7 +146,7 @@ mparams:add {
     action = function(n, v) 
         local z = ndls.zone[n]
         if v==1 and sc.punch_in[z].recording then
-            sc.punch_in:set(z, 0)
+            sc.punch_in:set(n, z, 0)
         end 
 
         sc.lvlmx[n].play = v; sc.lvlmx:update(n)
@@ -159,7 +158,8 @@ local rate = mparams:add {
     id = 'rate',
     type = 'number', min = -7, max = 2, default = 0, scopes = some, scope = 'zone',
     action = function(i, v) 
-        sc.ratemx[i].oct = v; sc.ratemx:update(i) end
+        sc.ratemx[i].oct = v; sc.ratemx:update(i) 
+    end
 }
 local rev = mparams:add {
     id = 'rev',
@@ -171,7 +171,7 @@ local td = mparams:add {
     id = 'tape/disk',
     type = 'binary', behavior = 'toggle', scopes = some, scope = 'zone',
     no_scope_param = true,
-    action = function(i, v) end
+    action = function(i, v) sc.oldmx[i].old2 = 1-v; sc.oldmx:update(i) end
 }
 function rate:set_scope(scope)
     mparam.set_scope(self, scope)
@@ -198,6 +198,7 @@ mparams:add_params()
 
 local zone = ndls.zone
 local alt = false
+local disk = function(n) return mparams.id['tape/disk']:get(n)==1 end
 
 --128 grid interface
 grid_ = {}
@@ -220,8 +221,6 @@ grid_[128] = function(varibright, arc)
                         else return mparams.id['play']:get(n) end
                     end,
                     action = function(s, v) 
-                        --TODO tape stop/start slew for t > ?
-                        
                         if sc.punch_in[ndls.zone[n]].recorded 
                             or sc.punch_in[ndls.zone[n]].recording 
                         then mparams.id['play']:set(v, n) end
@@ -233,7 +232,8 @@ grid_[128] = function(varibright, arc)
                         return sc.punch_in[ndls.zone[n]].tap_blink*11 + 4 
                     end,
                     action = function(s, v, t, dt) 
-                        --TODO if not recorded then punch_in:manual() end
+                        --TODO get working
+                        --if not recorded then set rec high
                         sc.punch_in:tap(ndls.zone[n], dt) 
                     end
                 },
@@ -250,23 +250,6 @@ grid_[128] = function(varibright, arc)
                     x = { 7, 15 }, y = bottom, 
                     --TODO if not tape/disk then sc.slew(0)
                 } :bind(zone, n),
-                copy = _grid.trigger {
-                    x = { 7, 15 }, y = bottom, z = 2, fingers = { 2, 5 }, edge = 'falling',
-                    enabled = false,
-                    lvl = { 0,
-                        function(s, draw)
-                            draw(mid); clock.sleep(0.1)
-                            draw(0); clock.sleep(0.1)
-                            draw(mid); clock.sleep(0.1)
-                            draw(0)
-                        end
-                    },
-                    action = function(s, v, t, d, add, _, list)
-                        --TODO
-                        --if #list > 2 then ndls.copy(src, dst, true)
-                        --else ndls.copy(src, dst) end
-                    end
-                },
                 tape_disk = _grid.toggle {
                     x = 5, y = top, lvl = mid2
                 } :bind(mparams.id['tape/disk'], n),
@@ -274,8 +257,7 @@ grid_[128] = function(varibright, arc)
                     x = 6, y = top, edge = 'falling', lvl = shaded,
                     value = function() return mparams.id.rev:get(n) end,
                     action = function(s, v, t)
-                        --TODO sc.slewmx:update(n, t)
-                        --might want lower limit on slew
+                        sc.slew(n, disk(n) and 0 or (t < 0.2) and 0.025 or t)
                         mparams.id.rev:set(v, n)
                     end
                 },
@@ -283,7 +265,7 @@ grid_[128] = function(varibright, arc)
                     x = { 7, 15 }, y = top,
                     value = function() return mparams.id.rate:get(n) + 8 end,
                     action = function(s, v, t)
-                        --sc.slewmx:update(n, t)
+                        sc.slew(n, disk(n) and 0 or t)
                         mparams.id.rate:set(v - 8, n)
                     end
                 },
@@ -419,6 +401,7 @@ arc_ = function(map)
                     n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
                     output = _output(),
                     action = function(s, v)
+                        --TODO set start/end/len fractionally
                         if alt then reg.play:delta_start(y, v * rsens) 
                         else reg.play:delta_startend(y, v * rsens * 2) end
                     end

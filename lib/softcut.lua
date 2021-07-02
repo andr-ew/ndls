@@ -32,10 +32,10 @@ local sc = {
         end
     },
     oldmx = {
-        { old = 1, rec = 0 },
+        { old = 1, old2 = 1, rec = 0 },
         update = function(s, n)
             sc.send('rec_level', n, s[n].rec)
-            sc.send('pre_level', n, (s[n].rec == 0) and 1 or s[n].old)
+            sc.send('pre_level', n, (s[n].rec == 0) and 1 or (s[n].old * s[n].old2))
             sc.sendmx[n].old = s[n].old
         end
     },
@@ -56,6 +56,7 @@ local sc = {
             for i = 1,2 do softcut.level_input_cut(i, n, s[n][i]) end
         end
     },
+    --TODO aliasing changes pre_filter_fc + dry/wet, default is 16000, full wet
     aliasmx = {
         { alias = 0, aliasing = 1 },
         update = function(s, n)
@@ -86,6 +87,7 @@ reg.blank = cartographer.divide(cartographer.buffer[1], zones)
 reg.rec = cartographer.subloop(reg.blank)
 reg.play = cartographer.subloop(reg.rec)
 
+sc.lvl_slew = 0.1
 sc.setup = function()
     audio.level_cut(1)
     audio.level_adc_cut(1)
@@ -96,21 +98,24 @@ sc.setup = function()
         softcut.rec(i, 1)
         softcut.play(i, 1)
         softcut.loop(i, 1)
-        softcut.level_slew_time(i, 0.1)
-        softcut.recpre_slew_time(i, 0.1)
+        softcut.level_slew_time(i, sc.lvl_slew)
+        softcut.recpre_slew_time(i, sc.lvl_slew)
         softcut.rate(i, 1)
         softcut.post_filter_dry(i, 0)
+        --TODO try pre_filter_fc_mod 0
         
         softcut.level_input_cut(1, i, 1)
         softcut.level_input_cut(2, i, 1)
         
         sc.slew(i, 0.2)
         
-        --adjust punch_in time quantum based on rate
-        -- reg.rec[i].rate_callback = function() 
-        --     return sc.ratemx[i].rate
-        -- end
         softcut.phase_quant(i, 1/100)
+    end
+    for i = 1,zones do
+        --adjust punch_in time quantum based on rate
+        reg.rec[i].rate_callback = function() 
+            return sc.ratemx[i].rate
+        end
     end
 
     -- softcut.event_position(function(i, ph)
@@ -137,7 +142,6 @@ sc.send = function(command, ...)
     softcut[command](...)
 end
 
---TODO slewmx (tape/disk)
 sc.slew = function(n, t)
     local st = (2 + (math.random() * 0.5)) * (t or 0)
     sc.send('rate_slew_time', n, st)
@@ -158,38 +162,34 @@ sc.zone = {
         
 sc.punch_in = {
     --indexed by zone
-    { recording = false, recorded = false, manual = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {}, big = false },
+    { recording = false, recorded = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {} },
     update_play = function(s, z)
         for n,v in ipairs(sc.zone) do if v == z then 
             sc.lvlmx[n].recorded = s[z].play
             sc.lvlmx:update(n)
         end end
     end,
-    -- big = function(s, z, v)
-    --     local buf = z
-    --     if v > 0.2 then s[buf].big = true end
-    -- end,
-    set = function(s, z, v)
+    set = function(s, n, z, v)
         --TODO minimum length for rec zone
         local buf = z
         if not s[buf].recorded then
             if v == 1 then
-                --reg.blank[buf]:set_length(16777216 / 48000 / 2) --wrong
+
+                --adjust punch_in time quantum based on rate
+                reg.rec[z].rate_callback = function() 
+                    return sc.ratemx[n].rate
+                end
+
                 reg.rec[buf]:punch_in()
-
-                --sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
-
-                s[buf].manual = false
+                -- s[buf].manual = false
                 s[buf].recording = true
 
             elseif s[buf].recording then
-                --sc.oldmx[buf].rec = 0; sc.oldmx:update(buf)
                 s[buf].play = 1; s:update_play(buf)
             
                 reg.rec[buf]:punch_out()
 
                 s[buf].recorded = true
-                s[buf].big = true
                 s[buf].recording = false
             end
         end
@@ -197,22 +197,21 @@ sc.punch_in = {
     get = function(s, z)
         return s[z].recording and 1 or 0
     end,
-    manual = function(s, z)
-        local buf = z
+    --manual = function(s, z)
+    --    local buf = z
 
-        --TODO caller sets mparam.rec high
-        if not s[buf].recorded then
-            --reg.blank[buf]:set_length(s.delay_size)
-            reg.rec[buf]:set_length(1, 'fraction')
+    --    if not s[buf].recorded then
+    --        --reg.blank[buf]:set_length(s.delay_size)
+    --        reg.rec[buf]:set_length(1, 'fraction')
             
-            s[buf].manual = true
+    --        s[buf].manual = true
 
-            --sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
-            s[buf].play = 1; s:update_play(buf)
+    --        --sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
+    --        s[buf].play = 1; s:update_play(buf)
 
-            s[buf].recorded = true
-        end
-    end,
+    --        s[buf].recorded = true
+    --    end
+    --end,
     untap = function(s, z)
         local buf = z
 
@@ -224,6 +223,7 @@ sc.punch_in = {
     tap = function(s, z, t)
         local buf = z
 
+        --TODO caller sets mparam.rec high
         if t < 1 and t > 0 then
             table.insert(s[buf].tap_buf, t)
             if #s[buf].tap_buf > 2 then table.remove(s[buf].tap_buf, 1) end
@@ -257,8 +257,7 @@ sc.punch_in = {
 
         s[buf].recorded = false
         s[buf].recording = false
-        s[buf].big = false
-        s[buf].manual = false
+        -- s[buf].manual = false
         s:untap(z)
 
         reg.rec[buf]:set_length(1, 'fraction')
