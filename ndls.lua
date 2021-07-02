@@ -10,6 +10,23 @@
 -- version 0.1.0 @andrew
 --
 
+--TODO
+--v0
+--screen UI
+--alias/alising
+--other todos
+--copy
+--pattern recorders
+--
+--v1
+--tap
+--arc assignments: pan, old, bnd
+--screen display waveform (focus), loop points (global)
+--alt hardware
+--
+--v1.1
+--volt/crow support
+
 function r() norns.script.load(norns.script.state) end
 
 --external libs
@@ -35,7 +52,7 @@ local some = { 'zone', 'voice' }
 --add params using the metaparams abstraction
 mparams:add { 
     id = 'vol', 
-    type = 'control', controlspec = cs.def { default = 1, max = 2 },
+    type = 'control', controlspec = cs.def { default = 1, max = 2.5 },
     scopes = all, scope = 'voice',
     action = function(i, v)
         sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
@@ -232,7 +249,6 @@ grid_[128] = function(varibright, arc)
                         return sc.punch_in[ndls.zone[n]].tap_blink*11 + 4 
                     end,
                     action = function(s, v, t, dt) 
-                        --TODO get working
                         --if not recorded then set rec high
                         sc.punch_in:tap(ndls.zone[n], dt) 
                     end
@@ -323,7 +339,7 @@ grid_[128] = function(varibright, arc)
                 return sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded 
             end,
             redraw = function(s, v, g)
-                --TODO consider showing play region phase
+                --consider showing play region phase
                 g:led(s.x[1] + util.round(sc.phase[n].rel * (s.x[2] - s.x[1])), s.y, 8)
 
                 return true --return a dirty flag to redraw every frame
@@ -340,7 +356,7 @@ arc_ = function(map)
     local _a = {
         vol = function(x, y)
             return _arc.number {
-                sens = 0.25, max = 1.5, cycle = 1.5,
+                sens = 0.25, max = 2.5, cycle = 1.5,
                 enabled = function(s) return ndls_.grid.view.value[y][x] == 1 end,
                 n = function(s) return tonumber(ndls_.grid.view.vertical and y or x) end,
             } :bind(mparams.id.vol, y)
@@ -401,9 +417,8 @@ arc_ = function(map)
                     n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
                     output = _output(),
                     action = function(s, v)
-                        --TODO set start/end/len fractionally
-                        if alt then reg.play:delta_start(y, v * rsens) 
-                        else reg.play:delta_startend(y, v * rsens * 2) end
+                        if alt then reg.play:delta_start(y, v * rsens, 'fraction') 
+                        else reg.play:delta_startend(y, v * rsens * 2, 'fraction') end
                     end
                 },
                 ph = _arc.affordance {
@@ -439,8 +454,9 @@ arc_ = function(map)
                     n = function() return tonumber(ndls_.grid.view.vertical and y or x) end,
                     output = _output(),
                     action = function(s, v)
-                        if alt then reg.play:delta_start(y, v * rsens) 
-                        else reg.play:delta_length(y, v * rsens) end
+                        --TODO min length of fade time
+                        if alt then reg.play:delta_start(y, v * rsens, 'fraction') 
+                        else reg.play:delta_length(y, v * rsens, 'fraction') end
                     end
                 },
                 st = _arc.number {

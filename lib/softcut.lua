@@ -48,6 +48,7 @@ local sc = {
             update = function(s, n)
                 s[n].rate = 2^s[n].oct * 2^(s[n].bnd) * s[n].dir
                 sc.send('rate', n, s[n].rate)
+                --set phase_quant to a constant when rate < 1
             end
     },
     inmx = { 
@@ -170,7 +171,7 @@ sc.punch_in = {
         end end
     end,
     set = function(s, n, z, v)
-        --TODO minimum length for rec zone
+        --consider minimum length for rec zone
         local buf = z
         if not s[buf].recorded then
             if v == 1 then
@@ -223,7 +224,7 @@ sc.punch_in = {
     tap = function(s, z, t)
         local buf = z
 
-        --TODO caller sets mparam.rec high
+        --caller sets mparam.rec high
         if t < 1 and t > 0 then
             table.insert(s[buf].tap_buf, t)
             if #s[buf].tap_buf > 2 then table.remove(s[buf].tap_buf, 1) end
