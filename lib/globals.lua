@@ -2,7 +2,7 @@ local ndls = {}
 
 --TODO 6 voices for 256 grid (?)
 ndls.voices = 4
-ndls.zones = 9 --zone count
+ndls.zones = 10 --zone count
 ndls._phase = {}
 
 ndls.zone =  { --active zone
@@ -11,11 +11,6 @@ ndls.zone =  { --active zone
     set = function(s, z, n)
         local zlast = s[n]
         s[n] = z
-
-        if not s.entered[n][z] then
-            mparams:copy(n, zlast, z)
-            s.entered[n][z] = true
-        else mparams:bang(n, 'zone') end
 
         sc.zone[n] = z; sc.zone:update(n)
 

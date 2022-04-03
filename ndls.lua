@@ -42,6 +42,11 @@ include 'ndls/lib/ui'                           --grid, arc, & norns UI
 function init()
     sc.setup()
     ndls.zone:init()
-    mparams:init()
-    --for i = 1,2 do mparams.id.rate:set(-1, i+2) end
+
+    params:read()
+    params:bang()
+end
+
+function cleanup()
+    params:write()
 end

@@ -217,11 +217,11 @@ sc.punch_in = {
         s[buf].recorded = false
         s[buf].recording = false
         -- s[buf].manual = false
-        s:untap(z)
 
         reg.rec[buf]:set_length(1, 'fraction')
         reg.play[buf]:set_length(0)
     end,
+    --[[
     save = function(s)
         local data = {}
         for i,v in ipairs(s) do data[i] = s[i].manual end
@@ -241,6 +241,7 @@ sc.punch_in = {
     end,
     copy = function(s, src, dst)
     end
+    --]]
 }
 
 --punch_in shallow copy first index for each zone
