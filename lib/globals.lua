@@ -17,9 +17,11 @@ ndls.zone =  { --active zone
         nest.arc.make_dirty()
         nest.screen.make_dirty()
     end,
+    --[[
     get = function(s, n)
         return s[n]
     end,
+    ]]
     init = function(s)
         for n = 1,ndls.voices do sc.zone:update(n) end
     end,

@@ -1,14 +1,15 @@
--- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change from a param.
-
+-- softcut utilities
 local voices, zones = ndls.voices, ndls.zones
 
--- softcut utilities
+-- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change.
 local sc = {
     phase = {
         { rel = 0, abs = 0 },
         set = function(s, n, v)
             s[n].abs = v
             s[n].rel = reg.rec:phase_relative(n, v, 'fraction')
+
+            nest.grid.make_dirty()
         end
     },
     sendmx = {

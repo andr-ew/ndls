@@ -1,5 +1,11 @@
 params:add_separator('ndls')
 
+local function nest.screen.make_dirty(); nest.arc.make_dirty()
+    for _,dev in ipairs({ 'arc', 'grid', 'screen' }) do
+        nest[dev].make_nest.screen.make_dirty(); nest.arc.make_dirty()
+    end
+end
+
 params:add {
     id = 'old',
     type = 'control', controlspec = cs.def { default = 0.8, max = 1 },
@@ -7,6 +13,7 @@ params:add {
         for i, ndls.voices do
             sc.oldmx[i].old = v; sc.oldmx:update(i)
         end
+        nest.screen.make_dirty(); nest.arc.make_dirty()
     end
 }
 params:add {
@@ -17,6 +24,7 @@ params:add {
             local scl = ({ -1, 1, -0.5, 0.5 })[i]
             sc.panmx[i].pan = v * scl * 2; sc.panmx:update(i)
         end
+        nest.screen.make_dirty(); nest.arc.make_dirty()
     end
 }
 
@@ -26,18 +34,23 @@ for i, ndls.voices do
         type = 'control', controlspec = cs.def { default = 1, max = 2.5 },
         action = function(v)
             sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
+            nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
     params:add {
         id = 'bnd '..i,
         type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0 },
-        action = function(v) sc.ratemx[i].bnd = v; sc.ratemx:update(i) end
+        action = function(v) 
+            sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end
     }
     params:add {
         id = 'cut '..i,
         type = 'control', controlspec = cs.def { default = 1, quantum = 1/100/2, step = 0 },
         action = function(v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
+            nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
     params:add {
@@ -45,6 +58,7 @@ for i, ndls.voices do
         type = 'control', controlspec = cs.def { default = 0.4 },
         action = function(v)
             softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
+            nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
     local types = { 'lp', 'bp', 'hp', 'dry' }
@@ -54,6 +68,7 @@ for i, ndls.voices do
         action = function(v)
             for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
             softcut['post_filter_'..types[v]](i, 1)
+            nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
     --TODO: reset on load
@@ -75,7 +90,7 @@ for i, ndls.voices do
                 sc.punch_in:set(n, z, 1)
             end
 
-            nest.arc.make_dirty()
+            nest.grid.make_dirty()
         end
     }
     params:add {
@@ -91,7 +106,7 @@ for i, ndls.voices do
 
             sc.lvlmx[n].play = v; sc.lvlmx:update(n)
 
-            nest.arc.make_dirty()
+            nest.grid.make_dirty()
         end
     }
     --[[
@@ -112,27 +127,40 @@ for i, ndls.voices do
         type = 'number', min = -7, max = 2, default = 0, 
         action = function(v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
+            nest.grid.make_dirty()
         end
     }
     params:add {
         id = 'rev '..i,
         type = 'binary', behavior = 'toggle', 
-        action = function(v) sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) end
+        action = function(v) 
+            sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
+            nest.grid.make_dirty()
+        end
     }
     params:add {
         id = 'dub '..i,
         type = 'binary', behavior = 'toggle', 
-        action = function(v) sc.oldmx[i].old2 = 1-v; sc.oldmx:update(i) end
+        action = function(v) 
+            sc.oldmx[i].old2 = 1-v; sc.oldmx:update(i) 
+            nest.grid.make_dirty()
+        end
     }
     params:add {
         id = 'send '..i,
         type = 'binary', behavior = 'toggle', scopes = { 'voice' }, default = 1,
-        action = function(v) sc.sendmx[i].send = v; sc.sendmx:update() end
+        action = function(v) 
+            sc.sendmx[i].send = v; sc.sendmx:update() 
+            nest.grid.make_dirty()
+        end
     }
     params:add {
         id = 'return '..i,
         type = 'binary', behavior = 'toggle', scopes = { 'voice' },
-        action = function(v) sc.sendmx[i].ret = v; sc.sendmx:update() end
+        action = function(v) 
+            sc.sendmx[i].ret = v; sc.sendmx:update() 
+            nest.grid.make_dirty()
+        end
     }
 
 end
