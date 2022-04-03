@@ -1,3 +1,5 @@
+-- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change from a param.
+
 local voices, zones = ndls.voices, ndls.zones
 
 -- softcut utilities
@@ -15,8 +17,8 @@ local sc = {
             for dst = 1, voices do
                 for src = 1,voices do if src ~= dst then
                     softcut.level_cut_cut(
-                        src, dst, 
-                          s[src].vol  * s[dst].old 
+                        src, dst,
+                          s[src].vol  * s[dst].old
                         * s[src].send * s[dst].ret
                     )
                 end end
@@ -24,13 +26,14 @@ local sc = {
         end
     },
     lvlmx = {
-        { vol = 1, play = 0, recorded = 0, send = 1 },         
+        { vol = 1, play = 0, recorded = 0, send = 1 },
         update = function(s, n)
             local v = s[n].vol * s[n].play * s[n].recorded
             softcut.level(n, v)
             sc.sendmx[n].vol = v
         end
     },
+    --TODO: play / dub
     oldmx = {
         { old = 1, old2 = 1, rec = 0 },
         update = function(s, n)
@@ -51,15 +54,14 @@ local sc = {
                 --set phase_quant to a constant when rate < 1
             end
     },
-    inmx = { 
+    inmx = {
         { 1, 1 }, --lvl L, lvl R
         update = function(s, n)
             for i = 1,2 do softcut.level_input_cut(i, n, s[n][i]) end
         end
     },
-    --TODO aliasing changes pre_filter_fc + dry/wet, default is 16000, full wet
     aliasmx = {
-        { alias = 0, aliasing = 1 },
+        { alias = 0 },
         update = function(s, n)
             if s[n].alias == 1 then
                 softcut.pre_filter_dry(n, 1)
@@ -87,6 +89,7 @@ local reg = {}
 reg.blank = cartographer.divide(cartographer.buffer[1], zones)
 reg.rec = cartographer.subloop(reg.blank)
 reg.play = cartographer.subloop(reg.rec)
+--TODO: zoom region
 
 sc.lvl_slew = 0.1
 sc.setup = function()
@@ -104,29 +107,29 @@ sc.setup = function()
         softcut.rate(i, 1)
         softcut.post_filter_dry(i, 0)
         --TODO try pre_filter_fc_mod 0
-        
+
         softcut.level_input_cut(1, i, 1)
         softcut.level_input_cut(2, i, 1)
-        
+
         sc.slew(i, 0.2)
-        
+
         softcut.phase_quant(i, 1/100)
     end
     for i = 1,zones do
         --adjust punch_in time quantum based on rate
-        reg.rec[i].rate_callback = function() 
+        reg.rec[i].rate_callback = function()
             return sc.ratemx[i].rate
         end
     end
 
     -- softcut.event_position(function(i, ph)
     --     if i <= ndls.voices then
-    --         sc.phase:set(i, ph) 
+    --         sc.phase:set(i, ph)
     --     end
     -- end)
     softcut.event_phase(function(i, ph)
         if i <= ndls.voices then
-            sc.phase:set(i, ph) 
+            sc.phase:set(i, ph)
         end
     end)
     softcut.poll_start_phase()
@@ -153,6 +156,8 @@ sc.fade = function(n, length)
     sc.send('fade_time', n, math.min(0.01, length))
 end
 
+--TODO: zoom
+
 sc.zone = {
     1, 2, 3, 4, --[voice] = zone
     update = function(s, n)
@@ -160,12 +165,13 @@ sc.zone = {
         sc.punch_in:update_play(s[n])
     end
 }
-        
+
+--TODO: play / dub
 sc.punch_in = {
     --indexed by zone
-    { recording = false, recorded = false, play = 0, t = 0, tap_blink = 0, tap_clock = nil, tap_buf = {} },
+    { recording = false, recorded = false, play = 0, t = 0 },
     update_play = function(s, z)
-        for n,v in ipairs(sc.zone) do if v == z then 
+        for n,v in ipairs(sc.zone) do if v == z then
             sc.lvlmx[n].recorded = s[z].play
             sc.lvlmx:update(n)
         end end
@@ -177,7 +183,7 @@ sc.punch_in = {
             if v == 1 then
 
                 --adjust punch_in time quantum based on rate
-                reg.rec[z].rate_callback = function() 
+                reg.rec[z].rate_callback = function()
                     return sc.ratemx[n].rate
                 end
 
@@ -187,7 +193,7 @@ sc.punch_in = {
 
             elseif s[buf].recording then
                 s[buf].play = 1; s:update_play(buf)
-            
+
                 reg.rec[buf]:punch_out()
 
                 s[buf].recorded = true
@@ -197,54 +203,6 @@ sc.punch_in = {
     end,
     get = function(s, z)
         return s[z].recording and 1 or 0
-    end,
-    --manual = function(s, z)
-    --    local buf = z
-
-    --    if not s[buf].recorded then
-    --        --reg.blank[buf]:set_length(s.delay_size)
-    --        reg.rec[buf]:set_length(1, 'fraction')
-            
-    --        s[buf].manual = true
-
-    --        --sc.oldmx[buf].rec = 1; sc.oldmx:update(buf)
-    --        s[buf].play = 1; s:update_play(buf)
-
-    --        s[buf].recorded = true
-    --    end
-    --end,
-    untap = function(s, z)
-        local buf = z
-
-        s[buf].tap_buf = {}
-        if s[buf].tap_clock then clock.cancel(s[buf].tap_clock) end
-        s[buf].tap_clock = nil
-        s[buf].tap_blink = 0
-    end,
-    tap = function(s, z, t)
-        local buf = z
-
-        --caller sets mparam.rec high
-        if t < 1 and t > 0 then
-            table.insert(s[buf].tap_buf, t)
-            if #s[buf].tap_buf > 2 then table.remove(s[buf].tap_buf, 1) end
-            local avg = 0
-            for i,v in ipairs(s[buf].tap_buf) do avg = avg + v end
-            avg = avg / #s[buf].tap_buf
-
-            reg.play:set_length(n*2, avg)
-            sc.punch_in:big(n, avg)
-
-            if s[buf].tap_clock then clock.cancel(s[buf].tap_clock) end
-            s[buf].tap_clock = clock.run(function() 
-                while true do
-                    s[buf].tap_blink = 1
-                    clock.sleep(avg*0.5)
-                    s[buf].tap_blink = 0
-                    clock.sleep(avg*0.5)
-                end
-            end)
-        else s:untap(z) end
     end,
     clear = function(s, z)
         local buf = z
@@ -272,11 +230,11 @@ sc.punch_in = {
     load = function(s, data)
         for i,v in ipairs(data) do
             s[i].manual = v
-            if v==true then 
+            if v==true then
                 s:manual(i)
                 s:big(i, reg.play[1][1]:get_length())
-            else 
-                --s:clear(i) 
+            else
+                --s:clear(i)
                 if sc.buf[i]==i then params:delta('clear '..i) end
             end
         end

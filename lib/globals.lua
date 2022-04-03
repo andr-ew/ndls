@@ -1,6 +1,6 @@
 local ndls = {}
 
---TODO 6 voices for 256 grid
+--TODO 6 voices for 256 grid (?)
 ndls.voices = 4
 ndls.zones = 9 --zone count
 ndls._phase = {}
@@ -19,8 +19,8 @@ ndls.zone =  { --active zone
 
         sc.zone[n] = z; sc.zone:update(n)
 
-        arc_redraw()
-        redraw()
+        nest.arc.make_dirty()
+        nest.screen.make_dirty()
     end,
     get = function(s, n)
         return s[n]
@@ -31,7 +31,7 @@ ndls.zone =  { --active zone
     copy = function(src, dst, range)
        --copy punch_in, region, set entered false for all voices
     end
-} 
+}
 for i = 1, ndls.voices do
     ndls.zone.entered[i] = {}
     for j = 1, ndls.zones do
