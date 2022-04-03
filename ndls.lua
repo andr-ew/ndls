@@ -31,11 +31,8 @@ cartographer, Slice = include 'lib/cartographer/cartographer'
 --internal files
 
 ndls = include 'ndls/lib/globals'               --shared values & functions
---mpats, mpat = include 'ndls/lib/metapattern'    --multi-scope wrapper around pattern_time
-mparams, mparam = include 'ndls/lib/metaparam'  --multi-scope wrapper around params
 sc, reg = include 'ndls/lib/softcut'            --softcut utilities
-cr = include 'ndls/lib/crow'                    --crow utilities
-
+Components = include 'ndls/lib/components'      --UI components
 include 'ndls/lib/params'                       --create params
 include 'ndls/lib/ui'                           --grid, arc, & norns UI
 

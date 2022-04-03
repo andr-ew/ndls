@@ -10,69 +10,12 @@ local view = {
     { 1, 0, 0, 0 },
     { 1, 0, 0, 0 },
 }
-
-local function View(vertical)
-    local held = {}
-
-    vertical = vertical or true
-
-    return function(props)
-        local g = nest.grid.device()
-
-        if nest.grid.has_input() then
-            local x, y, z = nest.grid.input_args()
-            
-            local dx, dy = x - props.x + 1, y - props.y + 1
-            if z == 1 then
-                table.insert(held, { x = dx, y = dy })
-
-                if #held > 1 then
-                    if held[1].x == held[2].x then vertical = true
-                    elseif held[1].y == held[2].y then vertical = false end
-                end
-
-                for i = 1,4 do --y
-                    for j = 1,4 do --x 
-                        props.state[i][j] = (
-                            vertical and dx == j
-                        )
-                            and 1 
-                            or ((not vertical and dy == i) and 1 or 0)
-                    end 
-                end
-
-                nest.grid.make_dirty()
-            else
-                for i,v in ipairs(held) do
-                    if v.x == dx and v.y == dy then table.remove(held, i) end
-                end
-            end
-        elseif nest.grid.is_drawing() then
-            for i = 0,3 do for j = 0,3 do 
-                g:led(props.x + j, props.y + i, props.state[i + 1][j + 1] * props.lvl)
-            end end               
-        end
-    end
-end
-
-local function Phase()
-    return function(props)
-        local g = nest.grid.device()
-
-        if nest.grid.is_drawing() then
-            g:led(
-                props.x[1] 
-                    + util.round(sc.phase[n].rel * (props.x[2] - props.x[1])), 
-                props.y, 
-                8
-            )
-        end
-    end
-end
+local vertical
+local alt = false
 
 local App = {}
 
-local function App.grid(size)
+function App.grid(size)
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
@@ -80,9 +23,9 @@ local function App.grid(size)
     --local _patrec = PatternRecorder()
 
     local function Voice(n)
-        local top, bottom = n, n + 4
+        local top, bottom = n, n + ndls.voices
 
-        _phase = Phase()
+        _phase = Components.grid.phase()
         
         local _params = {}
         _params.rec = to.pattern(mpat, 'rec '..n, Grid.toggle, function()
@@ -165,7 +108,7 @@ local function App.grid(size)
         _voices[i] = Voice(i)
     end
 
-    _view = View()
+    _view = Components.grid.view()
 
     return function()
         for i, _voice in ipairs(_voices) do
@@ -174,26 +117,147 @@ local function App.grid(size)
 
         _view{
             x = 1, y = 1, lvl = 15,
-            state = view,
+            view = view,
+            vertical = { vertical, function(v) vertical = v end }
         }
     end
 end
 
-function App.arc()
-    local rsens = 1/1000
+function App.arc(map)
+    local Destinations = {}
 
-    
+    function Destinations.vol(n, x)
+        local _num = to.pattern(mpat, 'vol '..n, Grid.number, function() 
+            return {
+                n = tonumber(vertical and n or x),
+                sens = 0.25, max = 2.5, cycle = 1.5,
+                state = of.param('vol '..n),
+            }
+        end)
+
+        return function() _num() end
+    end
+
+    function Destinations.cut(n, x)
+        local _cut = to.pattern(mpat, 'cut '..n, Grid.control, function() 
+            return {
+                n = tonumber(vertical and n or x),
+                x = { 42, 24+64 }, sens = 0.25, 
+                redraw_enabled = false,
+                controlspec = of.controlspec('cut '..n),
+                state = of.param('cut '..n),
+            }
+        end)
+
+        local _filt = Components.arc.filter()
+
+        local _type = to.pattern(mpat, 'type '..n, Grid.control, function() 
+            return {
+                n = tonumber(vertical and n or x),
+                options = 4, sens = 1/32,
+                x = { 27, 41 }, lvl = 12,
+                state = {
+                    params:get('type '..n),
+                    function(v) params:set('type '..n, v//1) end
+                }
+            }
+        end)
+
+        return function() 
+            _filt{
+                n = tonumber(vertical and n or x),
+                x = { 42, 24+64 },
+                type = params:get('type '..n),
+                cut = params:get('cut '..n),
+            }
+
+            if alt then 
+                _type()
+            else
+                _cut() 
+            end
+        end
+    end
+
+    function Destinations.st(n, x)
+        _st = Components.arc.st(mpat)
+
+        return function() 
+            _st{
+                n = tonumber(vertical and n or x),
+                x = { 33, 64+32 }, lvl = { 4, 15 },
+                reg = reg.play, nreg = n,
+                phase = sc.phase[y].rel,
+                show = sc.lvlmx[y].play == 1 and sc.punch_in[ndls.zone[y]].recorded,
+                nudge = alt,
+                sens = 1/1000,
+            }
+        end
+    end
+
+    function Destinations.len(n, x)
+        _len = Components.arc.len(mpat)
+
+        return function() 
+            _len{
+                n = tonumber(vertical and n or x),
+                x = { 33, 64+32 }, 
+                reg = reg.play, nreg = n,
+                phase = sc.phase[y].rel,
+                show = sc.lvlmx[y].play == 1 and sc.punch_in[ndls.zone[y]].recorded,
+                nudge = alt,
+                sens = 1/1000,
+                lvl_st = alt and 15 or 4,
+                lvl_en = alt and 4 or 15,
+                lvl_ph = 4,
+            }
+        end
+    end
+
+    _params = {}
+    for y = 1,4 do --track
+        _params[y] = {}
+
+        for x = 1,4 do --map item
+
+            _params[y][x] = Destinations[map[x]](y, x)
+        end
+    end
 
     return function()
+        for y = 1,4 do for x = 1,4 do
+            if view[y][x] > 0 then
+                _params[y][x]()
+            end
+        end
     end
 end
 
-nest.connect_grid(App.grid(), grid.connect(), 60)
-nest.connect_arc(App.arc(), arc.connect(), 60)
+function App.norns()
+    _alt = Key.momentary()
 
---[[
-nest.connect_arc(_app, arc.connect())
-nest.connect_enc(_app)
-nest.connect_key(_app)
-nest.connect_screen(_app)
---]]
+    return function()
+        _alt{
+            n = 1, 
+            state = {
+                alt and 1 or 0,
+                function(v)
+                    alt = v==1
+                    nest.arc.make_dirty()
+                end
+            }
+        }
+    end
+end
+
+local _app = {
+    grid = App.grid(),
+    arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
+    norns = App.norns(),
+}
+
+nest.connect_grid(_app.grid, grid.connect(), 60)
+nest.connect_arc(_app.arc, arc.connect(), 60)
+nest.connect_enc(_app.norns)
+nest.connect_key(_app.norns)
+nest.connect_screen(_app.norns)
