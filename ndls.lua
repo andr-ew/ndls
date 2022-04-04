@@ -40,10 +40,10 @@ function init()
     sc.setup()
     ndls.zone:init()
 
-    params:read()
+    --params:read()
     params:bang()
 end
 
 function cleanup()
-    params:write()
+    --params:write()
 end

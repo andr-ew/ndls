@@ -10,17 +10,17 @@ local sc = {
             s[n].rel = reg.rec:phase_relative(n, v, 'fraction')
 
             nest.grid.make_dirty()
+            nest.arc.make_dirty()
         end
     },
     sendmx = {
-        { vol = 1, old = 1, send = 1, ret = 0 },
+        { vol = 1, old = 1, send = 0, ret = 1 },
         update = function(s)
             for dst = 1, voices do
                 for src = 1,voices do if src ~= dst then
                     softcut.level_cut_cut(
                         src, dst,
-                          s[src].vol  * s[dst].old
-                        * s[src].send * s[dst].ret
+                        s[src].vol  * s[dst].old * s[src].send * s[dst].ret
                     )
                 end end
             end
@@ -31,7 +31,7 @@ local sc = {
         update = function(s, n)
             local v = s[n].vol * s[n].play * s[n].recorded
             softcut.level(n, v)
-            sc.sendmx[n].vol = v
+            sc.sendmx[n].vol = v; sc.sendmx:update(n)
         end
     },
     --TODO: play / dub

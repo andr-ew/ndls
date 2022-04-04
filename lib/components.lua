@@ -44,6 +44,7 @@ function Components.grid.view()
                         end 
                     end
 
+                    props.action()
                     nest.grid.make_dirty()
                 else
                     for i,v in ipairs(held) do
@@ -66,7 +67,7 @@ function Components.grid.phase()
         if nest.grid.is_drawing() then
             g:led(
                 props.x[1] 
-                    + util.round(sc.phase[n].rel * (props.x[2] - props.x[1])), 
+                    + util.round(props.phase * (props.x[2] - props.x[1])), 
                 props.y, 
                 8
             )
@@ -128,15 +129,15 @@ function Components.arc.st(mpat)
             end
         elseif nest.arc.is_drawing() then
             local st = props.x[1] + math.ceil(
-                r:get_start(y, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.reg:get_start(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
             )
             local en = props.x[1] - 1 + math.ceil(
-                r:get_end(y, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.reg:get_end(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
             )
             local ph = props.x[1] + util.round(
                 props.phase * (props.x[2] - props.x[1])
             )
-            local show = props.show
+            local show = props.show_phase
             for x = st,en do
                 a:led(props.n, (x - 1) % 64 + 1, props.lvl[(x==ph and show) and 2 or 1])
             end
@@ -163,10 +164,10 @@ function Components.arc.len(mpat)
             end
         elseif nest.arc.is_drawing() then
             local st = props.x[1] + math.ceil(
-                r:get_start(y, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.reg:get_start(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
             )
             local en = props.x[1] - 1 + math.ceil(
-                r:get_end(y, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.reg:get_end(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
             )
             local ph = props.x[1] + util.round(
                 props.phase * (props.x[2] - props.x[1])
@@ -174,9 +175,11 @@ function Components.arc.len(mpat)
 
             a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
             a:led(props.n, (en - 1) % 64 + 1, props.lvl_en)
-            if props.show then 
+            if props.show_phase then 
                 a:led(props.n, (ph - 1) % 64 + 1, props.lvl_ph)
             end
         end
     end
 end
+
+return Components

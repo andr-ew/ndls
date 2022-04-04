@@ -1,16 +1,10 @@
 params:add_separator('ndls')
 
-local function nest.screen.make_dirty(); nest.arc.make_dirty()
-    for _,dev in ipairs({ 'arc', 'grid', 'screen' }) do
-        nest[dev].make_nest.screen.make_dirty(); nest.arc.make_dirty()
-    end
-end
-
 params:add {
     id = 'old',
     type = 'control', controlspec = cs.def { default = 0.8, max = 1 },
     action = function(v)
-        for i, ndls.voices do
+        for i = 1, ndls.voices do
             sc.oldmx[i].old = v; sc.oldmx:update(i)
         end
         nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -28,7 +22,7 @@ params:add {
     end
 }
 
-for i, ndls.voices do
+for i = 1, ndls.voices do
     params:add {
         id = 'vol '..i,
         type = 'control', controlspec = cs.def { default = 1, max = 2.5 },
@@ -83,7 +77,7 @@ for i, ndls.voices do
             local z = ndls.zone[n]
             if not sc.punch_in[z].recorded then
                 sc.punch_in:set(n, z, v)
-                if v==0 then params.id['play']:set(1, n) end
+                if v==0 then params:set('play '..i, 1) end
             elseif sc.lvlmx[n].play == 0 and v == 1 then
                 --TODO reset params
                 sc.punch_in:clear(z)
@@ -148,28 +142,37 @@ for i, ndls.voices do
     }
     params:add {
         id = 'send '..i,
-        type = 'binary', behavior = 'toggle', scopes = { 'voice' }, default = 1,
+        type = 'binary', behavior = 'toggle',
         action = function(v) 
             sc.sendmx[i].send = v; sc.sendmx:update() 
+
+            if v > 0 and params:get('return '..i) > 0 then
+                sc.sendmx[i].ret = 0; sc.sendmx:update() 
+                params:set('return '..i, 0, true)
+            end
             nest.grid.make_dirty()
         end
     }
     params:add {
         id = 'return '..i,
-        type = 'binary', behavior = 'toggle', scopes = { 'voice' },
+        type = 'binary', behavior = 'toggle', default = 1,
         action = function(v) 
             sc.sendmx[i].ret = v; sc.sendmx:update() 
+
+            if v > 0 and params:get('send '..i) > 0 then
+                sc.sendmx[i].send = 0; sc.sendmx:update() 
+                params:set('send '..i, 0, true)
+            end
             nest.grid.make_dirty()
         end
     }
-
 end
 
 params:add {
     id = 'alias',
     type = 'binary', behavior = 'toggle', 
     action = function(v)
-        for i, ndls.voices do
+        for i = 1, ndls.voices do
             sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
         end
     end

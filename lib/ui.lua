@@ -10,12 +10,13 @@ local view = {
     { 1, 0, 0, 0 },
     { 1, 0, 0, 0 },
 }
-local vertical
+local vertical = true
 local alt = false
 
 local App = {}
 
 function App.grid(size)
+    local varibright = true
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
@@ -35,14 +36,14 @@ function App.grid(size)
             }
         end)
         _params.play = to.pattern(mpat, 'play '..n, Grid.toggle, function()
-            local recorded = sc.punch_in[ndls.zone[n]].recorded
-            local recording = sc.punch_in[ndls.zone[n]].recording
-
             return {
                 x = 2, y = bottom, lvl = shaded,
                 state = {
-                    recorded and params:get('play '..n) or 0,
+                    sc.punch_in[ndls.zone[n]].recorded and params:get('play '..n) or 0,
                     function(v)
+                        local recorded = sc.punch_in[ndls.zone[n]].recorded
+                        local recording = sc.punch_in[ndls.zone[n]].recording
+
                         if recorded or recording then 
                             params:set('play '..n, v)
                         end
@@ -84,7 +85,7 @@ function App.grid(size)
         end)
         _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
             return {
-                x = { 6, 15 }, y = top,
+                x = { 6, 15 }, y = top, filtersame = true,
                 state = { params:get('rate '..n) + 8 },
                 action = function(v, t)
                     sc.slew(n, t)
@@ -94,10 +95,12 @@ function App.grid(size)
         end)
 
         return function()
-            _phase{ 
-                x = { 1, 16 }, y = top,
-                phase = sc.phase[n].rel,
-            }
+            if sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded then
+                _phase{ 
+                    x = { 1, 16 }, y = top,
+                    phase = sc.phase[n].rel,
+                }
+            end
 
             for _, _param in pairs(_params) do _param() end
         end
@@ -111,15 +114,16 @@ function App.grid(size)
     _view = Components.grid.view()
 
     return function()
-        for i, _voice in ipairs(_voices) do
-            _voice{}
-        end
-
         _view{
             x = 1, y = 1, lvl = 15,
             view = view,
-            vertical = { vertical, function(v) vertical = v end }
+            vertical = { vertical, function(v) vertical = v end },
+            action = nest.arc.make_dirty
         }
+        
+        for i, _voice in ipairs(_voices) do
+            _voice{}
+        end
     end
 end
 
@@ -127,7 +131,7 @@ function App.arc(map)
     local Destinations = {}
 
     function Destinations.vol(n, x)
-        local _num = to.pattern(mpat, 'vol '..n, Grid.number, function() 
+        local _num = to.pattern(mpat, 'vol '..n, Arc.number, function() 
             return {
                 n = tonumber(vertical and n or x),
                 sens = 0.25, max = 2.5, cycle = 1.5,
@@ -139,7 +143,7 @@ function App.arc(map)
     end
 
     function Destinations.cut(n, x)
-        local _cut = to.pattern(mpat, 'cut '..n, Grid.control, function() 
+        local _cut = to.pattern(mpat, 'cut '..n, Arc.control, function() 
             return {
                 n = tonumber(vertical and n or x),
                 x = { 42, 24+64 }, sens = 0.25, 
@@ -151,15 +155,18 @@ function App.arc(map)
 
         local _filt = Components.arc.filter()
 
-        local _type = to.pattern(mpat, 'type '..n, Grid.control, function() 
+        local _type = to.pattern(mpat, 'type '..n, Arc.option, function() 
             return {
                 n = tonumber(vertical and n or x),
-                options = 4, sens = 1/32,
+                options = 4, sens = 1/64,
                 x = { 27, 41 }, lvl = 12,
+                --[[
                 state = {
                     params:get('type '..n),
                     function(v) params:set('type '..n, v//1) end
-                }
+                },
+                --]]
+                action = function(v) params:set('type '..n, v//1) end
             }
         end)
 
@@ -183,15 +190,17 @@ function App.arc(map)
         _st = Components.arc.st(mpat)
 
         return function() 
-            _st{
-                n = tonumber(vertical and n or x),
-                x = { 33, 64+32 }, lvl = { 4, 15 },
-                reg = reg.play, nreg = n,
-                phase = sc.phase[y].rel,
-                show = sc.lvlmx[y].play == 1 and sc.punch_in[ndls.zone[y]].recorded,
-                nudge = alt,
-                sens = 1/1000,
-            }
+            if sc.punch_in[ndls.zone[n]].recorded then
+                _st{
+                    n = tonumber(vertical and n or x),
+                    x = { 33, 64+32 }, lvl = { 4, 15 },
+                    reg = reg.play, nreg = n,
+                    phase = sc.phase[n].rel,
+                    show_phase = sc.lvlmx[n].play == 1,
+                    nudge = alt,
+                    sens = 1/1000,
+                }
+            end
         end
     end
 
@@ -199,22 +208,24 @@ function App.arc(map)
         _len = Components.arc.len(mpat)
 
         return function() 
-            _len{
-                n = tonumber(vertical and n or x),
-                x = { 33, 64+32 }, 
-                reg = reg.play, nreg = n,
-                phase = sc.phase[y].rel,
-                show = sc.lvlmx[y].play == 1 and sc.punch_in[ndls.zone[y]].recorded,
-                nudge = alt,
-                sens = 1/1000,
-                lvl_st = alt and 15 or 4,
-                lvl_en = alt and 4 or 15,
-                lvl_ph = 4,
-            }
+            if sc.punch_in[ndls.zone[n]].recorded then
+                _len{
+                    n = tonumber(vertical and n or x),
+                    x = { 33, 64+32 }, 
+                    reg = reg.play, nreg = n,
+                    phase = sc.phase[n].rel,
+                    show_phase = sc.lvlmx[n].play == 1,
+                    nudge = alt,
+                    sens = 1/1000,
+                    lvl_st = alt and 15 or 4,
+                    lvl_en = alt and 4 or 15,
+                    lvl_ph = 4,
+                }
+            end
         end
     end
 
-    _params = {}
+    local _params = {}
     for y = 1,4 do --track
         _params[y] = {}
 
@@ -229,7 +240,7 @@ function App.arc(map)
             if view[y][x] > 0 then
                 _params[y][x]()
             end
-        end
+        end end
     end
 end
 
@@ -257,7 +268,7 @@ local _app = {
 }
 
 nest.connect_grid(_app.grid, grid.connect(), 60)
-nest.connect_arc(_app.arc, arc.connect(), 60)
+nest.connect_arc(_app.arc, arc.connect(), 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
 nest.connect_screen(_app.norns)
