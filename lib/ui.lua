@@ -1,5 +1,15 @@
+function pattern_time:resume()
+    if self.count > 0 then
+        self.prev_time = util.time()
+        self.process(self.event[self.step])
+        self.play = 1
+        self.metro.time = self.time[self.step] * self.time_factor
+        self.metro:start()
+    end
+end
+
 local pattern, mpat = {}, {}
-for i = 1,ndls.voices do
+for i = 1,8 do
     pattern[i] = pattern_time.new() 
     mpat[i] = multipattern.new(pattern[i])
 end
@@ -20,8 +30,6 @@ function App.grid(size)
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
-
-    --local _patrec = PatternRecorder()
 
     local function Voice(n)
         local top, bottom = n, n + ndls.voices
@@ -51,7 +59,13 @@ function App.grid(size)
                 },
             }
         end)
-        --_zoom = Grid.toggle
+        _params.zoom = to.pattern(mpat, 'zoom '..n, Grid.toggle, function() 
+            return {
+                x = 3, y = bottom, edge = 'falling',
+                state = { sc.get_zoom(n) and 1 or 0 },
+                action = function(v, t) sc.zoom(n, v > 0, t) end
+            }
+        end)
         _params.zone = to.pattern(mpat, 'zone '..n, Grid.number, function()
             return {
                 x = { 4, 13 }, y = bottom,
@@ -106,12 +120,14 @@ function App.grid(size)
         end
     end
 
+    local _view = Components.grid.view()
+    
     _voices = {}
     for i = 1, ndls.voices do
         _voices[i] = Voice(i)
     end
 
-    _view = Components.grid.view()
+    local _patrec = PatternRecorder()
 
     return function()
         _view{
@@ -124,6 +140,10 @@ function App.grid(size)
         for i, _voice in ipairs(_voices) do
             _voice{}
         end
+        
+        _patrec{
+            x = 16, y = { 1, 8 }, pattern = pattern,
+        }
     end
 end
 
@@ -194,7 +214,8 @@ function App.arc(map)
                 _st{
                     n = tonumber(vertical and n or x),
                     x = { 33, 64+32 }, lvl = { 4, 15 },
-                    reg = reg.play, nreg = n,
+                    reg = sc.get_zoom(n) and reg.zoom or reg.play, 
+                    nreg = n,
                     phase = sc.phase[n].rel,
                     show_phase = sc.lvlmx[n].play == 1,
                     nudge = alt,
@@ -212,7 +233,8 @@ function App.arc(map)
                 _len{
                     n = tonumber(vertical and n or x),
                     x = { 33, 64+32 }, 
-                    reg = reg.play, nreg = n,
+                    reg = sc.get_zoom(n) and reg.zoom or reg.play, 
+                    nreg = n,
                     phase = sc.phase[n].rel,
                     show_phase = sc.lvlmx[n].play == 1,
                     nudge = alt,
@@ -271,4 +293,4 @@ nest.connect_grid(_app.grid, grid.connect(), 60)
 nest.connect_arc(_app.arc, arc.connect(), 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
-nest.connect_screen(_app.norns)
+--nest.connect_screen(_app.norns)

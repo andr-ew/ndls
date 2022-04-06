@@ -1,15 +1,6 @@
 params:add_separator('ndls')
 
-params:add {
-    id = 'old',
-    type = 'control', controlspec = cs.def { default = 0.8, max = 1 },
-    action = function(v)
-        for i = 1, ndls.voices do
-            sc.oldmx[i].old = v; sc.oldmx:update(i)
-        end
-        nest.screen.make_dirty(); nest.arc.make_dirty()
-    end
-}
+--[[
 params:add {
     id = 'spread',
     type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0.75 },
@@ -21,6 +12,17 @@ params:add {
         nest.screen.make_dirty(); nest.arc.make_dirty()
     end
 }
+--]]
+params:add {
+    id = 'q',
+    type = 'control', controlspec = cs.def { default = 0.4 },
+    action = function(v)
+        for i = 1, ndls.voices do
+            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end
+    end
+}
 
 for i = 1, ndls.voices do
     params:add {
@@ -28,6 +30,25 @@ for i = 1, ndls.voices do
         type = 'control', controlspec = cs.def { default = 1, max = 2.5 },
         action = function(v)
             sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end
+    }
+    params:add {
+        id = 'pan '..i,
+        type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0 },
+        action = function(v)
+            sc.panmx[i].pan = v; sc.panmx:update(i)
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end
+    }
+    params:add {
+        --id = 'old',
+        id = 'old '..i,
+        type = 'control', controlspec = cs.def { default = 0.8, max = 1 },
+        action = function(v)
+            --for i = 1, ndls.voices do
+                sc.oldmx[i].old = v; sc.oldmx:update(i)
+            --end
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
@@ -44,14 +65,6 @@ for i = 1, ndls.voices do
         type = 'control', controlspec = cs.def { default = 1, quantum = 1/100/2, step = 0 },
         action = function(v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
-            nest.screen.make_dirty(); nest.arc.make_dirty()
-        end
-    }
-    params:add {
-        id = 'q '..i,
-        type = 'control', controlspec = cs.def { default = 0.4 },
-        action = function(v)
-            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
@@ -77,7 +90,10 @@ for i = 1, ndls.voices do
             local z = ndls.zone[n]
             if not sc.punch_in[z].recorded then
                 sc.punch_in:set(n, z, v)
-                if v==0 then params:set('play '..i, 1) end
+
+                if v==0 and sc.punch_in[z].recorded then 
+                    params:set('play '..i, 1) 
+                end
             elseif sc.lvlmx[n].play == 0 and v == 1 then
                 --TODO reset params
                 sc.punch_in:clear(z)

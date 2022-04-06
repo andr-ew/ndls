@@ -90,7 +90,7 @@ local reg = {}
 reg.blank = cartographer.divide(cartographer.buffer[1], zones)
 reg.rec = cartographer.subloop(reg.blank)
 reg.play = cartographer.subloop(reg.rec)
---TODO: zoom region
+reg.zoom = cartographer.subloop(reg.rec)
 
 sc.lvl_slew = 0.1
 sc.setup = function()
@@ -157,22 +157,44 @@ sc.fade = function(n, length)
     sc.send('fade_time', n, math.min(0.01, length))
 end
 
---TODO: zoom
-
-sc.zone = {
-    1, 2, 3, 4, --[voice] = zone
+sc.reg = {
+    zone = { 1, 2, 3, 4, }, --[voice] = zone
+    zoomed = {}, --[voice][zone] = true/false
     update = function(s, n)
-        cartographer.assign(reg.play[s[n]], n) --TODO don't reassign if zone matches
-        sc.punch_in:update_play(s[n])
+        local bund = s.zoomed[n][s.zone[n]] and 'zoom' or 'play'
+        cartographer.assign(reg[bund][s.zone[n]], n) --TODO don't reassign if zone matches
+
+        sc.punch_in:update_play(s.zone[n])
     end
 }
+for i = 1, ndls.voices do
+    sc.reg.zoomed[i] = {}
+    for j = 1, ndls.zones do
+        sc.reg.zoomed[i][j] = false
+    end
+end
+
+sc.zoom = function(n, v, t)
+    local z = sc.reg.zone[n]
+    sc.reg.zoomed[n][z] = v
+
+    if v then
+        reg.zoom[z]:set_length(t, 'seconds')
+        reg.zoom[z]:set_start(sc.phase[n].abs - t, 'seconds', 'absolute')
+    end
+
+    sc.reg:update(n)
+end
+
+sc.get_zoom = function(n) return sc.reg.zoomed[n][ndls.zone[n]] end
+
 
 --TODO: play / dub
 sc.punch_in = {
     --indexed by zone
     { recording = false, recorded = false, play = 0, t = 0 },
     update_play = function(s, z)
-        for n,v in ipairs(sc.zone) do if v == z then
+        for n,v in ipairs(sc.reg.zone) do if v == z then
             sc.lvlmx[n].recorded = s[z].play
             sc.lvlmx:update(n)
         end end
@@ -221,6 +243,7 @@ sc.punch_in = {
 
         reg.rec[buf]:set_length(1, 'fraction')
         reg.play[buf]:set_length(0)
+        reg.zoom[buf]:set_length(0)
     end,
     --[[
     save = function(s)
@@ -252,5 +275,7 @@ for i = 2, zones do
         sc.punch_in[i][l] = v
     end
 end
+
+--TODO: sc.save / sc.load
 
 return sc, reg
