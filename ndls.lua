@@ -40,10 +40,21 @@ function init()
     sc.setup()
     ndls.zone:init()
 
-    --params:read()
+    params:read()
+    for i = 1, ndls.voices do
+        params:set('vol '..i, 1)
+        --params:set('bnd '..i, 0)
+        params:set('cut '..i, 1)
+        params:set('type '..i, 1)
+        params:set('rec '..i, 0)
+        params:set('play '..i, 0)
+        params:set('rate '..i, 0)
+        params:set('rev '..i, 0)
+    end
+
     params:bang()
 end
 
 function cleanup()
-    --params:write()
+    params:write()
 end
