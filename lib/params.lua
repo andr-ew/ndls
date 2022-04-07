@@ -194,7 +194,7 @@ end
 
 params:add {
     id = 'alias',
-    type = 'binary', behavior = 'toggle', 
+    type = 'binary', behavior = 'toggle', default = true,
     action = function(v)
         for i = 1, ndls.voices do
             sc.aliasmx[i].alias = v; sc.aliasmx:update(i)

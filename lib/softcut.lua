@@ -123,6 +123,7 @@ sc.setup = function()
         softcut.rate(i, 1)
         softcut.post_filter_dry(i, 0)
         --TODO try pre_filter_fc_mod 0
+        softcut.pre_filter_fc_mod(i, 0)
 
         --softcut.level_input_cut(1, i, 1)
         --softcut.level_input_cut(2, i, 1)
