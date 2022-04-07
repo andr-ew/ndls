@@ -13,6 +13,19 @@ local sc = {
             nest.arc.make_dirty()
         end
     },
+    inmx = {
+        {},
+        route = 'left',
+        update = function(s, n)
+            if s.route == 'left' then
+                softcut.level_input_cut(1, n, 1)
+                softcut.level_input_cut(2, n, 0)
+            elseif s.route == 'right' then
+                softcut.level_input_cut(1, n, 0)
+                softcut.level_input_cut(2, n, 1)
+            end
+        end
+    },
     sendmx = {
         { vol = 1, old = 1, send = 0, ret = 1 },
         update = function(s)
@@ -55,12 +68,14 @@ local sc = {
                 --set phase_quant to a constant when rate < 1
             end
     },
+    --[[
     inmx = {
         { 1, 1 }, --lvl L, lvl R
         update = function(s, n)
             for i = 1,2 do softcut.level_input_cut(i, n, s[n][i]) end
         end
     },
+    ]]--
     aliasmx = {
         { alias = 0 },
         update = function(s, n)
@@ -109,8 +124,8 @@ sc.setup = function()
         softcut.post_filter_dry(i, 0)
         --TODO try pre_filter_fc_mod 0
 
-        softcut.level_input_cut(1, i, 1)
-        softcut.level_input_cut(2, i, 1)
+        --softcut.level_input_cut(1, i, 1)
+        --softcut.level_input_cut(2, i, 1)
 
         sc.slew(i, 0.2)
 
