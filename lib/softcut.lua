@@ -165,7 +165,7 @@ end
 
 sc.slew = function(n, t)
     local st = (2 + (math.random() * 0.5)) * (t or 0)
-    sc.send('rate_slew_time', n, st)
+    sc.send('rate_slew_time', n, util.clamp(0, 2.5, st))
     return st
 end
 

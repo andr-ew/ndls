@@ -43,7 +43,10 @@ for i = 1, ndls.voices do
     }
     params:add {
         id = 'pan '..i,
-        type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0 },
+        type = 'control', 
+        controlspec = cs.def { 
+            min = -1, max = 1, default = ({ 0, 0.1, -0.3, 0.5 })[i]
+        },
         action = function(v)
             sc.panmx[i].pan = v; sc.panmx:update(i)
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -194,7 +197,7 @@ end
 
 params:add {
     id = 'alias',
-    type = 'binary', behavior = 'toggle', default = true,
+    type = 'binary', behavior = 'toggle', default = 0,
     action = function(v)
         for i = 1, ndls.voices do
             sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
