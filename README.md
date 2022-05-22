@@ -6,10 +6,13 @@ endless and/or noodles
 
 ## hardware
 
-norns + one or more of the following:
+**required:** norns + one or more of the following:
 - midi footswitch
 - grid
+
+**recommended**
 - arc
+- midi cc controller
 
 ## grid
 
