@@ -62,7 +62,7 @@ scope
 - zone/track setting for every track parameter
 - zone scope UI components are just duplicated for each zone, so if pattern recorded, only one component in one zone will be mapped to the pattern
 
-# roadmap
+# roadmap (v2)
 
 sync
 - sync record/play actions, pattern recorders, quantize window edits
