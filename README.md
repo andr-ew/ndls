@@ -55,14 +55,20 @@ track focus
 
 ## notes
 
-sync
-- syncronize rec/play keys & pattern recorder keys to clock division
-- phase reset softcut *only* when loop length is 100%
-
 arc assignable to first two pages of track parameters
 - we can add more later
 
+scope
+- zone/track setting for every track parameter
+- zone scope UI components are just duplicated for each zone, so if pattern recorded, only one component in one zone will be mapped to the pattern
+
 # roadmap
+
+sync
+- sync record/play actions, pattern recorders, quantize window edits
+- unique sync setting per zone & pattern ? 
+  - map this setting to the grid when holding K1
+  - allow copying synced audio to unsynced zone & vice-versa
 
 engine selection
 - softcut
