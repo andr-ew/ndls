@@ -61,3 +61,20 @@ sync
 
 arc assignable to first two pages of track parameters
 - we can add more later
+
+# roadmap
+
+engine selection
+- softcut
+- roughcut
+  - supercollider engine with no resampling
+  - engine commands mimic most of the softcut API
+  - additional parameters
+    - fx dry/wet
+    - sample rate
+    - bit depth
+  - additional norns page (r)
+    - dry/wet
+    - sample rate
+    - bit depth
+  - glide/rate_slew is disabled (for a different feel)
