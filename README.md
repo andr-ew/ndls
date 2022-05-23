@@ -70,11 +70,11 @@ engine selection
   - supercollider engine with no resampling or interpolation
   - engine commands mimic most of the softcut API
   - additional parameters
-    - fx dry/wet
-    - sample rate
     - bit depth
+    - sample rate
+    - sample rate slew
   - additional norns page (r)
-    - dry/wet
-    - sample rate
-    - bit depth
+    - E1: bit depth
+    - E2: sample rate
+    - E3: sample rate slew
   - glide/rate_slew is disabled (for a different feel)
