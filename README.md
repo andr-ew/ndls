@@ -67,7 +67,7 @@ arc assignable to first two pages of track parameters
 engine selection
 - softcut
 - roughcut
-  - supercollider engine with no resampling
+  - supercollider engine with no resampling or interpolation
   - engine commands mimic most of the softcut API
   - additional parameters
     - fx dry/wet
