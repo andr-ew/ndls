@@ -8,7 +8,7 @@ endless and/or noodles
 
 **required** norns + one or more of the following:
 - midi footswitch
-- grid
+- grid (128, 64, or midigrid)
 
 **recommended**
 - arc
