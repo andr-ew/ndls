@@ -66,7 +66,7 @@ scope
 
 sync
 - sync record/play actions, pattern recorders, quantize window edits
-- unique sync setting per zone & pattern ? 
+- unique sync setting per zone & pattern recorder ? 
   - map this setting to the grid when holding K1
   - allow copying synced audio to unsynced zone & vice-versa
 
