@@ -48,6 +48,7 @@ track focus
     - E1: direction
     - E2: rate
     - E3: bend
+    - ++ fixed slew ?
   - z
     - E1: zone
     - E2: send
