@@ -63,6 +63,10 @@ scope
 - zone/track setting for every track parameter
 - zone scope UI components are just duplicated for each zone, so if pattern recorded, only one component in one zone will be mapped to the pattern
 
+rate modes
+- octaves (1/16, 1/8, 1/4 ... 2, 4)
+- tones (1/4, 1/3, 1/2 ... 5, 6)
+
 # roadmap (v2)
 
 sync
