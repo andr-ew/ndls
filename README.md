@@ -63,29 +63,16 @@ scope
 - zone/track setting for every track parameter
 - zone scope UI components are just duplicated for each zone, so if pattern recorded, only one component in one zone will be mapped to the pattern
 
-rate modes
-- octaves (1/16, 1/8, 1/4 ... 2, 4)
-- tones (1/4, 1/3, 1/2 ... 5, 6)
+# future maybe
 
-# roadmap (v2)
+rate intervals (toggle per each)
+- octave
+- fifth
+- maj7
+- min7
 
 sync
 - sync record/play actions, pattern recorders, quantize window edits
 - unique sync setting per zone & pattern recorder ? 
   - map this setting to the grid when holding K1
   - allow copying synced audio to unsynced zone & vice-versa
-
-engine selection
-- softcut
-- roughcut
-  - supercollider engine with no resampling or interpolation
-  - engine commands mimic most of the softcut API
-  - additional parameters
-    - bit depth
-    - sample rate
-    - sample rate slew
-  - additional norns page (r)
-    - E1: bit depth
-    - E2: sample rate
-    - E3: sample rate slew
-  - glide/rate_slew is disabled (for a different feel)
