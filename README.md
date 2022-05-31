@@ -65,6 +65,8 @@ scope
 
 # future maybe
 
+pattern + audio save/recall
+
 rate intervals (toggle per each)
 - octave
 - fifth
