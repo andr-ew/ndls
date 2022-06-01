@@ -20,7 +20,7 @@ endless and/or noodles
 
 ## norns
 
-**mixer**
+**mixer view**
 - **E1:** crossfader
 - **E2-E3:** mix parameter
   - level
@@ -28,7 +28,7 @@ endless and/or noodles
 - **K2:** track focus 1+2 / 3+4
 - **K3:** parameter select
 
-**track focus**
+**track view**
 - **E1:** page
 - **E2-E3:** track parameter
 - **K2-K3:** randomize parameter
