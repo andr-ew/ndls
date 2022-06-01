@@ -46,7 +46,7 @@ scope
 - zone/track setting for every track parameter
 - zone scope UI components are just duplicated for each zone, so if pattern recorded, only one component in one zone will be mapped to the pattern
 
-# future maybe
+## future maybe
 
 pattern + audio save/recall
 
