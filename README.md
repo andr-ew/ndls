@@ -34,7 +34,8 @@ spititual successor to anachronism.
   - **pages**
     - **v:** vol, old
     - **s:** start, length
-    - **f:** filter tone, filter amount
+    - **f1:** filter freq, filter amount
+    - **f2:** filter response, filter amount
     - **p:** pitch, pan
 - **K2-K3:** randomize parameter
 - **K1:** edit all
