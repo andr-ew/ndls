@@ -31,12 +31,13 @@ endless and/or noodles
 **track view**
 - **E1:** page
 - **E2-E3:** track parameter
+  - **pages**
+    - **v:** vol, old
+    - **s:** start, length
+    - **f:** filter tone, filter amount
+    - **p:** pitch, pan
 - **K2-K3:** randomize parameter
-- **parameter pages**
-  - **v:** vol, old
-  - **s:** start, length
-  - **f:** filter tone, filter amount
-  - **p:** pitch, pan
+- **K1:** edit all
 
 ## notes
 
