@@ -47,7 +47,7 @@ scope
 - zone/track setting for every track parameter
 - zone scope UI components are just duplicated for each zone, so if pattern recorded, only one component in one zone will be mapped to the pattern
 
-idea: when output volume for track becomes 0, play is always off
+idea: when output volume for track becomes 0, play state is always off
 - this makes adding new sounds after a crossfade slightly easier
 
 ## future maybe
