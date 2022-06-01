@@ -1,8 +1,8 @@
 # ndls
 
-endless and/or noodles
-
 4-track asyncronous tape looper, delay, loop sampler. pattern memory & performace oriented. and it's ~ bendy ~
+
+spititual successor to anaphora.
 
 ## hardware
 
