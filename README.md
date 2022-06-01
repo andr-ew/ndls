@@ -6,13 +6,13 @@ spititual successor to anachronism.
 
 ## hardware
 
-**required** norns + one or more of the following:
-- midi footswitch
+**required**
+- norns
 - grid (128, 64, or midigrid)
 
-**encouraged**
+**also supported**
 - arc
-- midi cc controller
+- midi footswitch
 
 ## grid
 
