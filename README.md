@@ -2,7 +2,7 @@
 
 4-track asyncronous tape looper, delay, loop sampler. pattern memory & performace oriented. and it's ~ bendy ~
 
-spititual successor to anaphora.
+spititual successor to anachronism.
 
 ## hardware
 
