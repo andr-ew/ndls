@@ -40,8 +40,7 @@ endless and/or noodles
 
 ## notes
 
-arc assignable to first two pages of track parameters
-- we can add more later
+arc assignable to any of the "track focus" parameters
 
 scope
 - zone/track setting for every track parameter
