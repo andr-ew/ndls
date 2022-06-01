@@ -44,8 +44,17 @@ spititual successor to anachronism.
 arc assignable to any of the track view parameters
 
 scope
-- zone/track setting for every track parameter
-- zone scope UI components are just duplicated for each zone, so if pattern recorded, only one component in one zone will be mapped to the pattern
+- track
+  - values never reset, are saved across sessions in params
+- buffer
+  - value is unique per-buffer, per-track 
+  - values reset when entering a new buffer 
+    - when entering a blank buffer, volume resets to 1. when entering a recorded buffer, volume resets to 0.
+- zone
+  - value is unique per-zone, per-buffer, per-track
+  - values for all zones reset when entering a new buffer
+
+scoped UI components are just duplicated for each zone/buffer, so if a pattern is recorded, only one component scope will be mapped to the pattern
 
 idea: when output volume for track becomes 0, play state is always off
 - this makes adding new sounds after a crossfade slightly easier
