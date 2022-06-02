@@ -1,7 +1,36 @@
 local Components = {
     grid = {},
     arc = {},
+    norns = {},
 }
+
+function Components.norns.slider(...)
+    local x, y, width, height, value, min_value, max_value, markers, direction = ...
+
+    local slider = UI.Slider.new(...)
+
+    return function(props)
+        if nest.enc.has_input() then
+            local n, d = nest.enc.input_args()
+            
+            if n == props.n then
+                props.state[2](
+                    props.state[1] + (d * (props.sens or 0.01))
+                )
+
+                nest.screen.make_dirty()
+            end
+        elseif nest.screen.is_drawing() then
+            slider:set_value(props.state[1])
+            if props.markers then for id,position in pairs(props.markers) do
+                slider:set_marker_position(id, position)
+            end end
+            if props.active ~= nil then slider:set_active(props.active) end
+            
+            slider:redraw()
+        end
+    end
+end
 
 function Components.grid.view()
     local held = {}
@@ -55,7 +84,7 @@ function Components.grid.view()
         elseif nest.grid.is_drawing() then
             for i = 0,3 do for j = 0,3 do 
                 g:led(props.x + j, props.y + i, props.view[i + 1][j + 1] * props.lvl)
-            end end               
+            end end
         end
     end
 end

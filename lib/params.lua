@@ -39,7 +39,6 @@ params:add {
     controlspec = cs.def { min = -1, max = 1, default = 0.5 },
     action = function(v)
         sc.lvlmx.cf = v
-        print('crossfade', sc.lvlmx.cf)
         for i = 1, ndls.voices do sc.lvlmx:update(i) end
     end
 }
@@ -197,7 +196,7 @@ for i = 1, ndls.voices do
         id = 'return '..i,
         type = 'binary', behavior = 'toggle', default = 1,
         action = function(v) 
-            sc.sendmx[i].ret = v; sc.sendmx:update() 
+            sc.sendmx[i].ret = v; sc.sendmx:update()
 
             if v > 0 and params:get('send '..i) > 0 then
                 sc.sendmx[i].send = 0; sc.sendmx:update() 

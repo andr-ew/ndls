@@ -34,7 +34,7 @@ function App.grid(size)
     local function Voice(n)
         local top, bottom = n, n + ndls.voices
 
-        _phase = Components.grid.phase()
+        local _phase = Components.grid.phase()
         
         local _params = {}
         _params.rec = to.pattern(mpat, 'rec '..n, Grid.toggle, function()
@@ -99,14 +99,16 @@ function App.grid(size)
         end)
         _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
             return {
-                x = { 6, 15 }, y = top, filtersame = true,
-                state = { params:get('rate '..n) + 8 },
+                x = { 6, 13 }, y = top, filtersame = true,
+                state = { params:get('rate '..n) + 6 },
                 action = function(v, t)
                     sc.slew(n, t)
-                    params:set('rate '..n, v - 8)
+                    params:set('rate '..n, v - 6)
                 end,
             }
         end)
+
+        local _cf_assign = { Grid.toggle(), Grid.toggle() }
 
         return function()
             if sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded then
@@ -115,6 +117,29 @@ function App.grid(size)
                     phase = sc.phase[n].rel,
                 }
             end
+
+            _cf_assign[1]{
+                x = 14, y = top, lvl = shaded,
+                state = { params:get('crossfade assign '..n) == 2 and 1 or 0 },
+                action = function(v)
+                    if v == 1 then
+                        params:set('crossfade assign '..n, 2)
+                    elseif v == 0 then
+                        params:set('crossfade assign '..n, 1)
+                    end
+                end
+            }
+            _cf_assign[2]{
+                x = 15, y = top, lvl = shaded,
+                state = { params:get('crossfade assign '..n) == 3 and 1 or 0 },
+                action = function(v)
+                    if v == 1 then
+                        params:set('crossfade assign '..n, 3)
+                    elseif v == 0 then
+                        params:set('crossfade assign '..n, 1)
+                    end
+                end
+            }
 
             for _, _param in pairs(_params) do _param() end
         end
@@ -267,7 +292,20 @@ function App.arc(map)
 end
 
 function App.norns()
-    _alt = Key.momentary()
+    local _alt = Key.momentary()
+
+    local _crossfader
+    do
+        local x, y, width, height = 2, 2, 128 - 4, 3
+        local value = params:get('crossfade')
+        local min_value = params:lookup_param('crossfade').controlspec.minval
+        local max_value = params:lookup_param('crossfade').controlspec.maxval
+        local markers = { 0 }
+        local direction = 'right'
+        _crossfader = Components.norns.slider(
+            x, y, width, height, value, min_value, max_value, markers, direction
+        )
+    end
 
     return function()
         _alt{
@@ -279,6 +317,10 @@ function App.norns()
                     nest.arc.make_dirty()
                 end
             }
+        }
+        _crossfader{
+            n = 1,
+            state = of.param('crossfade')
         }
     end
 end
@@ -293,4 +335,4 @@ nest.connect_grid(_app.grid, grid.connect(), 60)
 nest.connect_arc(_app.arc, arc.connect(), 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
---nest.connect_screen(_app.norns)
+nest.connect_screen(_app.norns)

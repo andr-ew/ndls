@@ -14,6 +14,7 @@
 
 cs = require 'controlspec'
 pattern_time = require 'pattern_time'
+UI = require 'ui'
 
 nest = include 'lib/nest/core'
 Key, Enc = include 'lib/nest/norns'
@@ -52,6 +53,7 @@ function init()
         params:set('rev '..i, 0)
         params:set('crossfade assign '..i, i <3 and 2 or 3)
     end
+    params:set('crossfade', 0)
 
     params:bang()
 end
