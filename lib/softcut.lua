@@ -40,14 +40,20 @@ local sc = {
         end
     },
     lvlmx = {
-        { vol = 1, play = 0, recorded = 0, send = 1 },
+        { vol = 1, play = 0, recorded = 0, send = 1, cf_assign = 1, mix_vol = 1 },
+        cf = 0,
         update = function(s, n)
             local v = s[n].vol * s[n].play * s[n].recorded
-            softcut.level(n, v)
+            local fades = {
+                [0] = 1,
+                [1] = (s.cf > 0) and (1 - s.cf) or 1,
+                [2] = (s.cf < 0) and (1 + s.cf) or 1
+            }
+
+            softcut.level(n, v * fades[s[n].cf_assign] * s[n].mix_vol)
             sc.sendmx[n].vol = v; sc.sendmx:update(n)
         end
     },
-    --TODO: play / dub
     oldmx = {
         { old = 1, old2 = 1, rec = 0 },
         update = function(s, n)
@@ -122,7 +128,6 @@ sc.setup = function()
         softcut.recpre_slew_time(i, sc.lvl_slew)
         softcut.rate(i, 1)
         softcut.post_filter_dry(i, 0)
-        --TODO try pre_filter_fc_mod 0
         softcut.pre_filter_fc_mod(i, 0)
 
         --softcut.level_input_cut(1, i, 1)
@@ -205,7 +210,6 @@ end
 sc.get_zoom = function(n) return sc.reg.zoomed[n][ndls.zone[n]] end
 
 
---TODO: play / dub
 sc.punch_in = {
     --indexed by zone
     { recording = false, recorded = false, play = 0, t = 0 },

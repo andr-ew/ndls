@@ -50,6 +50,7 @@ function init()
         params:set('play '..i, 0)
         params:set('rate '..i, 0)
         params:set('rev '..i, 0)
+        params:set('crossfade assign '..i, i <3 and 2 or 3)
     end
 
     params:bang()
