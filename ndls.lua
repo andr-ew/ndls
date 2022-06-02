@@ -7,7 +7,7 @@
 --
 -- endless and/or noodles
 --
--- version 0.1.0-schubas @andrew
+-- version 0.1-comfort-station @andrew
 --
 
 --external libs

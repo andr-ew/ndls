@@ -14,22 +14,28 @@ for i = 1,8 do
     mpat[i] = multipattern.new(pattern[i])
 end
 
-local view = {
-    { 1, 0, 0, 0 },
-    { 1, 0, 0, 0 },
-    { 1, 0, 0, 0 },
-    { 1, 0, 0, 0 },
-}
+local view_matrix = false
+local view = {}
 local vertical = true
 local alt = false
 
 local App = {}
 
-function App.grid(size)
+function App.grid(wide, offset)
     local varibright = true
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
+
+    --TODO: only enable when arc is connected AND wide
+    view_matrix = wide
+
+    view = view_matrix and {
+        { 1, 0, 0, 0 },
+        { 1, 0, 0, 0 },
+        { 1, 0, 0, 0 },
+        { 1, 0, 0, 0 },
+    } or { 0, 0, 0, 0 }
 
     local function Voice(n)
         local top, bottom = n, n + ndls.voices
@@ -59,37 +65,32 @@ function App.grid(size)
                 },
             }
         end)
-        _params.zoom = to.pattern(mpat, 'zoom '..n, Grid.toggle, function() 
-            return {
-                x = 3, y = bottom, edge = 'falling',
-                state = { sc.get_zoom(n) and 1 or 0 },
-                action = function(v, t) sc.zoom(n, v > 0, t) end
-            }
-        end)
         _params.zone = to.pattern(mpat, 'zone '..n, Grid.number, function()
             return {
-                x = { 4, 13 }, y = bottom,
+                x = { 3, 6 }, y = bottom,
                 state = {
                     ndls.zone[n],
                     function(v) ndls.zone:set(v, n) end
                 }
             }
         end)
-        _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
-            return {
-                x = 14, y = bottom, lvl = shaded,
-                state = of.param('send '..n),
-            }
-        end)
-        _params.ret = to.pattern(mpat, 'return '..n, Grid.toggle, function()
-            return {
-                x = 15, y = bottom,
-                state = of.param('return '..n),
-            }
-        end)
+        if wide then
+            _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
+                return {
+                    x = 14, y = bottom, lvl = shaded,
+                    state = of.param('send '..n),
+                }
+            end)
+            _params.ret = to.pattern(mpat, 'return '..n, Grid.toggle, function()
+                return {
+                    x = 15, y = bottom, lvl = shaded,
+                    state = of.param('return '..n),
+                }
+            end)
+        end
         _params.rev = to.pattern(mpat, 'rev '..n, Grid.toggle, function()
             return {
-                x = 5, y = top, edge = 'falling', lvl = shaded,
+                x = wide and 5 or 2, y = top, edge = 'falling', lvl = shaded,
                 state = { params:get('rev '..n) },
                 action = function(v, t)
                     sc.slew(n, (t < 0.2) and 0.025 or t)
@@ -97,29 +98,26 @@ function App.grid(size)
                 end,
             }
         end)
-        _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
-            return {
-                x = { 6, 13 }, y = top, filtersame = true,
-                state = { params:get('rate '..n) + 6 },
-                action = function(v, t)
-                    sc.slew(n, t)
-                    params:set('rate '..n, v - 6)
-                end,
-            }
-        end)
+        do
+            local off = wide and 6 or 4
+            _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
+                return {
+                    x = wide and { 6, 13 } or { 3, 8 }, y = top, filtersame = true,
+                    state = { params:get('rate '..n) + off },
+                    action = function(v, t)
+                        sc.slew(n, t)
+                        params:set('rate '..n, v - off)
+                    end,
+                }
+            end)
+        end
 
         local _cf_assign = { Grid.toggle(), Grid.toggle() }
 
         return function()
-            if sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded then
-                _phase{ 
-                    x = { 1, 16 }, y = top,
-                    phase = sc.phase[n].rel,
-                }
-            end
-
             _cf_assign[1]{
-                x = 14, y = top, lvl = shaded,
+                x = wide and 14 or 7, y = wide and top or bottom, 
+                lvl = shaded,
                 state = { params:get('crossfade assign '..n) == 2 and 1 or 0 },
                 action = function(v)
                     if v == 1 then
@@ -130,7 +128,8 @@ function App.grid(size)
                 end
             }
             _cf_assign[2]{
-                x = 15, y = top, lvl = shaded,
+                x = wide and 15 or 8, y = wide and top or bottom, 
+                lvl = shaded,
                 state = { params:get('crossfade assign '..n) == 3 and 1 or 0 },
                 action = function(v)
                     if v == 1 then
@@ -142,10 +141,18 @@ function App.grid(size)
             }
 
             for _, _param in pairs(_params) do _param() end
+            
+            if sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded then
+                _phase{ 
+                    x = wide and { 1, 16 } or { 1, 8 }, y = top,
+                    phase = sc.phase[n].rel,
+                }
+            end
+
         end
     end
 
-    local _view = Components.grid.view()
+    local _view = wide and Components.grid.view() or Grid.toggle()
     
     _voices = {}
     for i = 1, ndls.voices do
@@ -155,12 +162,31 @@ function App.grid(size)
     local _patrec = PatternRecorder()
 
     return function()
-        _view{
-            x = 1, y = 1, lvl = 15,
-            view = view,
-            vertical = { vertical, function(v) vertical = v end },
-            action = nest.arc.make_dirty
-        }
+        if wide then
+            _view{
+                x = 1, y = 1, lvl = 15,
+                view = view,
+                vertical = { vertical, function(v) vertical = v end },
+                action = nest.arc.make_dirty
+            }
+        else
+            _view{
+                x = 1, y = { 1, 4 }, lvl = 15, count = { 0, 1 },
+                state = { 
+                    view, 
+                    function(v) 
+                        view = v 
+                        
+                        vertical = true
+                        for y = 1,ndls.voices do
+                            if view[y] > 0 then
+                                vertical = false
+                            end
+                        end
+                    end 
+                }
+            }
+        end
         
         for i, _voice in ipairs(_voices) do
             _voice{}
@@ -283,11 +309,29 @@ function App.arc(map)
     end
 
     return function()
-        for y = 1,4 do for x = 1,4 do
-            if view[y][x] > 0 then
-                _params[y][x]()
+        if view_matrix then
+            for y = 1,4 do for x = 1,4 do
+                if view[y][x] > 0 then
+                    _params[y][x]()
+                end
+            end end
+        else
+            if not vertical then
+                for i = 1,ndls.voices do
+                    local y = ndls.voices - i + 1
+                    if view[i] > 0 then
+                        for x = 1,4 do
+                            _params[y][x]()
+                        end
+                        break
+                    end
+                end
+            else
+                for y = 1,4 do
+                    _params[y][1]()
+                end
             end
-        end end
+        end
     end
 end
 
@@ -326,7 +370,7 @@ function App.norns()
 end
 
 local _app = {
-    grid = App.grid(),
+    grid = App.grid(false, 8),
     arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
     norns = App.norns(),
 }

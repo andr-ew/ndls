@@ -96,7 +96,7 @@ function Components.grid.phase()
         if nest.grid.is_drawing() then
             g:led(
                 props.x[1] 
-                    + util.round(props.phase * (props.x[2] - props.x[1])), 
+                    + math.floor(props.phase * (props.x[2] - props.x[1] + 1)), 
                 props.y, 
                 8
             )
