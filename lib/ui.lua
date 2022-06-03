@@ -148,18 +148,22 @@ function App.grid(wide, offset)
                     phase = sc.phase[n].rel,
                 }
             end
-
         end
     end
 
     local _view = wide and Components.grid.view() or Grid.toggle()
     
-    _voices = {}
+    local _voices = {}
     for i = 1, ndls.voices do
         _voices[i] = Voice(i)
     end
 
     local _patrec = PatternRecorder()
+
+    local function view_refresh()
+         nest.arc.make_dirty()
+         nest.screen.make_dirty()
+    end
 
     return function()
         if wide then
@@ -167,7 +171,7 @@ function App.grid(wide, offset)
                 x = 1, y = 1, lvl = 15,
                 view = view,
                 vertical = { vertical, function(v) vertical = v end },
-                action = nest.arc.make_dirty
+                action = view_refresh
             }
         else
             _view{
@@ -183,6 +187,8 @@ function App.grid(wide, offset)
                                 vertical = false
                             end
                         end
+
+                        view_refresh()
                     end 
                 }
             }
@@ -335,12 +341,46 @@ function App.arc(map)
     end
 end
 
+local function track_focus()
+    if not vertical then
+        for i = 1, ndls.voices do
+            if (view_matrix and view[i][1] or view[i]) > 0 then 
+                return ndls.voices - i + 1 
+            end
+        end
+    end
+end
+
 function App.norns()
+    local x,y = {}, {}
+
+    local mar = { left = 2, top = 4, right = 2, bottom = 0 }
+    local w = 128 - mar.left - mar.right
+    local h = 64 - mar.top - mar.bottom
+
+    x[1] = mar.left
+    x[2] = 128/2
+    y[1] = mar.top
+    y[2] = nil
+    y[3] = mar.top + h*(5.5/8)
+    y[4] = mar.top + h*(7/8)
+
+    local e = {
+        { x = x[1], y = y[1] },
+        { x = x[1], y = y[3] },
+        { x = x[2], y = y[3] },
+    }
+    local k = {
+        {  },
+        { x = x[1], y = y[4] },
+        { x = x[2], y = y[4] },
+    }
+
     local _alt = Key.momentary()
 
     local _crossfader
     do
-        local x, y, width, height = 2, 2, 128 - 4, 3
+        local x, y, width, height = x[1], y[1], 128 - mar.left - mar.right, 3
         local value = params:get('crossfade')
         local min_value = params:lookup_param('crossfade').controlspec.minval
         local max_value = params:lookup_param('crossfade').controlspec.maxval
@@ -349,6 +389,36 @@ function App.norns()
         _crossfader = Components.norns.slider(
             x, y, width, height, value, min_value, max_value, markers, direction
         )
+    end
+    
+    local function Voice(n)
+        local _params = {}
+
+        _params.old = to.pattern(mpat, 'old '..n, Text.enc.control, function()
+            return {
+                n = 2, x = e[2].x, y = e[2].y,
+                label = 'old '..n, 
+                state = of.param('old '..n),
+                controlspec = of.controlspec('old '..n),
+            }
+        end)
+        _params.pan = to.pattern(mpat, 'pan '..n, Text.enc.control, function()
+            return {
+                n = 3, x = e[3].x, y = e[3].y,
+                label = 'pan '..n, 
+                state = of.param('pan '..n),
+                controlspec = of.controlspec('pan '..n),
+            }
+        end)
+
+        return function()
+            for _, _param in pairs(_params) do _param() end
+        end
+    end
+    
+    local _voices = {}
+    for i = 1, ndls.voices do
+        _voices[i] = Voice(i)
     end
 
     return function()
@@ -366,11 +436,19 @@ function App.norns()
             n = 1,
             state = of.param('crossfade')
         }
+        
+        local focus = track_focus()
+
+        if focus then
+            _voices[focus]()
+        else
+            --TODO: crossfader goes here + mix params
+        end
     end
 end
 
 local _app = {
-    grid = App.grid(false, 8),
+    grid = App.grid(false, 0),
     arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
     norns = App.norns(),
 }
