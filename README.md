@@ -75,6 +75,10 @@ crossfader assign + send/return could be re-assignable slots ?
 - I could also see some shortcuts to parameter randomization also being really useful here (start + len, filter, vol + pan)
 - leaving them blank could extend existing UI (rate + zones)
 
+slew options
+- fixed slew (used for switching between zones)
+- disable glide (use the fixed slew on the rate component)
+
 ## future maybe
 
 sample loading
