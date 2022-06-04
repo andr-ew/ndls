@@ -44,16 +44,25 @@ spititual successor to anachronism.
 
 arc assignable to any of the track view parameters
 
+track parameter randomization
+  - play with different random distributions (gaussian is probably fine) for certain parameters (/all parameters?)
+  - provide some options for tuning averages & deviations (particularly for length)
+
 scope
 - track
   - values never reset, are saved across sessions in params
+  - maybe disallow pattern recording ?
 - buffer
   - value is unique per-buffer, per-track 
   - values reset when entering a new buffer 
     - when entering a blank buffer, volume resets to 1. when entering a recorded buffer, volume resets to 0.
+  - patterns are cleared out on reset
 - zone
   - value is unique per-zone, per-buffer, per-track
   - values for all zones reset when entering a new buffer
+- random zone
+  - zone, but values are automatically randomized upon filling a new buffer in all zones but the first zone
+  - start & length are fixed in this zone
 
 scoped UI components are just duplicated for each zone/buffer, so if a pattern is recorded, only one component scope will be mapped to the pattern
 
