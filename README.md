@@ -69,6 +69,8 @@ scoped UI components are just duplicated for each zone/buffer, so if a pattern i
 idea: when output volume for track becomes 0, play state is always off
 - this makes adding new sounds after a crossfade slightly easier
 
+still not really sure whether zone slices within a buffer should be shared across tracks or unique
+
 ## future maybe
 
 pattern + audio save/recall
