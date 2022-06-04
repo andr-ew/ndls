@@ -2,7 +2,7 @@ local ndls = {}
 
 --TODO 6 voices for 256 grid (?)
 ndls.voices = 4
-ndls.zones = 10 --zone count
+ndls.zones = 4 --zone count
 ndls._phase = {}
 
 --TODO: store this data in sc only. sc is really all our global data so there's no need to have this file at all.

@@ -447,8 +447,12 @@ function App.norns()
     end
 end
 
+local g64 = function()
+    return g and g.device and g.device.cols < 16 or false
+end
+
 local _app = {
-    grid = App.grid(false, 0),
+    grid = App.grid(not g64(), 0),
     arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
     norns = App.norns(),
 }
