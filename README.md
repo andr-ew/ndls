@@ -8,7 +8,7 @@ spiritual successor to anachronism.
 
 **required**
 - norns
-- grid (128, 64, or midigrid)
+- grid (128, 64, 256, or midigrid)
 
 **also supported**
 - arc
