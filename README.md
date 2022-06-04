@@ -71,6 +71,10 @@ idea: when output volume for track becomes 0, play state is always off
 
 still not really sure whether zone slices within a buffer should be shared across tracks or unique
 
+crossfader assign + send/return could be re-assignable slots ?
+- I could also see some shortcuts to parameter randomization being really useful here (start + len, filter)
+- leaving them blank could extend existing UI (rate + zones)
+
 ## future maybe
 
 pattern + audio save/recall
