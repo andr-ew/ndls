@@ -77,6 +77,8 @@ crossfader assign + send/return could be re-assignable slots ?
 
 ## future maybe
 
+sample loading
+
 pattern + audio save/recall
 
 rate intervals (toggle per each)
