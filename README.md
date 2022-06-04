@@ -1,6 +1,6 @@
 # ndls
 
-4-track asyncronous tape looper, delay, loop sampler. pattern memory & performace oriented. and it's ~ bendy ~
+4-track asyncronous tape looper, delay, loop splicer. pattern memory, performace oriented, + configurable. and it's ~ bendy ~
 
 spiritual successor to anachronism.
 
