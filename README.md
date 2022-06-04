@@ -25,6 +25,7 @@ spiritual successor to anachronism.
 - **E2-E3:** mix parameter
   - level
   - pan
+  - crossfader assign
 - **K2:** track focus 1+2 / 3+4
 - **K3:** parameter select
 
