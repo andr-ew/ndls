@@ -34,11 +34,15 @@
 - **E2-E3:** track parameter
   - **pages**
     - **v:** vol, old
+      - **K2-K3:** randomize
     - **s:** start, length
-    - **f1:** filter freq, filter amount
-    - **f2:** filter response, filter amount
+      - **K2-K3:** randomize 
+    - **f:** cutoff, resonance
+      - **K2:** randomize cutoff
+      - **K3:** filter type
     - **p:** pitch, pan
-- **K2-K3:** randomize parameter
+      - **K2:** randomize octave
+      - **K3:** randomize pan
 - **K1:** edit all
 
 ## notes
