@@ -113,6 +113,16 @@ reg.rec = cartographer.subloop(reg.blank)
 reg.play = cartographer.subloop(reg.rec)
 reg.zoom = cartographer.subloop(reg.rec)
 
+
+for z = 1, zones do
+    --adjust punch_in time quantum based on rate
+    reg.rec[z].rate_callback = function()
+        local enoz = tab.invert(sc.reg.zone)
+        local vc = enoz[z]
+        return vc and sc.ratemx[vc].rate or 1
+    end
+end
+
 sc.lvl_slew = 0.1
 sc.setup = function()
     audio.level_cut(1)
@@ -136,12 +146,6 @@ sc.setup = function()
         sc.slew(i, 0.2)
 
         softcut.phase_quant(i, 1/100)
-    end
-    for i = 1,zones do
-        --adjust punch_in time quantum based on rate
-        reg.rec[i].rate_callback = function()
-            return sc.ratemx[i].rate
-        end
     end
 
     -- softcut.event_position(function(i, ph)
@@ -210,6 +214,7 @@ end
 sc.get_zoom = function(n) return sc.reg.zoomed[n][ndls.zone[n]] end
 
 
+--[[
 sc.punch_in = {
     --indexed by zone
     { recording = false, recorded = false, play = 0, t = 0 },
@@ -265,7 +270,6 @@ sc.punch_in = {
         reg.play[buf]:set_length(0)
         reg.zoom[buf]:set_length(0)
     end,
-    --[[
     save = function(s)
         local data = {}
         for i,v in ipairs(s) do data[i] = s[i].manual end
@@ -285,7 +289,124 @@ sc.punch_in = {
     end,
     copy = function(s, src, dst)
     end
-    --]]
+}
+--]]
+
+sc.punch_in = {
+    min_size = 0.5,
+    { 
+        recording = false, recorded = false, manual = false, play = 0, t = 0, 
+        --tap_blink = 0, tap_clock = nil, tap_buf = {} 
+    },
+    update_play = function(s, z)
+        for n,v in ipairs(sc.reg.zone) do if v == z then
+            sc.lvlmx[n].recorded = s[z].play
+            sc.lvlmx:update(n)
+        end end
+    end,
+    set = function(s, z, v)
+        local buf = z
+
+        if not s[buf].recorded then
+            if v == 1 then
+                reg.rec[buf]:punch_in()
+
+                s[buf].manual = false
+                s[buf].recording = true
+
+            elseif s[buf].recording then
+                s[buf].play = 1; s:update_play(buf)
+            
+                reg.rec[buf]:punch_out()
+                --TODO: if len < min_size then len = min_size
+
+                s[buf].recorded = true
+                s[buf].recording = false
+            end
+        end
+    end,
+    get = function(s, z)
+        return s[z].recording and 1 or 0
+    end,
+    --NOTE: set these when calling manual:
+    -- params:set('rec '..n, 1)
+    -- params:set('play '..n, 1)
+    manual = function(s, z)
+        local buf = z
+
+        if not s[buf].recorded and not s[buf].recording then
+            reg.rec[buf]:set_length(s.min_size)
+            
+            s[buf].manual = true
+            s[buf].recorded = true
+            s[buf].recording = false
+        end
+    end,
+    -- untap = function(s, pair)
+    --     local buf = sc.buf[pair]
+
+    --     s[buf].tap_buf = {}
+    --     if s[buf].tap_clock then clock.cancel(s[buf].tap_clock) end
+    --     s[buf].tap_clock = nil
+    --     s[buf].tap_blink = 0
+    -- end,
+    -- tap = function(s, pair, t)
+    --     local buf = sc.buf[pair]
+
+    --     if t < 1 and t > 0 then
+    --         table.insert(s[buf].tap_buf, t)
+    --         if #s[buf].tap_buf > 2 then table.remove(s[buf].tap_buf, 1) end
+    --         local avg = 0
+    --         for i,v in ipairs(s[buf].tap_buf) do avg = avg + v end
+    --         avg = avg / #s[buf].tap_buf
+
+    --         reg.play:set_length(pair*2, avg)
+
+    --         if s[buf].tap_clock then clock.cancel(s[buf].tap_clock) end
+    --         s[buf].tap_clock = clock.run(function() 
+    --             while true do
+    --                 s[buf].tap_blink = 1
+    --                 clock.sleep(avg*0.5)
+    --                 s[buf].tap_blink = 0
+    --                 clock.sleep(avg*0.5)
+    --             end
+    --         end)
+    --     else s:untap(pair) end
+    -- end,
+    clear = function(s, z)
+        local buf = z
+
+        s[buf].play = 0; s:update_play(buf)
+        reg.blank[buf]:clear()
+        reg.rec[buf]:position(0)
+        reg.rec[buf]:punch_out()
+
+
+        s[buf].recorded = false
+        s[buf].recording = false
+        s[buf].manual = false
+        --s:untap(pair)
+
+        reg.rec[buf]:set_length(1, 'fraction')
+        reg.play[buf]:set_length(0)
+        reg.zoom[buf]:set_length(0)
+    end,
+    --save = function(s)
+    --    local data = {}
+    --    for i,v in ipairs(s) do data[i] = s[i].manual end
+    --    return data
+    --end,
+    --load = function(s, data)
+    --    for i,v in ipairs(data) do
+    --        s[i].manual = v
+    --        if v==true then 
+    --            s:manual(i)
+    --        else 
+    --            --s:clear(i) 
+    --            if sc.buf[i]==i then params:delta('clear '..i) end
+    --        end
+    --    end
+    --end
 }
 
 --punch_in shallow copy first index for each zone

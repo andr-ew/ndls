@@ -112,7 +112,7 @@ for i = 1, ndls.voices do
 
             local z = ndls.zone[n]
             if not sc.punch_in[z].recorded then
-                sc.punch_in:set(n, z, v)
+                sc.punch_in:set(z, v)
 
                 if v==0 and sc.punch_in[z].recorded then 
                     params:set('play '..i, 1) 
@@ -120,7 +120,7 @@ for i = 1, ndls.voices do
             elseif sc.lvlmx[n].play == 0 and v == 1 then
                 --TODO reset params
                 sc.punch_in:clear(z)
-                sc.punch_in:set(n, z, 1)
+                sc.punch_in:set(z, 1)
             end
 
             nest.grid.make_dirty()
@@ -134,7 +134,7 @@ for i = 1, ndls.voices do
 
             local z = ndls.zone[n]
             if v==1 and sc.punch_in[z].recording then
-                sc.punch_in:set(n, z, 0)
+                sc.punch_in:set(z, 0)
             end
 
             sc.lvlmx[n].play = v; sc.lvlmx:update(n)
