@@ -7,7 +7,7 @@
 --
 -- endless and/or noodles
 --
--- version 0.1-comfort-station @andrew
+-- version 1.0-beta @andrew
 --
 
 --external libs
@@ -29,13 +29,71 @@ PatternRecorder = include 'lib/nest/examples/grid/pattern_recorder'
 
 cartographer, Slice = include 'lib/cartographer/cartographer'
 
+--set up pattern recorders
+
+function pattern_time:resume()
+    if self.count > 0 then
+        self.prev_time = util.time()
+        self.process(self.event[self.step])
+        self.play = 1
+        self.metro.time = self.time[self.step] * self.time_factor
+        self.metro:start()
+    end
+end
+
+pattern, mpat = {}, {}
+for i = 1,8 do
+    pattern[i] = pattern_time.new() 
+    mpat[i] = multipattern.new(pattern[i])
+end
+
 --internal files
 
 ndls = include 'ndls/lib/globals'               --shared values & functions
 sc, reg = include 'ndls/lib/softcut'            --softcut utilities
-Components = include 'ndls/lib/components'      --UI components
 include 'ndls/lib/params'                       --create params
-include 'ndls/lib/ui'                           --grid, arc, & norns UI
+Components = include 'ndls/lib/components'      --UI components
+
+--UI globals
+view_matrix = false
+view = {}
+vertical = true
+alt = false
+
+function track_focus()
+    if not vertical then
+        for i = 1, ndls.voices do
+            if (view_matrix and view[i][1] or view[i]) > 0 then 
+                --return ndls.voices - i + 1 
+                return i
+            end
+        end
+    end
+end
+
+
+function g64()
+    return g and g.device and g.device.cols < 16 or false
+end
+
+App = {}
+App.grid = include 'ndls/lib/ui/grid'           --grid UI
+App.arc = include 'ndls/lib/ui/arc'             --arc UI
+App.norns = include 'ndls/lib/ui/norns'         --norns UI
+
+--set up nest v2 UI
+
+local _app = {
+    grid = App.grid(not g64(), 0),
+    arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
+    norns = App.norns(),
+}
+
+nest.connect_grid(_app.grid, grid.connect(), 60)
+nest.connect_arc(_app.arc, arc.connect(), 90)
+nest.connect_enc(_app.norns)
+nest.connect_key(_app.norns)
+nest.connect_screen(_app.norns)
 
 function init()
     sc.setup()

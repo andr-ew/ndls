@@ -21,16 +21,6 @@ params:add {
         for i = 1,ndls.voices do sc.inmx:update(i) end
     end
 }
-params:add {
-    id = 'q',
-    type = 'control', controlspec = cs.def { default = 0.4 },
-    action = function(v)
-        for i = 1, ndls.voices do
-            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
-            nest.screen.make_dirty(); nest.arc.make_dirty()
-        end
-    end
-}
 
 params:add_separator('mixer')
 params:add {
@@ -88,6 +78,14 @@ for i = 1, ndls.voices do
         type = 'control', controlspec = cs.def { default = 1, quantum = 1/100/2, step = 0 },
         action = function(v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end
+    }
+    params:add {
+        id = 'q '..i,
+        type = 'control', controlspec = cs.def { default = 0.4 },
+        action = function(v)
+            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
