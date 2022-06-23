@@ -22,6 +22,8 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 the grid is split in two halves with two sets of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
+read [here]() for alternate grid layouts (64, midigrid, 256)
+
 #### bottom half
 
 - **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
