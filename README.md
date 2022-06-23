@@ -16,7 +16,7 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 ## documentation
 
-### grid
+### grid + arc
 
 ![documentation image](lib/doc/ndls_128.png)
 
@@ -30,7 +30,7 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
   - idea: send a loop track into another track set up like a delay, for echoed loops.
 
 ### norns
-- **E1:** page
+- **E1:** page focus
 - **pages**
   - **v:** 
     - **E2:** vol, **E3:** old
