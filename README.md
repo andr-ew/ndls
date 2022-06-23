@@ -46,9 +46,9 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
       - delay length is set by time between key presses, as with looping
       - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
+- **slice:** not done yet !!
 - **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
   - idea: send a loop track into another track set up like a delay, for echoed loops.
-- **slice:** not done yet !!
 - **screen focus:** select which track controls to edit on the norns screen
 - **arc focus:** select which track controls to edit on arc. 
   - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus component to flip orientation, editing four of the same control in different tracks
