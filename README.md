@@ -2,7 +2,7 @@
 
 4-track asyncronous tape looper, delay, loop splicer. pattern memory, performace oriented + configurable. and it's ~ bendy ~
 
-(spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim))
+spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim)
 
 ## hardware
 
