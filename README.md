@@ -12,7 +12,7 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 **also supported**
 - arc
-- midi footswitch
+- midi mapping
 
 ## install
 
