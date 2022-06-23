@@ -52,7 +52,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
       - delay length is set by time between key presses, as with looping
       - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
-- **slice:** not done yet !!
+- **slice:** (not done yet)
 - **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
   - idea: send a loop track into another track set up like a delay, for echoed loops.
 
@@ -84,15 +84,15 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - **pages**
   - **v:** 
     - **E2:** vol, **E3:** old
-    - **K2-K3:** randomize
+    - **K2-K3:** randomize (not done yet)
   - **s:** 
     - **E2:** slice start, **E3:** slice length
-    - **K2-K3:** randomize 
+    - **K2-K3:** randomize (not done yet)
   - **f:** 
     - **E2:** filter cutoff, **E3:** filter resonance
-    - **K2:** randomize cutoff, **K3:** filter type
+    - **K2:** randomize cutoff, **K3:** filter type (not done yet)
   - **p:** 
     - **E2:** pan, **E3:** pitch bend
-    - **K2:** randomize octave, **K3:** randomize pan
+    - **K2:** randomize octave, **K3:** randomize pan (not done yet)
 
 
