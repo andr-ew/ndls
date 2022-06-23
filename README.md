@@ -20,6 +20,10 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 ![documentation image](lib/doc/ndls_128.png)
 
+the grid is split in two halves with two sets of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
+
+#### bottom half
+
 - **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
   - record a new loop in a blank buffer:
     - 1 - toggle the **rec** key _on_
@@ -49,6 +53,9 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 - **slice:** not done yet !!
 - **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
   - idea: send a loop track into another track set up like a delay, for echoed loops.
+
+#### top half
+  
 - **screen focus:** select which track controls to edit on the norns screen
 - **arc focus:** select which track controls to edit on arc. 
   - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus component to flip orientation, editing four of the same control in different tracks
