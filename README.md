@@ -24,7 +24,7 @@ in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
 ![documentation image](lib/doc/ndls_128.png)
 
-the grid is split in two halves with two sets of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
+the grid is split in two halves with two blocks of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
