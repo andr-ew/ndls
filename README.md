@@ -20,7 +20,7 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 ![documentation image](lib/doc/ndls_128.png)
 
-- **rec:** press the rec key to create a new loop, then press it again to stop recording & begin playback. pressing rec while a loop is playing engages overdub. the **old** control sets the overdub level.
+- **rec:** press the rec key to create a new loop, then press it again to stop recording & begin playback. pressing rec while a loop is playing engages overdub. the **old** control sets the volume of old material.
 - **play:** play toggles track playback. to clear a loop, just toggle playback off, then record a new loop with the **rec** key as before.
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
 - **screen focus:** select which track controls to edit on the norns screen
