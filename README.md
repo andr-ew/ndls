@@ -53,7 +53,7 @@ track parameter randomization
   - play with different random distributions (gaussian is probably fine) for certain parameters (/all parameters?)
   - provide some options for tuning averages & deviations (particularly for length)
 
-scope
+control scopes
 - track
   - values never reset, are saved across sessions in params
   - maybe disallow pattern recording ?
@@ -71,7 +71,7 @@ scope
 
 scoped UI components are just duplicated for each zone/buffer, so if a pattern is recorded, only one component scope will be mapped to the pattern
 
-scoped param object
+control object
 - only creates a real param for the track scope, which will be saved in the pset
 - for all other scopes, just store intentially volitile internal data for every buffer/zone
 
