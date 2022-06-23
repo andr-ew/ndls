@@ -1,6 +1,6 @@
 # alternate grid sizes
 
-## 64 grid (and arc 2)
+## 64 grid / midigrid (and arc 2)
 
 ![documentation image](ndls_64.png)
 
