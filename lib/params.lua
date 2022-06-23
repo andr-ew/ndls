@@ -5,7 +5,7 @@ params:add {
     id = 'spread',
     type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0.75 },
     action = function(v)
-        for i = 1, ndls.voices do
+        for i = 1, voices do
             local scl = ({ -1, 1, -0.5, 0.5 })[i]
             sc.panmx[i].pan = v * scl * 2; sc.panmx:update(i)
         end
@@ -18,7 +18,7 @@ params:add {
     type = 'option', id = 'input routing', options = ir_op,
     action = function(v)
         sc.inmx.route = ir_op[v]
-        for i = 1,ndls.voices do sc.inmx:update(i) end
+        for i = 1,voices do sc.inmx:update(i) end
     end
 }
 
@@ -30,12 +30,12 @@ params:add {
     controlspec = cs.def { min = -1, max = 1, default = 0.5 },
     action = function(v)
         sc.lvlmx.cf = v
-        for i = 1, ndls.voices do sc.lvlmx:update(i) end
+        for i = 1, voices do sc.lvlmx:update(i) end
     end
 }
 --]]
 
-for i = 1, ndls.voices do
+for i = 1, voices do
     params:add_separator('voice '..i)
     params:add {
         id = 'vol '..i,
@@ -61,7 +61,7 @@ for i = 1, ndls.voices do
         id = 'old '..i,
         type = 'control', controlspec = cs.def { default = 0.8, max = 1 },
         action = function(v)
-            --for i = 1, ndls.voices do
+            --for i = 1, voices do
                 sc.oldmx[i].old = v; sc.oldmx:update(i)
             --end
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -110,7 +110,7 @@ for i = 1, ndls.voices do
 
             sc.oldmx[n].rec = v; sc.oldmx:update(n)
 
-            local z = ndls.zone[n]
+            local z = sc.buffer[n]
             if not sc.punch_in[z].recorded then
                 sc.punch_in:set(z, v)
 
@@ -133,7 +133,7 @@ for i = 1, ndls.voices do
         action = function(v)
             local n = i
 
-            local z = ndls.zone[n]
+            local z = sc.buffer[n]
             if v==1 and sc.punch_in[z].recording then
                 sc.punch_in:set(z, 0)
             end
@@ -150,7 +150,7 @@ for i = 1, ndls.voices do
         type = 'binary',
         behavior = 'trigger',
         action = function()
-            local z = ndls.zone[n]
+            local z = zone[n]
             sc.punch_in:clear(z)
             
             params:set('rec '..i, 0)
@@ -223,7 +223,7 @@ params:add {
     id = 'alias',
     type = 'binary', behavior = 'toggle', default = 0,
     action = function(v)
-        for i = 1, ndls.voices do
+        for i = 1, voices do
             sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
         end
     end

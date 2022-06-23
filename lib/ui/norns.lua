@@ -77,7 +77,7 @@ local function App()
             _len_view = Text.enc.number()
 
             return function()
-                if sc.punch_in[ndls.zone[args.voice]].recorded then
+                if sc.punch_in[sc.buffer[args.voice]].recorded then
                     _st_view{
                         n = 2, x = e[2].x, y = e[2].y,
                         label = 'st', 
@@ -121,8 +121,8 @@ local function App()
         --p
         do
             local _pg = _pages[4]
-            _pg.bnd = Ctl{ id = 'bnd', voice = n, n = 2 }
-            _pg.pan = Ctl{ id = 'pan', voice = n, n = 3 }
+            _pg.pan = Ctl{ id = 'pan', voice = n, n = 2 }
+            _pg.bnd = Ctl{ id = 'bnd', voice = n, n = 3 }
         end
 
         return function(props)
@@ -131,7 +131,7 @@ local function App()
     end
     
     local _voices = {}
-    for i = 1, ndls.voices do
+    for i = 1, voices do
         _voices[i] = Voice{ n = i }
     end
 

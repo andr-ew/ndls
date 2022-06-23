@@ -29,7 +29,7 @@ PatternRecorder = include 'lib/nest/examples/grid/pattern_recorder'
 
 cartographer, Slice = include 'lib/cartographer/cartographer'
 
---set up pattern recorders
+--globals
 
 function pattern_time:resume()
     if self.count > 0 then
@@ -47,20 +47,17 @@ for i = 1,8 do
     mpat[i] = multipattern.new(pattern[i])
 end
 
---internal files
-
-ndls = include 'ndls/lib/globals'               --shared values & functions
-sc, reg = include 'ndls/lib/softcut'            --softcut utilities
-include 'ndls/lib/params'                       --create params
-Components = include 'ndls/lib/components'      --UI components
-
---UI globals
+voices = 4
+buffers = 4
 
 view_matrix = false
 view = {}
 vertical = true
 alt = false
 norns_view = 1
+
+local g = grid.connect()
+local a = arc.connect()
 
 function g64()
     return g and g.device and g.device.cols < 16 or false
@@ -70,31 +67,31 @@ local greg = function()
     return reg.play
 end
 
-local set_start_zone = {}
-for i = 1, ndls.zones do
-    set_start_zone[i] = multipattern.wrap_set(mpat, 'start '..i, function(v) 
+local set_start_scoped = {}
+for i = 1, buffers do
+    set_start_scoped[i] = multipattern.wrap_set(mpat, 'start '..i, function(v) 
         greg()[i]:set_start(v, 'fraction')
         nest.screen.make_dirty(); nest.arc.make_dirty()
     end)
 end
-local set_end_zone = {}
-for i = 1, ndls.zones do
-    set_end_zone[i] = multipattern.wrap_set(mpat, 'end '..i, function(v) 
+local set_end_scoped = {}
+for i = 1, buffers do
+    set_end_scoped[i] = multipattern.wrap_set(mpat, 'end '..i, function(v) 
         greg()[i]:set_end(v, 'fraction')
         nest.screen.make_dirty(); nest.arc.make_dirty()
     end)
 end
 get_set_start = function(voice)
-    local zone = ndls.zone[voice]
-    return set_start_zone[zone]
+    local buffer = sc.buffer[voice]
+    return set_start_scoped[scoped]
 end
 get_start = function(voice, units)
     units = units or 'fraction'
     return greg():get_start(voice, units)
 end
 get_set_end = function(voice)
-    local zone = ndls.zone[voice]
-    return set_end_zone[zone]
+    local buffer = sc.buffer[voice]
+    return set_end_scoped[scoped]
 end
 get_end = function(voice, units)
     units = units or 'fraction'
@@ -105,12 +102,15 @@ get_len = function(voice, units)
     return greg():get_length(voice, units)
 end
 
---include UI files
+--internal files
 
+sc, reg = include 'ndls/lib/softcut'               --softcut utilities
+include 'ndls/lib/params'                          --create params
+Components = include 'ndls/lib/ui/components'      --UI components
 App = {}
-App.grid = include 'ndls/lib/ui/grid'           --grid UI
-App.arc = include 'ndls/lib/ui/arc'             --arc UI
-App.norns = include 'ndls/lib/ui/norns'         --norns UI
+App.grid = include 'ndls/lib/ui/grid'              --grid UI
+App.arc = include 'ndls/lib/ui/arc'                --arc UI
+App.norns = include 'ndls/lib/ui/norns'            --norns UI
 
 --set up nest v2 UI
 
@@ -120,18 +120,17 @@ local _app = {
     norns = App.norns(),
 }
 
-nest.connect_grid(_app.grid, grid.connect(), 60)
-nest.connect_arc(_app.arc, arc.connect(), 90)
+nest.connect_grid(_app.grid, g, 60)
+nest.connect_arc(_app.arc, a, 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
 nest.connect_screen(_app.norns)
 
 function init()
     sc.setup()
-    ndls.zone:init()
 
     params:read()
-    for i = 1, ndls.voices do
+    for i = 1, voices do
         params:set('vol '..i, 1)
         --params:set('bnd '..i, 0)
         params:set('cut '..i, 1)

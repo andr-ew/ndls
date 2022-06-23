@@ -15,7 +15,7 @@ local function App(wide, offset)
     } or { 0, 0, 0, 0 }
 
     local function Voice(n)
-        local top, bottom = n, n + ndls.voices
+        local top, bottom = n, n + voices
 
         local _phase = Components.grid.phase()
         
@@ -30,10 +30,10 @@ local function App(wide, offset)
             return {
                 x = 2, y = bottom, lvl = shaded,
                 state = {
-                    sc.punch_in[ndls.zone[n]].recorded and params:get('play '..n) or 0,
+                    sc.punch_in[sc.buffer[n]].recorded and params:get('play '..n) or 0,
                     function(v)
-                        local recorded = sc.punch_in[ndls.zone[n]].recorded
-                        local recording = sc.punch_in[ndls.zone[n]].recording
+                        local recorded = sc.punch_in[sc.buffer[n]].recorded
+                        local recording = sc.punch_in[sc.buffer[n]].recording
 
                         if recorded or recording then 
                             params:set('play '..n, v)
@@ -42,12 +42,17 @@ local function App(wide, offset)
                 },
             }
         end)
-        _params.zone = to.pattern(mpat, 'zone '..n, Grid.number, function()
+        _params.buffer = to.pattern(mpat, 'buffer '..n, Grid.number, function()
             return {
                 x = { 3, 6 }, y = bottom,
                 state = {
-                    ndls.zone[n],
-                    function(v) ndls.zone:set(v, n) end
+                    sc.buffer[n],
+                    function(v)
+                        sc.buffer:set(n, v)
+
+                        nest.arc.make_dirty()
+                        nest.screen.make_dirty()
+                    end
                 }
             }
         end)
@@ -121,7 +126,7 @@ local function App(wide, offset)
 
             for _, _param in pairs(_params) do _param() end
             
-            if sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded then
+            if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
                 _phase{ 
                     x = wide and { 1, 16 } or { 1, 8 }, y = top,
                     phase = sc.phase[n].rel, lvl = 4,
@@ -134,7 +139,7 @@ local function App(wide, offset)
     local _norns_view = Grid.number()
     
     local _voices = {}
-    for i = 1, ndls.voices do
+    for i = 1, voices do
         _voices[i] = Voice(i)
     end
 
