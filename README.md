@@ -22,7 +22,7 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 the grid is split in two halves with two sets of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
-read [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
+see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
 #### bottom half
 
