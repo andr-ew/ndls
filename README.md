@@ -20,8 +20,31 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 ![documentation image](lib/doc/ndls_128.png)
 
-- **rec:** press the rec key to create a new loop, then press it again to stop recording & begin playback. pressing rec while a loop is playing engages overdub. the **old** control sets the volume of old material.
-- **play:** play toggles track playback. to clear a loop, just toggle playback off, then record a new loop with the **rec** key as before.
+- **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
+  - record a new loop in a blank buffer:
+    - 1 - toggle the **rec** key _on_
+    - 2 - play some audio into softcut from TAPE or norns' inputs
+    - 3 - toggle **rec** back _off_
+    - 4 - softcut will loop what you just played, loop pedal style.
+  - overdub into a playing loop:
+    - 1 - toggle the **rec** key _on_
+    - 2 - play some new material into softcut from TAPE or norns' inputs
+    - 3 - softcut will record the new material on top of the loop. 
+      - the volume of the old material is set by the **old** control.
+  - silence a playing loop:
+    - toggle the **play** key _off_
+  - clear a buffer, and record a brand new loop:
+    - 1 - toggle the **play** key _off_
+    - 2 - toggle the **rec** key _on_. softcut will clear the old contents of the buffer.
+    - 3 - play some new material into softcut from TAPE or norns' inputs
+    - 4 - toggle **rec** back _off_
+    - 5 - softcut will loop the new material
+  - use a blank buffer as a delay
+    - 1 - toggle the **rec** key _on_
+    - 2 - toggle the **play** key _on_
+    - 3 - softcut will begin playing and overdubbing, like a delay.
+      - delay length is set by time between key presses, as with looping
+      - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
 - **screen focus:** select which track controls to edit on the norns screen
 - **arc focus:** select which track controls to edit on arc. 
