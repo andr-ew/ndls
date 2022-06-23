@@ -14,6 +14,10 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 - arc
 - midi footswitch
 
+## install
+
+in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
+
 ## documentation
 
 ### grid + arc
