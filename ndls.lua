@@ -50,9 +50,8 @@ end
 voices = 4
 buffers = 4
 
-view_matrix = false
 view = {}
-vertical = true
+vertical = false
 alt = false
 norns_view = 1
 

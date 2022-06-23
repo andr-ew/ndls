@@ -5,13 +5,12 @@ local function App(wide, offset)
     local mid2 = varibright and 8 or 15
 
     --TODO: only enable when arc is connected AND wide
-    view_matrix = true
 
-    view = view_matrix and {
-        { 1, 0, 0, 0 },
-        { 1, 0, 0, 0 },
-        { 1, 0, 0, 0 },
-        { 1, 0, 0, 0 },
+    view = {
+        { 1, 1, 1, 1 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 },
     } or { 0, 0, 0, 0 }
 
     local function Voice(n)

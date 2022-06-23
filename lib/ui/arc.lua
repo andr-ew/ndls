@@ -108,29 +108,11 @@ local function App(map)
     end
 
     return function()
-        if view_matrix then
-            for y = 1,4 do for x = 1,4 do
-                if view[y][x] > 0 then
-                    _params[y][x]()
-                end
-            end end
-        else
-            if not vertical then
-                for i = 1,voices do
-                    local y = voices - i + 1
-                    if view[i] > 0 then
-                        for x = 1,4 do
-                            _params[y][x]()
-                        end
-                        break
-                    end
-                end
-            else
-                for y = 1,4 do
-                    _params[y][1]()
-                end
+        for y = 1,4 do for x = 1,4 do
+            if view[y][x] > 0 then
+                _params[y][x]()
             end
-        end
+        end end
     end
 end
 
