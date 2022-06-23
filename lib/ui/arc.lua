@@ -61,7 +61,7 @@ local function App(map)
         _st = Components.arc.st(mpat)
 
         return function() 
-            if sc.punch_in[ndls.zone[n]].recorded then
+            if sc.punch_in[sc.buffer[n]].recorded then
                 _st{
                     n = tonumber(vertical and n or x),
                     x = { 33, 64+32 }, lvl = { 4, 15 },
@@ -79,7 +79,7 @@ local function App(map)
         _len = Components.arc.len(mpat)
 
         return function() 
-            if sc.punch_in[ndls.zone[n]].recorded then
+            if sc.punch_in[sc.buffer[n]].recorded then
                 _len{
                     n = tonumber(vertical and n or x),
                     x = { 33, 64+32 }, 
@@ -116,8 +116,8 @@ local function App(map)
             end end
         else
             if not vertical then
-                for i = 1,ndls.voices do
-                    local y = ndls.voices - i + 1
+                for i = 1,voices do
+                    local y = voices - i + 1
                     if view[i] > 0 then
                         for x = 1,4 do
                             _params[y][x]()

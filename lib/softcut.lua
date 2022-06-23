@@ -1,8 +1,10 @@
 -- softcut utilities
-local voices, zones = ndls.voices, ndls.zones
 
--- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change.
-local sc = {
+-- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change (exceptions wherever noted).
+
+local sc
+
+sc = {
     phase = {
         { rel = 0, abs = 0 },
         set = function(s, n, v)
@@ -108,18 +110,24 @@ end
 
 --softcut buffer regions
 local reg = {}
-reg.blank = cartographer.divide(cartographer.buffer[1], zones)
+reg.blank = cartographer.divide(cartographer.buffer[1], buffers)
 reg.rec = cartographer.subloop(reg.blank)
 reg.play = cartographer.subloop(reg.rec)
 --reg.zoom = cartographer.subloop(reg.rec)
 
 
-for z = 1, zones do
+for b = 1, buffers do
     --adjust punch_in time quantum based on rate
-    reg.rec[z].rate_callback = function()
-        local enoz = tab.invert(sc.reg.zone)
-        local vc = enoz[z]
-        return vc and sc.ratemx[vc].rate or 1
+    reg.rec[b].rate_callback = function()
+        local voice
+        for vc = 1,voices do if sc.buffer[vc] == b then
+            if voice then
+                if sc.punch_in[b].recording then voice = vc end
+            else
+                voice = vc
+            end
+        end end
+        return voice and sc.ratemx[voice].rate or 1
     end
 end
 
@@ -154,7 +162,7 @@ sc.setup = function()
     --     end
     -- end)
     softcut.event_phase(function(i, ph)
-        if i <= ndls.voices then
+        if i <= voices then
             sc.phase:set(i, ph)
         end
     end)
@@ -181,18 +189,6 @@ end
 sc.fade = function(n, length)
     sc.send('fade_time', n, math.min(0.01, length))
 end
-
-sc.reg = {
-    zone = { 1, 2, 3, 4, }, --[voice] = zone
-    --zoomed = {}, --[voice][zone] = true/false
-    update = function(s, n)
-        --local bund = s.zoomed[n][s.zone[n]] and 'zoom' or 'play'
-        local bund = 'play'
-        cartographer.assign(reg[bund][s.zone[n]], n) --TODO don't reassign if zone matches
-
-        sc.punch_in:update_play(s.zone[n])
-    end
-}
 
 --[[
 sc.punch_in = {
@@ -279,7 +275,7 @@ sc.punch_in = {
         --tap_blink = 0, tap_clock = nil, tap_buf = {} 
     },
     update_play = function(s, z)
-        for n,v in ipairs(sc.reg.zone) do if v == z then
+        for n,v in ipairs(sc.buffer) do if v == z then
             sc.lvlmx[n].recorded = s[z].play
             sc.lvlmx:update(n)
         end end
@@ -390,13 +386,27 @@ sc.punch_in = {
 }
 
 --punch_in shallow copy first index for each zone
-for i = 2, zones do
+for i = 2, buffers do
     sc.punch_in[i] = {}
     for l,v in pairs(sc.punch_in[1]) do
         sc.punch_in[i][l] = v
     end
 end
 
---TODO: sc.save / sc.load
+--this object has no accociated param/control, so it can be set directly with the set function
+sc.buffer = { --[voice] = buffer
+    set = function(s, n, v)
+        if s[n] ~= v then
+            print('set ', n, v)
+            s[n] = v
+
+            local bund = 'play'
+            cartographer.assign(reg[bund][s[n]], n)
+
+            sc.punch_in:update_play(s[n])
+        end
+    end
+}
+for i = 1,buffers do sc.buffer:set(i, i) end
 
 return sc, reg
