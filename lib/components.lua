@@ -98,7 +98,7 @@ function Components.grid.phase()
                 props.x[1] 
                     + math.floor(props.phase * (props.x[2] - props.x[1] + 1)), 
                 props.y, 
-                8
+                props.lvl
             )
         end
     end

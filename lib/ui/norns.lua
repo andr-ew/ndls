@@ -16,6 +16,7 @@ local function App()
         { x = x[1], y = y[1] },
         { x = x[1], y = y[4] },
         { x = x[2], y = y[4] },
+        { x = x[2], y = y[1] },
     }
     local k = {
         {  },
@@ -23,7 +24,7 @@ local function App()
         { x = x[2], y = y[4] },
     }
 
-    local _alt = Key.momentary()
+    --local _alt = Key.momentary()
 
     --[[
     local _crossfader
@@ -43,6 +44,7 @@ local function App()
     local page_names = { 'v', 's', 'f', 'p' }
     local tab = 1
     local _tab = Text.enc.option()
+    local _norns_view_tab = Text.enc.option()
 
     local function Ctl(args)
         local _ctl = to.pattern(mpat, args.id..' '..args.voice, Text.enc.control, function()
@@ -75,34 +77,36 @@ local function App()
             _len_view = Text.enc.number()
 
             return function()
-                _st_view{
-                    n = 2, x = e[2].x, y = e[2].y,
-                    label = 'st', 
-                    state = { get_start(args.voice, 'seconds') },
-                    input_enabled = false,
-                }
-                _len_view{
-                    n = 3, x = e[3].x, y = e[3].y,
-                    label = 'len', 
-                    state = { get_len(args.voice, 'seconds') },
-                    input_enabled = false,
-                }
+                if sc.punch_in[ndls.zone[args.voice]].recorded then
+                    _st_view{
+                        n = 2, x = e[2].x, y = e[2].y,
+                        label = 'st', 
+                        state = { get_start(args.voice, 'seconds') },
+                        input_enabled = false,
+                    }
+                    _len_view{
+                        n = 3, x = e[3].x, y = e[3].y,
+                        label = 'len', 
+                        state = { get_len(args.voice, 'seconds') },
+                        input_enabled = false,
+                    }
 
-                if nest.enc.has_input() then
-                    local n, d = nest.enc.input_args()
+                    if nest.enc.has_input() then
+                        local n, d = nest.enc.input_args()
 
-                    local st = { get_start(args.voice), get_set_start(args.voice) }
-                    local en = { get_end(args.voice), get_set_end(args.voice) }
-                    
-                    if n == 2 then
-                        st[2](st[1] + d * args.sens)
-                        en[2](en[1] + d * args.sens)
+                        local st = { get_start(args.voice), get_set_start(args.voice) }
+                        local en = { get_end(args.voice), get_set_end(args.voice) }
+                        
+                        if n == 2 then
+                            st[2](st[1] + d * args.sens)
+                            en[2](en[1] + d * args.sens)
 
-                        nest.screen.make_dirty()
-                    elseif n == 3 then
-                        en[2](en[1] + d * args.sens)
+                            nest.screen.make_dirty()
+                        elseif n == 3 then
+                            en[2](en[1] + d * args.sens)
 
-                        nest.screen.make_dirty()
+                            nest.screen.make_dirty()
+                        end
                     end
                 end
             end
@@ -132,27 +136,33 @@ local function App()
     end
 
     return function()
-        _alt{
-            n = 1, 
-            state = {
-                alt and 1 or 0,
-                function(v)
-                    alt = v==1
-                    nest.arc.make_dirty()
-                end
+        -- _alt{
+        --     n = 1, 
+        --     state = {
+        --         alt and 1 or 0,
+        --         function(v)
+        --             alt = v==1
+        --             nest.arc.make_dirty()
+        --         end
+        --     }
+        -- }
+
+        _tab{
+            x = e[1].x, y = e[1].y, n = 1,
+            options = page_names, state = { tab, function(v) tab = v end }
+        }
+        _norns_view_tab{
+            x = e[4].x, y = e[4].y, n = 4, options = { 1, 2, 3, 4 }, 
+            state = { 
+                norns_view, 
+                function(v) 
+                    norns_view = v 
+                    nest.grid.make_dirty()
+                end 
             }
         }
-        local focus = track_focus()
 
-        if focus then
-            _tab{
-                x = x[1], y = y[1], n = 1,
-                options = page_names, state = { tab, function(v) tab = v end }
-            }
-
-            _voices[focus]{ tab = tab//1 }
-        else
-        end
+        _voices[norns_view]{ tab = tab//1 }
     end
 end
 

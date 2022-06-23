@@ -5,7 +5,7 @@ local function App(wide, offset)
     local mid2 = varibright and 8 or 15
 
     --TODO: only enable when arc is connected AND wide
-    view_matrix = wide
+    view_matrix = true
 
     view = view_matrix and {
         { 1, 0, 0, 0 },
@@ -67,7 +67,7 @@ local function App(wide, offset)
         end
         _params.rev = to.pattern(mpat, 'rev '..n, Grid.toggle, function()
             return {
-                x = wide and 5 or 2, y = top, edge = 'falling', lvl = shaded,
+                x = wide and 7 or 2, y = top, edge = 'falling', lvl = shaded,
                 state = { params:get('rev '..n) },
                 action = function(v, t)
                     sc.slew(n, (t < 0.2) and 0.025 or t)
@@ -79,7 +79,7 @@ local function App(wide, offset)
             local off = wide and 6 or 4
             _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
                 return {
-                    x = wide and { 6, 13 } or { 3, 8 }, y = top, filtersame = true,
+                    x = wide and { 8, 15 } or { 3, 8 }, y = top, filtersame = true,
                     state = { params:get('rate '..n) + off },
                     action = function(v, t)
                         sc.slew(n, t)
@@ -124,13 +124,14 @@ local function App(wide, offset)
             if sc.lvlmx[n].play == 1 and sc.punch_in[ndls.zone[n]].recorded then
                 _phase{ 
                     x = wide and { 1, 16 } or { 1, 8 }, y = top,
-                    phase = sc.phase[n].rel,
+                    phase = sc.phase[n].rel, lvl = 4,
                 }
             end
         end
     end
 
-    local _view = wide and Components.grid.view() or Grid.toggle()
+    local _view = wide and Components.grid.view()
+    local _norns_view = Grid.number()
     
     local _voices = {}
     for i = 1, ndls.voices do
@@ -147,31 +148,23 @@ local function App(wide, offset)
     return function()
         if wide then
             _view{
-                x = 1, y = 1, lvl = 15,
+                x = 3, y = 1, lvl = 8,
                 view = view,
                 vertical = { vertical, function(v) vertical = v end },
                 action = view_refresh
             }
-        else
-            _view{
-                x = 1, y = { 1, 4 }, lvl = 15, count = { 0, 1 },
-                state = { 
-                    view, 
-                    function(v) 
-                        view = v 
-                        
-                        vertical = true
-                        for y = 1,ndls.voices do
-                            if view[y] > 0 then
-                                vertical = false
-                            end
-                        end
-
-                        view_refresh()
-                    end 
-                }
-            }
         end
+        _norns_view{
+            x = 1, y = { 1, 4 }, lvl = 8,
+            state = { 
+                4 - norns_view + 1, 
+                function(v) 
+                    norns_view = 4 - v + 1 
+                    nest.screen.make_dirty()
+                end 
+            }
+        }
+
         
         for i, _voice in ipairs(_voices) do
             _voice{}

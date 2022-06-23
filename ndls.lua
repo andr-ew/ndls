@@ -60,17 +60,7 @@ view_matrix = false
 view = {}
 vertical = true
 alt = false
-
-function track_focus()
-    if not vertical then
-        for i = 1, ndls.voices do
-            if (view_matrix and view[i][1] or view[i]) > 0 then 
-                --return ndls.voices - i + 1 
-                return i
-            end
-        end
-    end
-end
+norns_view = 1
 
 function g64()
     return g and g.device and g.device.cols < 16 or false

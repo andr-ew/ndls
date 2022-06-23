@@ -124,6 +124,7 @@ for i = 1, ndls.voices do
             end
 
             nest.grid.make_dirty()
+            nest.screen.make_dirty()
         end
     }
     params:add {
@@ -140,6 +141,7 @@ for i = 1, ndls.voices do
             sc.lvlmx[n].play = v; sc.lvlmx:update(n)
 
             nest.grid.make_dirty()
+            nest.screen.make_dirty()
         end
     }
     --[[
