@@ -1,6 +1,6 @@
 # ndls
 
-4-track asyncronous tape looper, delay, loop splicer. pattern memory, performace oriented + configurable. and it's ~ bendy ~
+4-track asyncronous tape looper, delay, & loop splicer based on softcut. pattern memory, performace oriented + configurable. and it's ~ bendy ~
 
 spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim)
 
@@ -29,6 +29,20 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 - **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
   - idea: send a loop track into another track set up like a delay, for echoed loops.
 - **slice:** not done yet !!
+- **rate:** record & playback rate, quantized to octaves. 
+  - press one key with one finger to jump instantly to a new pitch. 
+  - to ~ glide ~ smoothly to a new pitch, do this:
+    - 1 - hold one finger on the lit / current value key
+    - 2 - press the key of the rate you'd like to glide to
+    - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key. this is an expressive gesture !
+- **rev:** set record/playback direction. hold & release to glide to the new direction.
+- **patterns:** 8 pattern recorders, these can record & play back any input on grid, norns, or arc. use them like this:
+  - single tap
+    - (blank pattern): begin recording
+    - (recording pattern): end recording, begin looping
+    - (playing pattern): play/pause playback
+  - double tap: overdub pattern
+  - hold: clear pattern
 
 ### norns
 - **E1:** page focus
