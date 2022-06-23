@@ -71,6 +71,10 @@ scope
 
 scoped UI components are just duplicated for each zone/buffer, so if a pattern is recorded, only one component scope will be mapped to the pattern
 
+scoped param object
+- only creates a real param for the track scope, which will be saved in the pset
+- for all other scopes, just store intentially volitile internal data for every buffer/zone
+
 idea: when output volume for track becomes 0, play state is always off
 - this makes adding new sounds after a crossfade slightly easier
 
