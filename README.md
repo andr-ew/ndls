@@ -66,13 +66,16 @@ the grid is split in two halves with two sets of controls mapped to four tracks 
     - 1 - hold one finger on the lit / current value key
     - 2 - press the key of the rate you'd like to glide to
     - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key. this is an expressive gesture !
-- **patterns:** 8 pattern recorders, these can record & play back any input on grid, norns, or arc. use them like this:
-  - single tap
-    - (blank pattern): begin recording
-    - (recording pattern): end recording, begin looping
-    - (playing pattern): play/pause playback
-  - double tap: overdub pattern
-  - hold: clear pattern
+
+#### pattern recorders
+
+the rightmost column contans 8 pattern recorders, these can record & play back any combination of input on grid, norns, or arc. use them like this:
+- single tap
+  - (blank pattern): begin recording
+  - (recording pattern): end recording, begin looping
+  - (playing pattern): play/pause playback
+- double tap: overdub pattern
+- hold: clear pattern
 
 ### norns
 - **E1:** page focus
