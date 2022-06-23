@@ -22,7 +22,8 @@ params:add {
     end
 }
 
-params:add_separator('mixer')
+--params:add_separator('mixer')
+--[[
 params:add {
     id = 'crossfade',
     type = 'control', 
@@ -32,6 +33,7 @@ params:add {
         for i = 1, ndls.voices do sc.lvlmx:update(i) end
     end
 }
+--]]
 
 for i = 1, ndls.voices do
     params:add_separator('voice '..i)
@@ -203,6 +205,7 @@ for i = 1, ndls.voices do
             nest.grid.make_dirty()
         end
     }
+    --[[
     local assignments = { 'none', 'left', 'right' }
     params:add {
         id = 'crossfade assign '..i,
@@ -211,6 +214,7 @@ for i = 1, ndls.voices do
             sc.lvlmx[i].cf_assign = v - 1; sc.lvlmx:update(i)
         end
     }
+    --]]
 end
 
 params:add {

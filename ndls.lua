@@ -55,6 +55,7 @@ include 'ndls/lib/params'                       --create params
 Components = include 'ndls/lib/components'      --UI components
 
 --UI globals
+
 view_matrix = false
 view = {}
 vertical = true
@@ -71,37 +72,50 @@ function track_focus()
     end
 end
 
-
 function g64()
     return g and g.device and g.device.cols < 16 or false
+end
+
+local greg = function()
+    return reg.play
 end
 
 local set_start_zone = {}
 for i = 1, ndls.zones do
     set_start_zone[i] = multipattern.wrap_set(mpat, 'start '..i, function(v) 
-        reg.play[i]:set_start(v, 'fraction')
+        greg()[i]:set_start(v, 'fraction')
+        nest.screen.make_dirty(); nest.arc.make_dirty()
     end)
 end
 local set_end_zone = {}
 for i = 1, ndls.zones do
     set_end_zone[i] = multipattern.wrap_set(mpat, 'end '..i, function(v) 
-        reg.play[i]:set_end(v, 'fraction')
+        greg()[i]:set_end(v, 'fraction')
+        nest.screen.make_dirty(); nest.arc.make_dirty()
     end)
 end
 get_set_start = function(voice)
     local zone = ndls.zone[voice]
     return set_start_zone[zone]
 end
-get_start = function(voice)
-    return reg.play:get_start(voice, 'fraction')
+get_start = function(voice, units)
+    units = units or 'fraction'
+    return greg():get_start(voice, units)
 end
 get_set_end = function(voice)
     local zone = ndls.zone[voice]
     return set_end_zone[zone]
 end
-get_end = function(voice)
-    return reg.play:get_end(voice, 'fraction')
+get_end = function(voice, units)
+    units = units or 'fraction'
+    return greg():get_end(voice, units)
 end
+get_len = function(voice, units)
+    units = units or 'fraction'
+    return greg():get_length(voice, units)
+end
+
+--include UI files
 
 App = {}
 App.grid = include 'ndls/lib/ui/grid'           --grid UI
@@ -136,9 +150,9 @@ function init()
         params:set('play '..i, 0)
         params:set('rate '..i, 0)
         params:set('rev '..i, 0)
-        params:set('crossfade assign '..i, i <3 and 2 or 3)
+        --params:set('crossfade assign '..i, i <3 and 2 or 3)
     end
-    params:set('crossfade', 0)
+    --params:set('crossfade', 0)
 
     params:bang()
 end

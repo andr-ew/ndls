@@ -14,8 +14,8 @@ local function App()
 
     local e = {
         { x = x[1], y = y[1] },
-        { x = x[1], y = y[3] },
-        { x = x[2], y = y[3] },
+        { x = x[1], y = y[4] },
+        { x = x[2], y = y[4] },
     }
     local k = {
         {  },
@@ -25,6 +25,7 @@ local function App()
 
     local _alt = Key.momentary()
 
+    --[[
     local _crossfader
     do
         local x, y, width, height = x[1], y[1], 128 - mar.left - mar.right, 3
@@ -37,6 +38,7 @@ local function App()
             x, y, width, height, value, min_value, max_value, markers, direction
         )
     end
+    --]]
     
     local page_names = { 'v', 's', 'f', 'p' }
     local tab = 1
@@ -68,8 +70,44 @@ local function App()
             _pg.old = Ctl{ id = 'old', voice = n, n = 3 }
         end
         --s
-        do
+        local function S(args)
+            _st_view = Text.enc.number()
+            _len_view = Text.enc.number()
+
+            return function()
+                _st_view{
+                    n = 2, x = e[2].x, y = e[2].y,
+                    label = 'st', 
+                    state = { get_start(args.voice, 'seconds') },
+                    input_enabled = false,
+                }
+                _len_view{
+                    n = 3, x = e[3].x, y = e[3].y,
+                    label = 'len', 
+                    state = { get_len(args.voice, 'seconds') },
+                    input_enabled = false,
+                }
+
+                if nest.enc.has_input() then
+                    local n, d = nest.enc.input_args()
+
+                    local st = { get_start(args.voice), get_set_start(args.voice) }
+                    local en = { get_end(args.voice), get_set_end(args.voice) }
+                    
+                    if n == 2 then
+                        st[2](st[1] + d * args.sens)
+                        en[2](en[1] + d * args.sens)
+
+                        nest.screen.make_dirty()
+                    elseif n == 3 then
+                        en[2](en[1] + d * args.sens)
+
+                        nest.screen.make_dirty()
+                    end
+                end
+            end
         end
+        _pages[2].s = S{ sens = 0.01, voice = n }
         --f
         do
             local _pg = _pages[3]
@@ -114,10 +152,6 @@ local function App()
 
             _voices[focus]{ tab = tab//1 }
         else
-            _crossfader{
-                n = 1,
-                state = of.param('crossfade')
-            }
         end
     end
 end

@@ -89,9 +89,10 @@ local function App(wide, offset)
             end)
         end
 
-        local _cf_assign = { Grid.toggle(), Grid.toggle() }
+        --local _cf_assign = { Grid.toggle(), Grid.toggle() }
 
         return function()
+            --[[
             _cf_assign[1]{
                 x = wide and 14 or 7, y = wide and top or bottom, 
                 lvl = shaded,
@@ -116,6 +117,7 @@ local function App(wide, offset)
                     end
                 end
             }
+            --]]
 
             for _, _param in pairs(_params) do _param() end
             
