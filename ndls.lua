@@ -82,16 +82,16 @@ for i = 1, buffers do
     end)
 end
 get_set_start = function(voice)
-    local buffer = sc.buffer[voice]
-    return set_start_scoped[scoped]
+    local b = sc.buffer[voice]
+    return set_start_scoped[b]
 end
 get_start = function(voice, units)
     units = units or 'fraction'
     return greg():get_start(voice, units)
 end
 get_set_end = function(voice)
-    local buffer = sc.buffer[voice]
-    return set_end_scoped[scoped]
+    local b = sc.buffer[voice]
+    return set_end_scoped[b]
 end
 get_end = function(voice, units)
     units = units or 'fraction'
