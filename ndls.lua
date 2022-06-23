@@ -76,6 +76,33 @@ function g64()
     return g and g.device and g.device.cols < 16 or false
 end
 
+local set_start_zone = {}
+for i = 1, ndls.zones do
+    set_start_zone[i] = multipattern.wrap_set(mpat, 'start '..i, function(v) 
+        reg.play[i]:set_start(v, 'fraction')
+    end)
+end
+local set_end_zone = {}
+for i = 1, ndls.zones do
+    set_end_zone[i] = multipattern.wrap_set(mpat, 'end '..i, function(v) 
+        reg.play[i]:set_end(v, 'fraction')
+    end)
+end
+get_set_start = function(voice)
+    local zone = ndls.zone[voice]
+    return set_start_zone[zone]
+end
+get_start = function(voice)
+    return reg.play:get_start(voice, 'fraction')
+end
+get_set_end = function(voice)
+    local zone = ndls.zone[voice]
+    return set_end_zone[zone]
+end
+get_end = function(voice)
+    return reg.play:get_end(voice, 'fraction')
+end
+
 App = {}
 App.grid = include 'ndls/lib/ui/grid'           --grid UI
 App.arc = include 'ndls/lib/ui/arc'             --arc UI

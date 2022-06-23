@@ -65,12 +65,11 @@ local function App(map)
                 _st{
                     n = tonumber(vertical and n or x),
                     x = { 33, 64+32 }, lvl = { 4, 15 },
-                    reg = sc.get_zoom(n) and reg.zoom or reg.play, 
-                    nreg = n,
                     phase = sc.phase[n].rel,
                     show_phase = sc.lvlmx[n].play == 1,
-                    nudge = alt,
                     sens = 1/1000,
+                    st = { get_start(n), get_set_start(n) },
+                    en = { get_end(n), get_set_end(n) },
                 }
             end
         end
@@ -84,8 +83,6 @@ local function App(map)
                 _len{
                     n = tonumber(vertical and n or x),
                     x = { 33, 64+32 }, 
-                    reg = sc.get_zoom(n) and reg.zoom or reg.play, 
-                    nreg = n,
                     phase = sc.phase[n].rel,
                     show_phase = sc.lvlmx[n].play == 1,
                     nudge = alt,
@@ -93,6 +90,8 @@ local function App(map)
                     lvl_st = alt and 15 or 4,
                     lvl_en = alt and 4 or 15,
                     lvl_ph = 4,
+                    st = { get_start(n), get_set_start(n) },
+                    en = { get_end(n), get_set_end(n) },
                 }
             end
         end

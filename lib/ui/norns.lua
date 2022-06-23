@@ -74,12 +74,12 @@ local function App()
         do
             local _pg = _pages[3]
             _pg.cut = Ctl{ id = 'cut', voice = n, n = 2 }
-            _pg.pan = Ctl{ id = 'q', voice = n, n = 3 }
+            _pg.q = Ctl{ id = 'q', voice = n, n = 3 }
         end
         --p
         do
             local _pg = _pages[4]
-            _pg.cut = Ctl{ id = 'bnd', voice = n, n = 2 }
+            _pg.bnd = Ctl{ id = 'bnd', voice = n, n = 2 }
             _pg.pan = Ctl{ id = 'pan', voice = n, n = 3 }
         end
 

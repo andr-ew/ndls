@@ -140,7 +140,7 @@ function Components.arc.filter()
 end
 
 --TODO: pattern recording
-function Components.arc.st(mpat)
+function Components.arc.st(args)
     return function(props)
         local a = nest.arc.device()
         
@@ -148,20 +148,22 @@ function Components.arc.st(mpat)
             local n, d = nest.arc.input_args()
             
             if n == props.n then
-                if props.nudge then 
-                    props.reg:delta_start(props.nreg, d * props.sens, 'fraction') 
-                else 
-                    props.reg:delta_startend(props.nreg, d * props.sens * 2, 'fraction') 
-                end
+                --props. 
+                
+                --local st, en = props.state[1].st, props.state[1].en
+                local st = props.st[1]
+                local en = props.en[1]
+                props.st[2](props.st[1] + d * props.sens * 2)
+                props.en[2](props.en[1] + d * props.sens * 2)
 
                 nest.arc.make_dirty()
             end
         elseif nest.arc.is_drawing() then
             local st = props.x[1] + math.ceil(
-                props.reg:get_start(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.st[1]*(props.x[2] - props.x[1] + 2)
             )
             local en = props.x[1] - 1 + math.ceil(
-                props.reg:get_end(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.en[1]*(props.x[2] - props.x[1] + 2)
             )
             local ph = props.x[1] + util.round(
                 props.phase * (props.x[2] - props.x[1])
@@ -183,20 +185,17 @@ function Components.arc.len(mpat)
             local n, d = nest.arc.input_args()
             
             if n == props.n then
-                if props.nudge then 
-                    props.reg:delta_start(props.nreg, d * props.sens, 'fraction') 
-                else 
-                    props.reg:delta_length(props.nreg, d * props.sens * 2, 'fraction') 
-                end
+                local en = props.en[1]
+                props.en[2](props.en[1] + d * props.sens * 2)
 
                 nest.arc.make_dirty()
             end
         elseif nest.arc.is_drawing() then
             local st = props.x[1] + math.ceil(
-                props.reg:get_start(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.st[1]*(props.x[2] - props.x[1] + 2)
             )
             local en = props.x[1] - 1 + math.ceil(
-                props.reg:get_end(props.nreg, 'fraction')*(props.x[2] - props.x[1] + 2)
+                props.en[1]*(props.x[2] - props.x[1] + 2)
             )
             local ph = props.x[1] + util.round(
                 props.phase * (props.x[2] - props.x[1])
