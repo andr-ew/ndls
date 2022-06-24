@@ -78,6 +78,7 @@ edit all
   - a param is always made for the edit all value - so there's always a destination for midi mapping a control regardless of scope
   - for track scope controls, the edit all value is the same as the control value
   - for buffer scope & below, the edit all value is reset on script load
+  - the state displayed by a control component is the local state summed with the edit all value
 - holding K1 could also reveal a second bank of 8 pattern recorders  ;)
 
 ## future maybe
