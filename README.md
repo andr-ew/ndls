@@ -75,7 +75,7 @@ slew options
 
 edit all
 - each control has an additional UI component that becomes visible (or foregrounded on arc/grid) when holding K1. these are offsets to the main param which cannot be pattern recorded and are at the track scope. useful for shifting a value after it has been pattern recorded, or altering the base value across slices.
-  - a param is always made for the edit all value
+  - a param is always made for the edit all value - so there's always a destination for midi mapping a control regardless of scope
   - for track scope controls, the edit all value is the same as the control value
   - for buffer scope & below, the edit all value is reset on script load
 - holding K1 could also reveal a second bank of 8 pattern recorders  ;)
