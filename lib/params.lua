@@ -1,18 +1,5 @@
-params:add_separator('ndls')
+params:add_separator('config')
 
---[[
-params:add {
-    id = 'spread',
-    type = 'control', controlspec = cs.def { min = -1, max = 1, default = 0.75 },
-    action = function(v)
-        for i = 1, voices do
-            local scl = ({ -1, 1, -0.5, 0.5 })[i]
-            sc.panmx[i].pan = v * scl * 2; sc.panmx:update(i)
-        end
-        nest.screen.make_dirty(); nest.arc.make_dirty()
-    end
-}
---]]
 local ir_op = { 'left', 'right' } 
 params:add {
     type = 'option', id = 'input routing', options = ir_op,
@@ -22,18 +9,15 @@ params:add {
     end
 }
 
---params:add_separator('mixer')
---[[
 params:add {
-    id = 'crossfade',
-    type = 'control', 
-    controlspec = cs.def { min = -1, max = 1, default = 0.5 },
+    id = 'alias',
+    type = 'binary', behavior = 'toggle', default = 0,
     action = function(v)
-        sc.lvlmx.cf = v
-        for i = 1, voices do sc.lvlmx:update(i) end
+        for i = 1, voices do
+            sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
+        end
     end
 }
---]]
 
 for i = 1, voices do
     params:add_separator('voice '..i)
@@ -101,7 +85,6 @@ for i = 1, voices do
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
-    --TODO: reset on load
     params:add {
         id = 'rec '..i,
         type = 'binary', behavior = 'toggle', 
@@ -118,7 +101,6 @@ for i = 1, voices do
                     params:set('play '..i, 1) 
                 end
             elseif sc.lvlmx[n].play == 0 and v == 1 then
-                --TODO reset params
                 sc.punch_in:clear(z)
                 sc.punch_in:set(z, 1)
             end
@@ -144,19 +126,6 @@ for i = 1, voices do
             nest.screen.make_dirty()
         end
     }
-    --[[
-    params:add {
-        id = 'clear '..i,
-        type = 'binary',
-        behavior = 'trigger',
-        action = function()
-            local z = zone[n]
-            sc.punch_in:clear(z)
-            
-            params:set('rec '..i, 0)
-        end
-    }
-    --]]
     params:add {
         id = 'rate '..i,
         type = 'number', min = -7, max = 2, default = 0, 
@@ -183,7 +152,7 @@ for i = 1, voices do
     }
     params:add {
         id = 'send '..i,
-        type = 'binary', behavior = 'toggle',
+        type = 'binary', behavior = 'toggle', default = 1,
         action = function(v) 
             sc.sendmx[i].send = v; sc.sendmx:update() 
 
@@ -196,7 +165,7 @@ for i = 1, voices do
     }
     params:add {
         id = 'return '..i,
-        type = 'binary', behavior = 'toggle', default = 1,
+        type = 'binary', behavior = 'toggle',
         action = function(v) 
             sc.sendmx[i].ret = v; sc.sendmx:update()
 
@@ -207,24 +176,4 @@ for i = 1, voices do
             nest.grid.make_dirty()
         end
     }
-    --[[
-    local assignments = { 'none', 'left', 'right' }
-    params:add {
-        id = 'crossfade assign '..i,
-        type = 'option', options = assignments,
-        action = function(v)
-            sc.lvlmx[i].cf_assign = v - 1; sc.lvlmx:update(i)
-        end
-    }
-    --]]
 end
-
-params:add {
-    id = 'alias',
-    type = 'binary', behavior = 'toggle', default = 0,
-    action = function(v)
-        for i = 1, voices do
-            sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
-        end
-    end
-}
