@@ -32,6 +32,79 @@ function Components.norns.slider(...)
     end
 end
 
+function Components.norns.waveform(args)
+    local left, right = args.x[1], args.x[2]
+    local width = right - left + 1
+    local top, bottom = args.y[1], args.y[2]
+    local height = bottom - top + 1
+    local equator = math.floor(top + height/2)
+    local amp = math.floor(height/2)
+    
+    sc.samples:init(width)
+
+    return function(props)
+        local lvl = props.lvl or { window = 15, phase = 4, wave = 1 }
+        local reg = props.reg
+        local st, en = props.st, props.en
+        local ph = props.phase
+        local recording = props.recording
+        local recorded = props.recorded
+        local show_phase = props.show_phase
+        local samples = props.samples
+        local render = props.render or function() end
+        --local rec_flag = props.rec_flag
+
+        if not recorded then
+            if recording then
+                screen.level(lvl.window)
+                screen.move(left + width * reg:get_start('fraction'), equator)
+                screen.line(left + width * reg:get_end('fraction'), equator)
+                screen.stroke()
+
+                nest.screen.make_dirty()
+            end
+        else
+            --waveform
+            screen.level(lvl.wave)
+            screen.move(left, equator)
+            screen.line(right, equator)
+            screen.stroke()
+            for i = 1,width do
+                local x = left + i
+                local s = samples[i]
+                if s then
+                    local a = util.round(math.min(math.abs(s * 2), 1) * amp)
+                    --local db = 20 * math.log(a, 10)
+                    local db = a
+                    screen.move(x, equator - db - 1)
+                    screen.line_rel(0, 2 * db + 1)
+                    screen.stroke()
+                end
+            end
+
+            screen.level(lvl.window)
+            --st
+            screen.move(left + width * st, top)
+            screen.line(left + width * st, bottom)
+            screen.stroke()
+            --en
+            screen.move(left + width * en, top)
+            screen.line(left + width * en, bottom)
+            screen.stroke()
+            --phase
+            if show_phase then
+                screen.level(lvl.phase)
+                screen.move(left + width * ph, top)
+                screen.line(left + width * ph, bottom)
+                screen.stroke()
+            end
+            
+            render()
+            nest.screen.make_dirty()
+        end
+    end
+end
+
 function Components.grid.view()
     local held = {}
 
@@ -139,10 +212,14 @@ function Components.arc.filter()
     end
 end
 
---TODO: pattern recording
 function Components.arc.st(args)
     return function(props)
         local a = nest.arc.device()
+        
+        local recording = props.recording
+        local recorded = props.recorded
+        --local rec_flag = props.rec_flag
+        local reg = props.reg
         
         if nest.arc.has_input() then
             local n, d = nest.arc.input_args()
@@ -159,27 +236,43 @@ function Components.arc.st(args)
                 nest.arc.make_dirty()
             end
         elseif nest.arc.is_drawing() then
-            local st = props.x[1] + math.ceil(
-                props.st[1]*(props.x[2] - props.x[1] + 2)
-            )
-            local en = props.x[1] - 1 + math.ceil(
-                props.en[1]*(props.x[2] - props.x[1] + 2)
-            )
-            local ph = props.x[1] + util.round(
-                props.phase * (props.x[2] - props.x[1])
-            )
-            local show = props.show_phase
-            for x = st,en do
-                a:led(props.n, (x - 1) % 64 + 1, props.lvl[(x==ph and show) and 2 or 1])
+            if not recorded then
+                if recording then
+                    local st = props.x[1]
+                    local en = props.x[1] - 1 + math.ceil(
+                        reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
+                    )
+                    for x = st,en do
+                        a:led(props.n, (x - 1) % 64 + 1, props.lvl[1])
+                    end
+                end
+            else
+                local st = props.x[1] + math.ceil(
+                    props.st[1]*(props.x[2] - props.x[1] + 2)
+                )
+                local en = props.x[1] - 1 + math.ceil(
+                    props.en[1]*(props.x[2] - props.x[1] + 2)
+                )
+                local ph = props.x[1] + util.round(
+                    props.phase * (props.x[2] - props.x[1])
+                )
+                local show = props.show_phase
+                for x = st,en do
+                    a:led(props.n, (x - 1) % 64 + 1, props.lvl[(x==ph and show) and 2 or 1])
+                end
             end
         end
     end
 end
 
---TODO: pattern recording
 function Components.arc.len(mpat)
     return function(props)
         local a = nest.arc.device()
+
+        local recording = props.recording
+        local recorded = props.recorded
+        --local rec_flag = props.rec_flag
+        local reg = props.reg
         
         if nest.arc.has_input() then
             local n, d = nest.arc.input_args()
@@ -191,20 +284,31 @@ function Components.arc.len(mpat)
                 nest.arc.make_dirty()
             end
         elseif nest.arc.is_drawing() then
-            local st = props.x[1] + math.ceil(
-                props.st[1]*(props.x[2] - props.x[1] + 2)
-            )
-            local en = props.x[1] - 1 + math.ceil(
-                props.en[1]*(props.x[2] - props.x[1] + 2)
-            )
-            local ph = props.x[1] + util.round(
-                props.phase * (props.x[2] - props.x[1])
-            )
+            if not recorded then
+                if recording then
+                    local st = props.x[1]
+                    local en = props.x[1] - 1 + math.ceil(
+                        reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
+                    )
+                    a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
+                    a:led(props.n, (en - 1) % 64 + 1, props.lvl_st)
+                end
+            else
+                local st = props.x[1] + math.ceil(
+                    props.st[1]*(props.x[2] - props.x[1] + 2)
+                )
+                local en = props.x[1] - 1 + math.ceil(
+                    props.en[1]*(props.x[2] - props.x[1] + 2)
+                )
+                local ph = props.x[1] + util.round(
+                    props.phase * (props.x[2] - props.x[1])
+                )
 
-            a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
-            a:led(props.n, (en - 1) % 64 + 1, props.lvl_en)
-            if props.show_phase then 
-                a:led(props.n, (ph - 1) % 64 + 1, props.lvl_ph)
+                a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
+                a:led(props.n, (en - 1) % 64 + 1, props.lvl_en)
+                if props.show_phase then 
+                    a:led(props.n, (ph - 1) % 64 + 1, props.lvl_ph)
+                end
             end
         end
     end

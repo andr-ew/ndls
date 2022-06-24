@@ -7,6 +7,7 @@ local function App()
 
     x[1] = mar.left
     x[2] = 128/2
+    x[3] = 128 - mar.right
     y[1] = mar.top
     y[2] = nil
     y[3] = mar.top + h*(5.5/8)
@@ -135,6 +136,12 @@ local function App()
         _voices[i] = Voice{ n = i }
     end
 
+    local _waveform = Components.norns.waveform{ 
+        x = { x[1], x[3] },
+        y = { e[1].y + 8, e[2].y - 4 },
+        --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
+    }
+
     return function()
         -- _alt{
         --     n = 1, 
@@ -146,6 +153,22 @@ local function App()
         --         end
         --     }
         -- }
+        
+        do
+            local n = norns_view
+            local b = sc.buffer[n]
+            _waveform{
+                reg = reg.rec[b], samples = sc.samples[b],
+                st = get_start(n), en = get_end(n), phase = sc.phase[n].rel,
+                recording = sc.punch_in[b].recording,
+                recorded = sc.punch_in[b].recorded,
+                show_phase = sc.lvlmx[n].play == 1,
+                --rec_flag = params:get('rec '..n)
+                render = function()
+                    sc.samples:render(b)
+                end
+            }
+        end
 
         _tab{
             x = e[1].x, y = e[1].y, n = 1,

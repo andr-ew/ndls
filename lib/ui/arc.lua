@@ -61,17 +61,21 @@ local function App(map)
         _st = Components.arc.st(mpat)
 
         return function() 
-            if sc.punch_in[sc.buffer[n]].recorded then
-                _st{
-                    n = tonumber(vertical and n or x),
-                    x = { 33, 64+32 }, lvl = { 4, 15 },
-                    phase = sc.phase[n].rel,
-                    show_phase = sc.lvlmx[n].play == 1,
-                    sens = 1/1000,
-                    st = { get_start(n), get_set_start(n) },
-                    en = { get_end(n), get_set_end(n) },
-                }
-            end
+            local b = sc.buffer[n]
+
+            _st{
+                n = tonumber(vertical and n or x),
+                x = { 33, 64+32 }, lvl = { 4, 15 },
+                phase = sc.phase[n].rel,
+                show_phase = sc.lvlmx[n].play == 1,
+                sens = 1/1000,
+                st = { get_start(n), get_set_start(n) },
+                en = { get_end(n), get_set_end(n) },
+                recording = sc.punch_in[b].recording,
+                recorded = sc.punch_in[b].recorded,
+                reg = reg.rec[b],
+                --rec_flag = params:get('rec '..n)
+            }
         end
     end
 
@@ -79,21 +83,25 @@ local function App(map)
         _len = Components.arc.len(mpat)
 
         return function() 
-            if sc.punch_in[sc.buffer[n]].recorded then
-                _len{
-                    n = tonumber(vertical and n or x),
-                    x = { 33, 64+32 }, 
-                    phase = sc.phase[n].rel,
-                    show_phase = sc.lvlmx[n].play == 1,
-                    nudge = alt,
-                    sens = 1/1000,
-                    lvl_st = alt and 15 or 4,
-                    lvl_en = alt and 4 or 15,
-                    lvl_ph = 4,
-                    st = { get_start(n), get_set_start(n) },
-                    en = { get_end(n), get_set_end(n) },
-                }
-            end
+            local b = sc.buffer[n]
+
+            _len{
+                n = tonumber(vertical and n or x),
+                x = { 33, 64+32 }, 
+                phase = sc.phase[n].rel,
+                show_phase = sc.lvlmx[n].play == 1,
+                nudge = alt,
+                sens = 1/1000,
+                lvl_st = alt and 15 or 4,
+                lvl_en = alt and 4 or 15,
+                lvl_ph = 4,
+                st = { get_start(n), get_set_start(n) },
+                en = { get_end(n), get_set_end(n) },
+                recording = sc.punch_in[b].recording,
+                recorded = sc.punch_in[b].recorded,
+                reg = reg.rec[b],
+                --rec_flag = params:get('rec '..n)
+            }
         end
     end
 

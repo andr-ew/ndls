@@ -13,6 +13,7 @@ sc = {
 
             nest.grid.make_dirty()
             nest.arc.make_dirty()
+            nest.screen.make_dirty()
         end
     },
     inmx = {
@@ -268,7 +269,7 @@ sc.punch_in = {
 }
 --]]
 
-sc.punch_in = {
+sc.punch_in = { -- [buf] = {}
     min_size = 0.5,
     { 
         recording = false, recorded = false, manual = false, play = 0, t = 0, 
@@ -408,5 +409,33 @@ sc.buffer = { --[voice] = buffer
     end
 }
 for i = 1,buffers do sc.buffer:set(i, i) end
+
+sc.samples = { -- [buffer] = { samples }
+    width = 0,
+    render = function(s, buf)
+        reg.rec[buf]:render(s.width)
+    end,
+    init = function(s, width)
+        s.width = width
+
+        local events = {}
+        for i = 1,buffers do 
+            s[i] = {} 
+
+            events[i] = reg.rec[i]:event_render(function(interval, samps) 
+                s[i] = samps 
+            end)
+        end
+
+        softcut.event_render(function(...)
+            for i,e in ipairs(events) do e(...) end
+            nest.screen.make_dirty()
+        end)
+        
+        for i = 1,buffers do 
+            s:render(i)
+        end
+    end
+} 
 
 return sc, reg
