@@ -1,4 +1,4 @@
-# ndls
+# ndls (beta)
 
 4-track asyncronous tape looper, delay, & loop splicer based on softcut. pattern memory, performace oriented + configurable. and it's ~ bendy ~
 
