@@ -20,15 +20,6 @@
 
 ## norns
 
-**mixer view**
-- **E1:** crossfader
-- **E2-E3:** mix parameter
-  - level
-  - pan
-  - crossfader assign
-- **K2:** track focus 1+2 / 3+4
-- **K3:** parameter select
-
 **track view**
 - **E1:** page
 - **E2-E3:** track parameter
@@ -62,12 +53,12 @@ control scopes
   - values reset when entering a new buffer 
     - when entering a blank buffer, volume resets to 1. when entering a recorded buffer, volume resets to 0.
   - patterns are cleared out on reset
-- zone
-  - value is unique per-zone, per-buffer, per-track
-  - values for all zones reset when entering a new buffer
-- random zone
-  - zone, but values are automatically randomized upon filling a new buffer in all zones but the first zone
-  - start & length are fixed in this zone
+- slice
+  - value is unique per-slice, per-buffer, per-track
+  - values for all slices reset when entering a new buffer
+- random slice
+  - slice, but values are automatically randomized upon filling a new buffer in all slices but the first slice
+  - start & length are fixed in this scope
 
 scoped UI components are just duplicated for each zone/buffer, so if a pattern is recorded, only one component scope will be mapped to the pattern
 
@@ -75,18 +66,19 @@ control object
 - only creates a real param for the track scope, which will be saved in the pset
 - for all other scopes, just store intentially volitile internal data for every buffer/zone
 
-idea: when output volume for track becomes 0, play state is always off
-- this makes adding new sounds after a crossfade slightly easier
-
 still not really sure whether zone slices within a buffer should be shared across tracks or unique
-
-crossfader assign + send/return could be re-assignable slots ?
-- I could also see some shortcuts to parameter randomization being really useful here (start + len, filter, vol + pan)
-- leaving them blank could extend existing UI (rate + zones)
+- leaning shared for now
 
 slew options
 - fixed slew (used for switching between zones)
 - disable glide (use the fixed slew on the rate component)
+
+edit all
+- each control has an additional UI component that becomes visible (or foregrounded on arc/grid) when holding K1. these are offsets to the main param which cannot be pattern recorded and are at the track scope. useful for shifting a value after it has been pattern recorded, or altering the base value across slices.
+  - a param is always made for the edit all value
+  - for track scope controls, the edit all value is the same as the control value
+  - for buffer scope & below, the edit all value is reset on script load
+- holding K1 could also reveal a second bank of 8 pattern recorders  ;)
 
 ## future maybe
 
