@@ -64,7 +64,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   
 - **screen focus:** select which track controls to edit on the norns screen
 - **arc focus:** select which track controls to edit on arc. 
-  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus component to flip orientation, editing four of the same control in different tracks
+  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
 - **rate:** record & playback rate, quantized to octaves. 
   - press one key with one finger to jump instantly to a new pitch. 
