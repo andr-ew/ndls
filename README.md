@@ -53,7 +53,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
     - 1 - toggle the **rec** key _on_
     - 2 - toggle the **play** key _on_
     - 3 - softcut will begin playing and overdubbing, like a delay.
-      - delay length is set by time between key presses, as with looping
+      - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
       - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
 - **slice:** (not done yet)
@@ -64,7 +64,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   
 - **screen focus:** select which track controls to edit on the norns screen
 - **arc focus:** select which track controls to edit on arc. 
-  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus component to flip orientation, editing four of the same control in different tracks
+  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
 - **rate:** record & playback rate, quantized to octaves. 
   - press one key with one finger to jump instantly to a new pitch. 
