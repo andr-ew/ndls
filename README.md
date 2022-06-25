@@ -22,7 +22,7 @@ in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
 ### grid + arc
 
-![documentation image](lib/doc/ndls_128.png)
+![grid & arc documentation image](lib/doc/ndls_128.png)
 
 the grid is split in two halves with two blocks of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
@@ -84,18 +84,9 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - hold: clear pattern
 
 ### norns
-- **E1:** page focus
-- **pages**
-  - **v:** 
-    - **E2:** vol, **E3:** old
-    - **K2-K3:** randomize (not done yet)
-  - **s:** 
-    - **E2:** slice start, **E3:** slice length
-    - **K2-K3:** randomize (not done yet)
-  - **f:** 
-    - **E2:** filter cutoff, **E3:** filter resonance
-    - **K2:** randomize cutoff, **K3:** filter type (not done yet)
-  - **p:** 
-    - **E2:** pan, **E3:** pitch bend
-    - **K2:** randomize octave, **K3:** randomize pan (not done yet)
+
+- **E1:** set page focus
+- **track focus:** displays the track focus (set using the top left keys on the grid)
+
+![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
 
