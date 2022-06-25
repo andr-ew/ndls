@@ -85,6 +85,12 @@ edit all
   - "track edit", "global edit" ?
 - holding K1 could also reveal a second bank of 8 pattern recorders  ;)
 
+page graphics
+- v: mixer (track volumes)
+- s: waveform
+- f: filter graph
+- p: mixer (track pans)
+
 ## future maybe
 
 sample loading
