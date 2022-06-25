@@ -94,7 +94,7 @@ any changes to these controls can be pattern recorded using the grid.
 
 ### norns
 
-the norns encoders are mapped to 8 continous controls for each track, with norns keys mapped to randomizations of certain values. use the **screen focus** compon on the top left keys on the grid to switch track focus.
+the norns encoders are mapped to 8 continous controls for each track, with norns keys mapped to randomizations of certain values. use the **screen focus** component on the top left of the grid to switch track focus.
 
 any changes to these controls can be pattern recorded using the grid.
 
