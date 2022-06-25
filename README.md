@@ -128,6 +128,7 @@ randomization ranges can be configured in the params menu under **config > rando
 
 - **E2:** filter cutoff
 - **E3:** filter resonance
+- **K3:** filter type (lowpass, bandpass, highpass, dry)
 
 #### page p (pan/pitch)
 
