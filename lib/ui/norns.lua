@@ -133,13 +133,24 @@ local function App()
             end
         end
         _pages[2].s = S{ sens = 0.01, voice = n }
-        --TODO: randomizer keys
 
         --f
         do
             local _pg = _pages[3]
             _pg.cut = Ctl{ id = 'cut', voice = n, n = 2 }
             _pg.q = Ctl{ id = 'q', voice = n, n = 3 }
+            do
+                local id = 'type '..n
+                _pg.typ = to.pattern(mpat, id, Text.key.option, function()
+                    return {
+                        n = 3, y = k[3].y, 
+                        --x = k[3].x - 7,
+                        x = k[3].x, scroll_window = { 1, 1 },
+                        state = of.param(id),
+                        options = params:lookup_param(id).options,
+                    }
+                end)
+            end
         end
         --p
         do
@@ -193,7 +204,7 @@ local function App()
         end
 
         _tab{
-            x = e[1].x, y = e[1].y, n = 1,
+            x = e[1].x, y = e[1].y, n = 1, sens = 0.5,
             options = page_names, state = { tab, function(v) tab = v end }
         }
         _norns_view_tab{
