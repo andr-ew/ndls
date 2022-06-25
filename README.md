@@ -90,13 +90,13 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 arc is mapped to four continous controls for each track. use the **arc focus** component on the grid to set the track focus for all four encoders, or tap two keys in the same column to rotate orientation and edit one control across four tracks simultaneously. the [norns](#norns) section below contains more info about the specific controls (**vol**, **cut**, **st**, **len**). 
 
-any changes to these controls can pattern recorded using the grid.
+any changes to these controls can be pattern recorded using the grid.
 
 ### norns
 
 the norns encoders are mapped to 8 continous controls for each track, with norns keys mapped to randomizations of certain values. use the **screen focus** compon on the top left keys on the grid to switch track focus.
 
-any changes to these controls can pattern recorded using the grid.
+any changes to these controls can be pattern recorded using the grid.
 
 #### global
 
