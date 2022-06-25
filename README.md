@@ -86,7 +86,7 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - double tap: overdub pattern
 - hold: clear pattern
 
-##### arc
+#### arc
 
 arc is mapped to four continous controls for each track. use the **arc focus** component on the grid to set the track focus for all four encoders, or tap two keys in the same column to rotate orientation and edit one control across four tracks simultaneously. the [norns](#norns) section below contains more info about the specific controls (**vol**, **cut**, **st**, **len**). 
 
