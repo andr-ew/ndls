@@ -1,6 +1,6 @@
 -- softcut utilities
 
--- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change (exceptions wherever noted).
+-- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change (exceptions where noted).
 
 local sc
 
@@ -113,9 +113,7 @@ end
 local reg = {}
 reg.blank = cartographer.divide(cartographer.buffer[1], buffers)
 reg.rec = cartographer.subloop(reg.blank)
-reg.play = cartographer.subloop(reg.rec)
---reg.zoom = cartographer.subloop(reg.rec)
-
+reg.play = cartographer.subloop(reg.rec, slices)
 
 for b = 1, buffers do
     --adjust punch_in time quantum based on rate
@@ -170,13 +168,6 @@ sc.setup = function()
     softcut.poll_start_phase()
 end
 
--- scoot = function()
---     reg.play:position(2, 0)
---     reg.play:position(4, 0)
--- end,
-
---more utilities
-
 sc.send = function(command, ...)
     softcut[command](...)
 end
@@ -191,83 +182,6 @@ sc.fade = function(n, length)
     sc.send('fade_time', n, math.min(0.01, length))
 end
 
---[[
-sc.punch_in = {
-    --indexed by zone
-    { recording = false, recorded = false, play = 0, t = 0 },
-    update_play = function(s, z)
-        for n,v in ipairs(sc.reg.zone) do if v == z then
-            sc.lvlmx[n].recorded = s[z].play
-            sc.lvlmx:update(n)
-        end end
-    end,
-    set = function(s, n, z, v)
-        --consider minimum length for rec zone
-        local buf = z
-        if not s[buf].recorded then
-            if v == 1 then
-
-                --adjust punch_in time quantum based on rate
-                reg.rec[z].rate_callback = function()
-                    return sc.ratemx[n].rate
-                end
-
-                reg.rec[buf]:punch_in()
-                -- s[buf].manual = false
-                s[buf].recording = true
-
-            elseif s[buf].recording then
-                s[buf].play = 1; s:update_play(buf)
-
-                reg.rec[buf]:punch_out()
-
-                s[buf].recorded = true
-                s[buf].recording = false
-            end
-        end
-    end,
-    get = function(s, z)
-        return s[z].recording and 1 or 0
-    end,
-    clear = function(s, z)
-        local buf = z
-        local i = buf
-
-        s[buf].play = 0; s:update_play(buf)
-        reg.rec[buf]:position(0)
-        reg.rec[buf]:clear()
-        reg.rec[buf]:punch_out()
-
-
-        s[buf].recorded = false
-        s[buf].recording = false
-        -- s[buf].manual = false
-
-        reg.rec[buf]:set_length(1, 'fraction')
-        reg.play[buf]:set_length(0)
-        reg.zoom[buf]:set_length(0)
-    end,
-    save = function(s)
-        local data = {}
-        for i,v in ipairs(s) do data[i] = s[i].manual end
-        return data
-    end,
-    load = function(s, data)
-        for i,v in ipairs(data) do
-            s[i].manual = v
-            if v==true then
-                s:manual(i)
-                s:big(i, reg.play[1][1]:get_length())
-            else
-                --s:clear(i)
-                if sc.buf[i]==i then params:delta('clear '..i) end
-            end
-        end
-    end,
-    copy = function(s, src, dst)
-    end
-}
---]]
 
 sc.punch_in = { -- [buf] = {}
     min_size = 0.5,
@@ -364,8 +278,10 @@ sc.punch_in = { -- [buf] = {}
         s[buf].manual = false
         --s:untap(pair)
 
-        reg.rec[buf]:set_length(1, 'fraction')
-        reg.play[buf]:set_length(0)
+        --reg.rec[buf]:set_length(1, 'fraction')
+        reg.rec[buf]:expand(1, 'fraction')
+
+        --reg.play[buf]:set_length(0)
         --reg.zoom[buf]:set_length(0)
     end,
     --save = function(s)
@@ -394,21 +310,82 @@ for i = 2, buffers do
     end
 end
 
---this object has no accociated param/control, so it can be set directly with the set function
+--the objects below this line have no accociated param/control, so they can be modified directly anywhere in the program
+
+
+local function update_assignment(n)
+    local sl = reg.play[sc.buffer[n]][sc.slice:get(n)]
+    cartographer.assign(sl, n)
+    
+    sc.punch_in:update_play(sc.buffer[n])
+end
+
 sc.buffer = { --[voice] = buffer
     set = function(s, n, v)
         if s[n] ~= v then
-            print('set ', n, v)
             s[n] = v
 
-            local bund = 'play'
-            cartographer.assign(reg[bund][s[n]], n)
-
-            sc.punch_in:update_play(s[n])
+            update_assignment(n)
         end
     end
 }
-for i = 1,buffers do sc.buffer:set(i, i) end
+sc.slice = { --[voice][buffer] = slice
+    set = function(s, n, b, v)
+        if s[n][b] ~= v then
+            s[n][b] = v
+
+            if b == sc.buffer[n] then
+                update_assignment(n)
+            end
+        end
+    end,
+    randomize = function(s, vc, sl, target)
+        local b = sc.buffer[vc]
+        local p = reg.play[b][sl]
+        local available = reg.rec[b]:get_length()
+        local ll = p:get_length('seconds')
+        local do_st = target == 'st' or target == 'both'
+        local do_len = target == 'len' or target == 'both'
+        local len, st
+        if do_len then
+            local min = math.min(params:get('len min'), params:get('len max'))
+            local max = math.max(params:get('len min'), params:get('len max'))
+            len = math.random()*(max-min) + min
+        end
+        if do_st then
+            local min = 0
+            local max = math.max(0, available - (do_len and len or ll))
+            st = math.random()*(max-min) + min
+        end
+
+        if do_st then p:expand() end
+        if do_len then p:set_length(len, 'seconds') end
+        if do_st then 
+            p:set_start(st, 'seconds') 
+            if not do_len then p:set_length(ll) end
+        end
+    end,
+    --call after loop punch_out
+    reset = function(s, n)
+        s:set(n, sc.buffer[n], 1)
+
+        for sl = 2, slices do s:randomize(n, sl, 'both') end
+    end,
+    get = function(s, n)
+        local b = sc.buffer[n]
+        return s[n][b]
+    end
+}
+for n = 1,voices do
+    sc.buffer[n] = n
+
+    sc.slice[n] = {}
+    for b = 1,buffers do
+        sc.slice[n][b] = 1
+    end
+
+    update_assignment(n)
+end
 
 sc.samples = { -- [buffer] = { samples }
     width = 0,

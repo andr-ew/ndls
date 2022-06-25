@@ -49,6 +49,7 @@ end
 
 voices = 4
 buffers = 4
+slices = 7
 
 view = {}
 vertical = false
@@ -62,43 +63,48 @@ function g64()
     return g and g.device and g.device.cols < 16 or false
 end
 
-local greg = function()
-    return reg.play
-end
+-- local greg = function(n)
+--     return reg.play[sc.buffer[n]][sc.slice:get(n)]
+-- end
 
 local set_start_scoped = {}
-for i = 1, buffers do
-    set_start_scoped[i] = multipattern.wrap_set(mpat, 'start '..i, function(v) 
-        greg()[i]:set_start(v, 'fraction')
-        nest.screen.make_dirty(); nest.arc.make_dirty()
-    end)
-end
 local set_end_scoped = {}
-for i = 1, buffers do
-    set_end_scoped[i] = multipattern.wrap_set(mpat, 'end '..i, function(v) 
-        greg()[i]:set_end(v, 'fraction')
-        nest.screen.make_dirty(); nest.arc.make_dirty()
-    end)
+for b = 1, buffers do
+    set_start_scoped[b] = {}
+    set_end_scoped[b] = {}
+
+    for sl = 1, slices do
+        set_start_scoped[b][sl] = multipattern.wrap_set(mpat, 'start '..b..' '..sl, function(v) 
+            reg.play[b][sl]:set_start(v, 'fraction')
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end)
+        set_end_scoped[b][sl] = multipattern.wrap_set(mpat, 'end '..b..' '..sl, function(v) 
+            reg.play[b][sl]:set_end(v, 'fraction')
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end)
+    end
 end
 get_set_start = function(voice)
     local b = sc.buffer[voice]
-    return set_start_scoped[b]
-end
-get_start = function(voice, units)
-    units = units or 'fraction'
-    return greg():get_start(voice, units)
+    local sl = sc.slice:get(voice)
+    return set_start_scoped[b][sl]
 end
 get_set_end = function(voice)
     local b = sc.buffer[voice]
-    return set_end_scoped[b]
+    local sl = sc.slice:get(voice)
+    return set_end_scoped[b][sl]
+end
+get_start = function(voice, units)
+    units = units or 'fraction'
+    return reg.play:get_start(voice, units)
 end
 get_end = function(voice, units)
     units = units or 'fraction'
-    return greg():get_end(voice, units)
+    return reg.play:get_end(voice, units)
 end
 get_len = function(voice, units)
     units = units or 'fraction'
-    return greg():get_length(voice, units)
+    return reg.play:get_length(voice, units)
 end
 
 --internal files

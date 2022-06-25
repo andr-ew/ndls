@@ -55,6 +55,38 @@ local function App(wide, offset)
                 }
             }
         end)
+        local function Slices(args)
+            local n = args.voice
+
+            local _slices = {}
+            for b = 1, buffers do
+                _slices[b] = to.pattern(mpat, 'slice '..n..' '..b, Grid.number, function()
+                    return {
+                        x = { 7, 13 }, y = bottom,
+                        state = {
+                            sc.slice[n][b],
+                            function(v)
+                                sc.slice:set(n, b, v)
+
+                                nest.arc.make_dirty()
+                                nest.screen.make_dirty()
+                            end
+                        }
+                    }
+                end)
+            end
+            local _fill = Grid.fill()
+
+            return function()
+                local b = sc.buffer[n]
+                if sc.punch_in[b].recorded then
+                    _fill{ x = 7, y = bottom, lvl = 4 }
+
+                    _slices[b]()
+                end
+            end
+        end
+        _params.slices = Slices{ voice = n }
         if wide then
             _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
                 return {
@@ -144,18 +176,18 @@ local function App(wide, offset)
 
     local _patrec = PatternRecorder()
 
-    local function view_refresh()
-         nest.arc.make_dirty()
-         nest.screen.make_dirty()
-    end
-
     return function()
         if wide then
             _view{
                 x = 3, y = 1, lvl = 8,
                 view = view,
                 vertical = { vertical, function(v) vertical = v end },
-                action = view_refresh
+                action = function(vertical, x, y)
+                    if not vertical then norns_view = y end
+
+                    nest.arc.make_dirty()
+                    nest.screen.make_dirty()
+                end
             }
         end
         _norns_view{

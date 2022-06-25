@@ -1,5 +1,33 @@
 params:add_separator('config')
 
+params:add_group('randomization', 2 + voices*3)
+do
+    params:add{
+        id = 'len min', type = 'control', 
+        controlspec = cs.def{ min = 0, max = 1, default = 0.1 },
+    }
+    params:add{
+        id = 'len max', type = 'control', 
+        controlspec = cs.def{ min = 0.5, max = 10, default = 2 },
+    }
+
+    for i = 1, voices do
+        params:add_separator('voice '..i)
+        params:add{
+            id = 'rand st '..i, type = 'binary', behavior = 'trigger',
+            action = function()
+                sc.slice:randomize(i, sc.slice:get(i), 'st')
+            end
+        }
+        params:add{
+            id = 'rand len '..i, type = 'binary', behavior = 'trigger',
+            action = function()
+                sc.slice:randomize(i, sc.slice:get(i), 'len')
+            end
+        }
+    end
+end
+
 local ir_op = { 'left', 'right' } 
 params:add {
     type = 'option', id = 'input routing', options = ir_op,
@@ -98,6 +126,7 @@ for i = 1, voices do
                 sc.punch_in:set(z, v)
 
                 if v==0 and sc.punch_in[z].recorded then 
+                    sc.slice:reset(n)
                     params:set('play '..i, 1) 
                 end
             elseif sc.lvlmx[n].play == 0 and v == 1 then

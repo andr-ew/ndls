@@ -146,7 +146,7 @@ function Components.grid.view()
                         end 
                     end
 
-                    props.action()
+                    props.action(vertical, dx, dy)
                     nest.grid.make_dirty()
                 else
                     for i,v in ipairs(held) do
