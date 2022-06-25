@@ -7,10 +7,12 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 ## hardware
 
 **required**
+
 - norns
 - grid (128, 64, 256, or midigrid)
 
 **also supported**
+
 - arc
 - midi mapping
 
@@ -39,7 +41,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   - overdub into a playing loop:
     - 1 - toggle the **rec** key _on_
     - 2 - play some new material into softcut from TAPE or norns' inputs
-    - 3 - softcut will record the new material on top of the loop. 
+    - 3 - softcut will record the new material on top of the loop.
       - the volume of the old material is set by the **old** control.
   - silence a playing loop:
     - toggle the **play** key _off_
@@ -61,13 +63,13 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   - idea: send a loop track into another track set up like a delay, for echoed loops.
 
 #### top half
-  
+
 - **screen focus:** select which track controls to edit on the norns screen
-- **arc focus:** select which track controls to edit on arc. 
+- **arc focus:** select which track controls to edit on arc.
   - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
-- **rate:** record & playback rate, quantized to octaves. 
-  - press one key with one finger to jump instantly to a new pitch. 
+- **rate:** record & playback rate, quantized to octaves.
+  - press one key with one finger to jump instantly to a new pitch.
   - to ~ glide ~ smoothly to a new pitch, do this:
     - 1 - hold one finger on the lit / current value key
     - 2 - press the key of the rate you'd like to glide to
@@ -76,6 +78,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 #### pattern recorders
 
 the rightmost column contans 8 pattern recorders, these can record & play back any combination of input on grid, norns, or arc. use them like this:
+
 - single tap
   - (blank pattern): begin recording
   - (recording pattern): end recording, begin looping
@@ -115,7 +118,6 @@ randomization ranges can be configured in the params menu under **config > rando
 
 - **E2:** filter cutoff
 - **E3:** filter resonance
-
 
 #### page p (pan/pitch)
 
