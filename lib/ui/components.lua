@@ -177,6 +177,58 @@ function Components.grid.phase()
     end
 end
 
+function Components.grid.buffer64(args)
+    local n = args.voice
+    local x = args.x
+    local y = args.y
+
+    local truth_tab = {
+        { 0, 0 },
+        { 1, 0 },
+        { 0, 1 },
+        { 1, 1 }
+    }
+    local def = truth_tab[sc.buffer[n]]
+    local cur = { def[1], def[2] }
+    local function set_buf()
+        local bv
+        for i,truth in ipairs(truth_tab) do
+            if cur[1] == truth[1] and cur[2] == truth[2] then
+                bv = i
+            end
+        end
+        sc.buffer:set(n, bv)
+
+        nest.arc.make_dirty()
+        nest.screen.make_dirty()
+    end
+
+    local _l = to.pattern(mpat, 'l buffer '..n, Grid.toggle, function()
+        return {
+            x = x[1], y = y,
+            state = {
+                cur[1],
+                function(v)
+                    cur[1] = v; set_buf()
+                end
+            }
+        }
+    end)
+    local _r = to.pattern(mpat, 'r buffer '..n, Grid.toggle, function()
+        return {
+            x = x[2], y = y,
+            state = {
+                cur[2],
+                function(v)
+                    cur[2] = v; set_buf()
+                end
+            }
+        }
+    end)
+
+    return function() _l(); _r() end
+end
+
 function Components.arc.filter()
     return function(props)
         local a = nest.arc.device()

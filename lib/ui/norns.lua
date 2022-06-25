@@ -157,6 +157,8 @@ local function App()
             local _pg = _pages[4]
             _pg.pan = Ctl{ id = 'pan', voice = n, n = 2 }
             _pg.bnd = Ctl{ id = 'bnd', voice = n, n = 3 }
+            --TODO: display pitch bend summed with rate 
+            -- (more intutive alongside the octave randomizer key)
         end
 
         return function(props)

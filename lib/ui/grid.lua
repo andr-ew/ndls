@@ -1,5 +1,6 @@
-local function App(wide, offset)
-    local varibright = true
+local function App(args)
+    local varibright = args.varibright
+    local wide = args.wide
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
@@ -41,28 +42,31 @@ local function App(wide, offset)
                 },
             }
         end)
-        _params.buffer = to.pattern(mpat, 'buffer '..n, Grid.number, function()
-            return {
-                x = { 3, 6 }, y = bottom,
-                state = {
-                    sc.buffer[n],
-                    function(v)
-                        sc.buffer:set(n, v)
+        do
+            _params.buffer = wide and to.pattern(mpat, 'buffer '..n, Grid.number, function()
+                return {
+                    x = { 3, 6 }, y = bottom,
+                    state = {
+                        sc.buffer[n],
+                        function(v)
+                            sc.buffer:set(n, v)
 
-                        nest.arc.make_dirty()
-                        nest.screen.make_dirty()
-                    end
+                            nest.arc.make_dirty()
+                            nest.screen.make_dirty()
+                        end
+                    }
                 }
-            }
-        end)
+            end) or Components.grid.buffer64{ voice = n, x = { 3, 4 }, y = bottom }
+        end
         local function Slices(args)
             local n = args.voice
 
             local _slices = {}
+
             for b = 1, buffers do
                 _slices[b] = to.pattern(mpat, 'slice '..n..' '..b, Grid.number, function()
                     return {
-                        x = { 7, 13 }, y = bottom,
+                        x = wide and { 7, 13 } or { 5, 8 }, y = bottom,
                         state = {
                             sc.slice[n][b],
                             function(v)
@@ -80,7 +84,7 @@ local function App(wide, offset)
             return function()
                 local b = sc.buffer[n]
                 if sc.punch_in[b].recorded then
-                    _fill{ x = 7, y = bottom, lvl = 4 }
+                    _fill{ x = wide and 7 or 5, y = bottom, lvl = 4 }
 
                     _slices[b]()
                 end
@@ -115,7 +119,7 @@ local function App(wide, offset)
             local off = wide and 6 or 4
             _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
                 return {
-                    x = wide and { 8, 15 } or { 3, 8 }, y = top, filtersame = true,
+                    x = wide and { 8, 15 } or { 3, 7 }, y = top, filtersame = true,
                     state = { params:get('rate '..n) + off },
                     action = function(v, t)
                         sc.slew(n, t)
@@ -157,11 +161,13 @@ local function App(wide, offset)
 
             for _, _param in pairs(_params) do _param() end
             
-            if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
-                _phase{ 
-                    x = wide and { 1, 16 } or { 1, 8 }, y = top,
-                    phase = sc.phase[n].rel, lvl = 4,
-                }
+            if varibright then
+                if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
+                    _phase{ 
+                        x = wide and { 1, 16 } or { 1, 8 }, y = top,
+                        phase = sc.phase[n].rel, lvl = 4,
+                    }
+                end
             end
         end
     end
@@ -179,7 +185,7 @@ local function App(wide, offset)
     return function()
         if wide then
             _view{
-                x = 3, y = 1, lvl = 8,
+                x = 3, y = 1, lvl = mid2,
                 view = view,
                 vertical = { vertical, function(v) vertical = v end },
                 action = function(vertical, x, y)
@@ -191,7 +197,7 @@ local function App(wide, offset)
             }
         end
         _norns_view{
-            x = 1, y = { 1, 4 }, lvl = 8,
+            x = 1, y = { 1, 4 }, lvl = mid2,
             state = { 
                 4 - norns_view + 1, 
                 function(v) 
@@ -207,7 +213,8 @@ local function App(wide, offset)
         end
         
         _patrec{
-            x = 16, y = { 1, 8 }, pattern = pattern,
+            x = wide and 16 or 8, y = wide and { 1, 8 } or { 1, 4 }, 
+            pattern = pattern, varibright = varibright
         }
     end
 end

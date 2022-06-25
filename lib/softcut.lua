@@ -183,6 +183,7 @@ sc.fade = function(n, length)
 end
 
 
+--FIXME: punch-in with rate < 0 results in blank buffer
 sc.punch_in = { -- [buf] = {}
     min_size = 0.5,
     { 

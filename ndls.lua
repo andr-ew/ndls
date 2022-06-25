@@ -59,6 +59,8 @@ norns_view = 1
 local g = grid.connect()
 local a = arc.connect()
 
+varibright = (g and g.device and g.device.cols >= 16) and true or false
+
 function g64()
     return g and g.device and g.device.cols < 16 or false
 end
@@ -120,7 +122,8 @@ App.norns = include 'ndls/lib/ui/norns'            --norns UI
 --set up nest v2 UI
 
 local _app = {
-    grid = App.grid(not g64(), 0),
+    --grid = App.grid(not g64(), 0),
+    grid = App.grid{ wide = false, varibright = false },
     arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
     norns = App.norns(),
 }
