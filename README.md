@@ -94,27 +94,32 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
 
-- **E2:**
-- **E3:**
+- **E2:** track output level
+- **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
 
 #### page s (start/length)
 
 ![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
 
-- **E2:**
-- **E3:**
+- **E2:** slice window start point
+- **E3:** slice window start length
+- **K2:** randomize start point
+- **K3:** randomize length
+- **K2 + K3:** random window
+
+randomization ranges can be configured in the params menu under **config > randomization**
 
 #### page f (filter)
 
 ![norns screen page f documentation image](lib/doc/ndls_screen_f.png)
 
-- **E2:**
-- **E3:**
+- **E2:** filter cutoff
+- **E3:** filter resonance
 
 
 #### page p (pan/pitch)
 
 ![norns screen page p documentation image](lib/doc/ndls_screen_p.png)
 
-- **E2:**
-- **E3:**
+- **E2:** pan
+- **E3:** pitch bend (-1 to +1 octave)
