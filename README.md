@@ -1,107 +1,127 @@
-# ndls
+# ndls (beta)
 
-4-track asyncronous tape looper, delay, loop splicer. pattern memory, performace oriented + configurable. and it's ~ bendy ~
+4-track asyncronous tape looper, delay, & loop splicer based on softcut. pattern memory, performace oriented + configurable. and it's ~ bendy ~
 
-(spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim))
+spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim)
 
 ## hardware
 
 **required**
+
 - norns
 - grid (128, 64, 256, or midigrid)
 
 **also supported**
+
 - arc
-- midi footswitch
+- midi mapping
 
-## grid
+## install
 
-![documentation image](doc/ndls.png)
+in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
-## norns
+## documentation
 
-**mixer view**
-- **E1:** crossfader
-- **E2-E3:** mix parameter
-  - level
-  - pan
-  - crossfader assign
-- **K2:** track focus 1+2 / 3+4
-- **K3:** parameter select
+### grid + arc
 
-**track view**
-- **E1:** page
-- **E2-E3:** track parameter
-  - **pages**
-    - **v:** vol, old
-      - **K2-K3:** randomize
-    - **s:** start, length
-      - **K2-K3:** randomize 
-    - **f:** cutoff, resonance
-      - **K2:** randomize cutoff
-      - **K3:** filter type
-    - **p:** pitch, pan
-      - **K2:** randomize octave
-      - **K3:** randomize pan
-- **K1:** edit all
+![grid & arc documentation image](lib/doc/ndls_128.png)
 
-## notes
+the grid is split in two halves with two blocks of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
-arc assignable to any of the track view parameters
+see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
-track parameter randomization
-  - play with different random distributions (gaussian is probably fine) for certain parameters (/all parameters?)
-  - provide some options for tuning averages & deviations (particularly for length)
+#### bottom half
 
-control scopes
-- track
-  - values never reset, are saved across sessions in params
-  - maybe disallow pattern recording ?
-- buffer
-  - value is unique per-buffer, per-track 
-  - values reset when entering a new buffer 
-    - when entering a blank buffer, volume resets to 1. when entering a recorded buffer, volume resets to 0.
-  - patterns are cleared out on reset
-- zone
-  - value is unique per-zone, per-buffer, per-track
-  - values for all zones reset when entering a new buffer
-- random zone
-  - zone, but values are automatically randomized upon filling a new buffer in all zones but the first zone
-  - start & length are fixed in this zone
+- **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
+  - record a new loop in a blank buffer:
+    - 1 - toggle the **rec** key _on_
+    - 2 - play some audio into softcut from TAPE or norns' inputs
+    - 3 - toggle **rec** back _off_
+    - 4 - softcut will loop what you just played, loop pedal style.
+  - overdub into a playing loop:
+    - 1 - toggle the **rec** key _on_
+    - 2 - play some new material into softcut from TAPE or norns' inputs
+    - 3 - softcut will record the new material on top of the loop.
+      - the volume of the old material is set by the **old** control.
+  - silence a playing loop:
+    - toggle the **play** key _off_
+  - clear a buffer, and record a brand new loop:
+    - 1 - toggle the **play** key _off_
+    - 2 - toggle the **rec** key _on_. softcut will clear the old contents of the buffer.
+    - 3 - play some new material into softcut from TAPE or norns' inputs
+    - 4 - toggle **rec** back _off_
+    - 5 - softcut will loop the new material
+  - use a blank buffer as a delay
+    - 1 - toggle the **rec** key _on_
+    - 2 - toggle the **play** key _on_
+    - 3 - softcut will begin playing and overdubbing, like a delay.
+      - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
+      - delay feeback is set by the **old** control
+- **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
+- **slice:** each audio buffer has 7 independent playback windows that you switch between on the fly using the grid. each window has it's own editable **st** & **len** settings. slices 2-7 are auto-randomized upon recording a new loop into a buffer.
+- **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
+  - idea: send a loop track into another track set up like a delay, for echoed loops.
 
-scoped UI components are just duplicated for each zone/buffer, so if a pattern is recorded, only one component scope will be mapped to the pattern
+#### top half
 
-control object
-- only creates a real param for the track scope, which will be saved in the pset
-- for all other scopes, just store intentially volitile internal data for every buffer/zone
+- **screen focus:** select which track controls to edit on the norns screen
+- **arc focus:** select which track controls to edit on arc.
+  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks
+- **rev:** set record/playback direction. hold & release to glide to the new direction.
+- **rate:** record & playback rate, quantized to octaves.
+  - press one key with one finger to jump instantly to a new pitch.
+  - to ~ glide ~ smoothly to a new pitch, do this:
+    - 1 - hold one finger on the lit / current value key
+    - 2 - press the key of the rate you'd like to glide to
+    - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key. this is an expressive gesture !
 
-idea: when output volume for track becomes 0, play state is always off
-- this makes adding new sounds after a crossfade slightly easier
+#### pattern recorders
 
-still not really sure whether zone slices within a buffer should be shared across tracks or unique
+the rightmost column contans 8 pattern recorders, these can record & play back any combination of input on grid, norns, or arc. use them like this:
 
-crossfader assign + send/return could be re-assignable slots ?
-- I could also see some shortcuts to parameter randomization being really useful here (start + len, filter, vol + pan)
-- leaving them blank could extend existing UI (rate + zones)
+- single tap
+  - (blank pattern): begin recording
+  - (recording pattern): end recording, begin looping
+  - (playing pattern): play/pause playback
+- double tap: overdub pattern
+- hold: clear pattern
 
-slew options
-- fixed slew (used for switching between zones)
-- disable glide (use the fixed slew on the rate component)
+### norns
 
-## future maybe
+#### global
 
-sample loading
+- **E1:** set page focus
+- **track focus:** displays the track focus (set using the top left keys on the grid)
 
-pattern + audio save/recall
+#### page v (volume)
 
-rate intervals (toggle per each)
-- octave
-- fifth
-- maj7
-- min7
+![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
 
-sync
-- sync record/play actions, pattern recorders, quantize window edits
-- unique sync setting per zone & pattern recorder ? 
-  - map this setting to the grid when holding K1
-  - allow copying synced audio to unsynced zone & vice-versa
+- **E2:** track output level
+- **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
+
+#### page s (start/length)
+
+![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
+
+- **E2:** slice window start point
+- **E3:** slice window start length
+- **K2:** randomize start point
+- **K3:** randomize length
+- **K2 + K3:** random window
+
+randomization ranges can be configured in the params menu under **config > randomization**
+
+#### page f (filter)
+
+![norns screen page f documentation image](lib/doc/ndls_screen_f.png)
+
+- **E2:** filter cutoff
+- **E3:** filter resonance
+
+#### page p (pan/pitch)
+
+![norns screen page p documentation image](lib/doc/ndls_screen_p.png)
+
+- **E2:** pan
+- **E3:** pitch bend (-1 to +1 octave)
