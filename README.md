@@ -38,7 +38,7 @@
 
 ## notes
 
-arc assignable to any of the track view parameters
+arc assignable to any of the track parameters
 
 track parameter randomization
   - play with different random distributions (gaussian is probably fine) for certain parameters (/all parameters?)
@@ -79,8 +79,10 @@ edit all
   - for track scope controls, the edit all value is the same as the control value
   - for buffer scope & below, the edit all value is reset on script load
   - the state displayed by a control component is the local state summed with the edit all value
+    - to accomplish this in tandem with pattern recording there will need to be separate components for input & output per control (and also separate input components per scope)
 - for a non-recorded track/buffer - the edit all control is shown
 - i need a better name for this than edit all lol
+  - "track edit", "global edit" ?
 - holding K1 could also reveal a second bank of 8 pattern recorders  ;)
 
 ## future maybe
