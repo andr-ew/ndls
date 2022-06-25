@@ -115,7 +115,7 @@ any changes to these controls can pattern recorded using the grid.
 ![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
 
 - **E2:** slice window start point
-- **E3:** slice window start length
+- **E3:** slice window length
 - **K2:** randomize start point
 - **K3:** randomize length
 - **K2 + K3:** random window
