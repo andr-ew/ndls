@@ -79,6 +79,8 @@ edit all
   - for track scope controls, the edit all value is the same as the control value
   - for buffer scope & below, the edit all value is reset on script load
   - the state displayed by a control component is the local state summed with the edit all value
+- for a non-recorded track/buffer - the edit all control is shown
+- i need a better name for this than edit all lol
 - holding K1 could also reveal a second bank of 8 pattern recorders  ;)
 
 ## future maybe
