@@ -58,7 +58,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
       - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
       - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
-- **slice:** each audio buffer has 7 independent playback windows that you switch between on the fly using the grid. each window has it's own editable **st** & **len** settings. slices 2-7 are auto-randomized upon recording a new loop into a buffer.
+- **slice:** each audio buffer has 7 independent record & playback sub-windows that you switch between on the fly using the grid. each window has it's own editable **st** & **len** settings. slices 2-7 are auto-randomized upon recording a new loop into a buffer.
 - **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
   - idea: send a loop track into another track set up like a delay, for echoed loops.
 
