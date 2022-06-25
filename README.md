@@ -90,8 +90,31 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - **E1:** set page focus
 - **track focus:** displays the track focus (set using the top left keys on the grid)
 
-#### page v
+#### page v (volume)
 
 ![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
 
+- **E2:**
+- **E3:**
 
+#### page s (start/length)
+
+![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
+
+- **E2:**
+- **E3:**
+
+#### page f (filter)
+
+![norns screen page f documentation image](lib/doc/ndls_screen_f.png)
+
+- **E2:**
+- **E3:**
+
+
+#### page p (pan/pitch)
+
+![norns screen page p documentation image](lib/doc/ndls_screen_p.png)
+
+- **E2:**
+- **E3:**
