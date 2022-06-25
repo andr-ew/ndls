@@ -6,7 +6,9 @@ local function App()
     local h = 64 - mar.top - mar.bottom
 
     x[1] = mar.left
-    x[2] = 128/2
+    x[1.5] = w * 5/16 + mar.left
+    x[2] = w/2 + mar.left
+    x[2.5] = w * 13/16 + mar.left
     x[3] = 128 - mar.right
     y[1] = mar.top
     y[2] = nil
@@ -21,8 +23,8 @@ local function App()
     }
     local k = {
         {  },
-        { x = x[1], y = y[4] },
-        { x = x[2], y = y[4] },
+        { x = x[1.5], y = y[4] },
+        { x = x[2.5], y = y[4] },
     }
 
     --local _alt = Key.momentary()
@@ -76,6 +78,7 @@ local function App()
         local function S(args)
             _st_view = Text.enc.number()
             _len_view = Text.enc.number()
+            _randomize = Text.key.trigger()
 
             return function()
                 if sc.punch_in[sc.buffer[args.voice]].recorded then
@@ -109,10 +112,29 @@ local function App()
                             nest.screen.make_dirty()
                         end
                     end
+
+                    do
+                        local n = args.voice
+                        _randomize{
+                            label = { 'x', 'x' },
+                            edge = 'falling',
+                            n = { 2, 3 },
+                            y = k[2].y, x = { { k[2].x }, { k[3].x } },
+                            action = function(v, t, d, add, rem, l)
+                                if #l == 2 then
+                                    sc.slice:randomize(n, sc.slice:get(n), 'both')
+                                else
+                                    sc.slice:randomize(n, sc.slice:get(n), add==2 and 'len' or 'st')
+                                end
+                            end
+                        }
+                    end
                 end
             end
         end
         _pages[2].s = S{ sens = 0.01, voice = n }
+        --TODO: randomizer keys
+
         --f
         do
             local _pg = _pages[3]

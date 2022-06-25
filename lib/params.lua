@@ -4,11 +4,11 @@ params:add_group('randomization', 2 + voices*3)
 do
     params:add{
         id = 'len min', type = 'control', 
-        controlspec = cs.def{ min = 0, max = 1, default = 0.1 },
+        controlspec = cs.def{ min = 0, max = 1, default = 0.15 },
     }
     params:add{
         id = 'len max', type = 'control', 
-        controlspec = cs.def{ min = 0.5, max = 10, default = 2 },
+        controlspec = cs.def{ min = 0.5, max = 10, default = 0.75 },
     }
 
     for i = 1, voices do

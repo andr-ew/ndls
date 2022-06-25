@@ -359,11 +359,11 @@ sc.slice = { --[voice][buffer] = slice
         end
 
         if do_st then p:expand() end
-        if do_len then p:set_length(len, 'seconds') end
         if do_st then 
             p:set_start(st, 'seconds') 
             if not do_len then p:set_length(ll) end
         end
+        if do_len then p:set_length(len, 'seconds') end
     end,
     --call after loop punch_out
     reset = function(s, n)
