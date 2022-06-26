@@ -157,6 +157,8 @@ local function App()
             local _pg = _pages[4]
             _pg.pan = Ctl{ id = 'pan', voice = n, n = 2 }
             _pg.bnd = Ctl{ id = 'bnd', voice = n, n = 3 }
+            --TODO: display pitch bend summed with rate 
+            -- (more intutive alongside the octave randomizer key)
         end
 
         return function(props)
@@ -174,6 +176,9 @@ local function App()
         y = { e[1].y + 8, e[2].y - 4 },
         --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
     }
+
+    local norns_view_pages = {}
+    for i = 1,voices do norns_view_pages[i] = i end
 
     return function()
         -- _alt{
@@ -208,7 +213,7 @@ local function App()
             options = page_names, state = { tab, function(v) tab = v end }
         }
         _norns_view_tab{
-            x = e[4].x, y = e[4].y, n = 4, options = { 1, 2, 3, 4 }, 
+            x = e[4].x, y = e[4].y, n = 4, options = norns_view_pages, 
             state = { 
                 norns_view, 
                 function(v) 

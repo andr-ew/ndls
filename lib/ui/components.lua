@@ -109,6 +109,8 @@ function Components.grid.view()
     local held = {}
 
     return function(props)
+        local tall = props.tall
+
         local g = nest.grid.device()
 
         local vertical = props.vertical[1]
@@ -118,25 +120,27 @@ function Components.grid.view()
             local x, y, z = nest.grid.input_args()
             
             if
-                x >= props.x and x <= props.x + 3 
-                    and y >= props.y and y <= props.y + 3 
+                x >= props.x and x <= props.x + (tall and 5 or 3) 
+                    and y >= props.y and y <= props.y + (tall and 5 or 3)
             then
                 local dx, dy = x - props.x + 1, y - props.y + 1
 
                 if z == 1 then
                     table.insert(held, { x = dx, y = dy })
 
-                    if #held > 1 then
-                        if held[1].x == held[2].x then 
-                            vertical = true
-                            set_vertical(true)
-                        elseif held[1].y == held[2].y then 
-                            vertical = false
-                            set_vertical(false) 
+                    if not tall then
+                        if #held > 1 then
+                            if held[1].x == held[2].x then 
+                                vertical = true
+                                set_vertical(true)
+                            elseif held[1].y == held[2].y then 
+                                vertical = false
+                                set_vertical(false) 
+                            end
                         end
                     end
 
-                    for i = 1,4 do --y
+                    for i = 1,tall and 6 or 4 do --y
                         for j = 1,4 do --x 
                             props.view[i][j] = (
                                 vertical and dx == j
@@ -155,7 +159,7 @@ function Components.grid.view()
                 end
             end
         elseif nest.grid.is_drawing() then
-            for i = 0,3 do for j = 0,3 do 
+            for i = 0,tall and 5 or 3 do for j = 0,3 do 
                 g:led(props.x + j, props.y + i, props.view[i + 1][j + 1] * props.lvl)
             end end
         end
@@ -175,6 +179,58 @@ function Components.grid.phase()
             )
         end
     end
+end
+
+function Components.grid.buffer64(args)
+    local n = args.voice
+    local x = args.x
+    local y = args.y
+
+    local truth_tab = {
+        { 0, 0 },
+        { 1, 0 },
+        { 0, 1 },
+        { 1, 1 }
+    }
+    local def = truth_tab[sc.buffer[n]]
+    local cur = { def[1], def[2] }
+    local function set_buf()
+        local bv
+        for i,truth in ipairs(truth_tab) do
+            if cur[1] == truth[1] and cur[2] == truth[2] then
+                bv = i
+            end
+        end
+        sc.buffer:set(n, bv)
+
+        nest.arc.make_dirty()
+        nest.screen.make_dirty()
+    end
+
+    local _l = to.pattern(mpat, 'l buffer '..n, Grid.toggle, function()
+        return {
+            x = x[1], y = y,
+            state = {
+                cur[1],
+                function(v)
+                    cur[1] = v; set_buf()
+                end
+            }
+        }
+    end)
+    local _r = to.pattern(mpat, 'r buffer '..n, Grid.toggle, function()
+        return {
+            x = x[2], y = y,
+            state = {
+                cur[2],
+                function(v)
+                    cur[2] = v; set_buf()
+                end
+            }
+        }
+    end)
+
+    return function() _l(); _r() end
 end
 
 function Components.arc.filter()
@@ -220,6 +276,7 @@ function Components.arc.st(args)
         local recorded = props.recorded
         --local rec_flag = props.rec_flag
         local reg = props.reg
+        local off = props.rotated and 16 or 0
         
         if nest.arc.has_input() then
             local n, d = nest.arc.input_args()
@@ -243,7 +300,7 @@ function Components.arc.st(args)
                         reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
                     )
                     for x = st,en do
-                        a:led(props.n, (x - 1) % 64 + 1, props.lvl[1])
+                        a:led(props.n, (x - 1) % 64 + 1 - off, props.lvl[1])
                     end
                 end
             else
@@ -258,7 +315,7 @@ function Components.arc.st(args)
                 )
                 local show = props.show_phase
                 for x = st,en do
-                    a:led(props.n, (x - 1) % 64 + 1, props.lvl[(x==ph and show) and 2 or 1])
+                    a:led(props.n, (x - 1) % 64 + 1 - off, props.lvl[(x==ph and show) and 2 or 1])
                 end
             end
         end
@@ -273,6 +330,7 @@ function Components.arc.len(mpat)
         local recorded = props.recorded
         --local rec_flag = props.rec_flag
         local reg = props.reg
+        local off = props.rotated and 16 or 0
         
         if nest.arc.has_input() then
             local n, d = nest.arc.input_args()
@@ -290,8 +348,8 @@ function Components.arc.len(mpat)
                     local en = props.x[1] - 1 + math.ceil(
                         reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
                     )
-                    a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
-                    a:led(props.n, (en - 1) % 64 + 1, props.lvl_st)
+                    a:led(props.n, (st - 1) % 64 + 1 - off, props.lvl_st)
+                    a:led(props.n, (en - 1) % 64 + 1 - off, props.lvl_st)
                 end
             else
                 local st = props.x[1] + math.ceil(
@@ -304,10 +362,10 @@ function Components.arc.len(mpat)
                     props.phase * (props.x[2] - props.x[1])
                 )
 
-                a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
-                a:led(props.n, (en - 1) % 64 + 1, props.lvl_en)
+                a:led(props.n, (st - 1) % 64 + 1 - off, props.lvl_st)
+                a:led(props.n, (en - 1) % 64 + 1 - off, props.lvl_en)
                 if props.show_phase then 
-                    a:led(props.n, (ph - 1) % 64 + 1, props.lvl_ph)
+                    a:led(props.n, (ph - 1) % 64 + 1 - off, props.lvl_ph)
                 end
             end
         end

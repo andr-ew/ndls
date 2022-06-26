@@ -1,17 +1,24 @@
-local function App(wide, offset)
-    local varibright = true
+local function App(args)
+    local varibright = args.varibright
+    local wide = args.wide
+    local tall = args.tall
     local shaded = varibright and { 4, 15 } or { 0, 15 }
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
 
-    --TODO: only enable when arc is connected AND wide
-
-    view = {
+    view = tall and {
         { 1, 1, 1, 1 },
         { 0, 0, 0, 0 },
         { 0, 0, 0, 0 },
         { 0, 0, 0, 0 },
-    } or { 0, 0, 0, 0 }
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 },
+    } or {
+        { 1, 1, 1, 1 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 },
+        { 0, 0, 0, 0 },
+    }
 
     local function Voice(n)
         local top, bottom = n, n + voices
@@ -41,28 +48,32 @@ local function App(wide, offset)
                 },
             }
         end)
-        _params.buffer = to.pattern(mpat, 'buffer '..n, Grid.number, function()
-            return {
-                x = { 3, 6 }, y = bottom,
-                state = {
-                    sc.buffer[n],
-                    function(v)
-                        sc.buffer:set(n, v)
+        do
+            _params.buffer = wide and to.pattern(mpat, 'buffer '..n, Grid.number, function()
+                return {
+                    x = tall and { 3, 8 } or { 3, 6 }, y = bottom,
+                    state = {
+                        sc.buffer[n],
+                        function(v)
+                            sc.buffer:set(n, v)
 
-                        nest.arc.make_dirty()
-                        nest.screen.make_dirty()
-                    end
+                            nest.arc.make_dirty()
+                            nest.screen.make_dirty()
+                        end
+                    }
                 }
-            }
-        end)
+            end) or Components.grid.buffer64{ voice = n, x = { 3, 4 }, y = bottom }
+        end
         local function Slices(args)
             local n = args.voice
 
             local _slices = {}
+
             for b = 1, buffers do
                 _slices[b] = to.pattern(mpat, 'slice '..n..' '..b, Grid.number, function()
                     return {
-                        x = { 7, 13 }, y = bottom,
+                        x = tall and { 9, 14 } or (wide and { 7, 13 } or { 5, 8 }), 
+                        y = bottom,
                         state = {
                             sc.slice[n][b],
                             function(v)
@@ -80,7 +91,7 @@ local function App(wide, offset)
             return function()
                 local b = sc.buffer[n]
                 if sc.punch_in[b].recorded then
-                    _fill{ x = 7, y = bottom, lvl = 4 }
+                    _fill{ x = wide and 7 or 5, y = bottom, lvl = 4 }
 
                     _slices[b]()
                 end
@@ -90,13 +101,13 @@ local function App(wide, offset)
         if wide then
             _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
                 return {
-                    x = 14, y = bottom, lvl = shaded,
+                    x = tall and 15 or 14, y = bottom, lvl = shaded,
                     state = of.param('send '..n),
                 }
             end)
             _params.ret = to.pattern(mpat, 'return '..n, Grid.toggle, function()
                 return {
-                    x = 15, y = bottom, lvl = shaded,
+                    x = tall and 16 or 15, y = bottom, lvl = shaded,
                     state = of.param('return '..n),
                 }
             end)
@@ -115,7 +126,7 @@ local function App(wide, offset)
             local off = wide and 6 or 4
             _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
                 return {
-                    x = wide and { 8, 15 } or { 3, 8 }, y = top, filtersame = true,
+                    x = wide and { 8, 15 } or { 3, 7 }, y = top, filtersame = true,
                     state = { params:get('rate '..n) + off },
                     action = function(v, t)
                         sc.slew(n, t)
@@ -125,43 +136,16 @@ local function App(wide, offset)
             end)
         end
 
-        --local _cf_assign = { Grid.toggle(), Grid.toggle() }
-
         return function()
-            --[[
-            _cf_assign[1]{
-                x = wide and 14 or 7, y = wide and top or bottom, 
-                lvl = shaded,
-                state = { params:get('crossfade assign '..n) == 2 and 1 or 0 },
-                action = function(v)
-                    if v == 1 then
-                        params:set('crossfade assign '..n, 2)
-                    elseif v == 0 then
-                        params:set('crossfade assign '..n, 1)
-                    end
-                end
-            }
-            _cf_assign[2]{
-                x = wide and 15 or 8, y = wide and top or bottom, 
-                lvl = shaded,
-                state = { params:get('crossfade assign '..n) == 3 and 1 or 0 },
-                action = function(v)
-                    if v == 1 then
-                        params:set('crossfade assign '..n, 3)
-                    elseif v == 0 then
-                        params:set('crossfade assign '..n, 1)
-                    end
-                end
-            }
-            --]]
-
             for _, _param in pairs(_params) do _param() end
             
-            if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
-                _phase{ 
-                    x = wide and { 1, 16 } or { 1, 8 }, y = top,
-                    phase = sc.phase[n].rel, lvl = 4,
-                }
+            if varibright then
+                if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
+                    _phase{ 
+                        x = wide and { 1, 16 } or { 1, 8 }, y = top,
+                        phase = sc.phase[n].rel, lvl = 4,
+                    }
+                end
             end
         end
     end
@@ -179,8 +163,8 @@ local function App(wide, offset)
     return function()
         if wide then
             _view{
-                x = 3, y = 1, lvl = 8,
-                view = view,
+                x = 3, y = 1, lvl = mid2,
+                view = view, tall = tall,
                 vertical = { vertical, function(v) vertical = v end },
                 action = function(vertical, x, y)
                     if not vertical then norns_view = y end
@@ -191,11 +175,11 @@ local function App(wide, offset)
             }
         end
         _norns_view{
-            x = 1, y = { 1, 4 }, lvl = 8,
+            x = 1, y = { 1, voices }, lvl = mid2,
             state = { 
-                4 - norns_view + 1, 
+                voices - norns_view + 1, 
                 function(v) 
-                    norns_view = 4 - v + 1 
+                    norns_view = voices - v + 1 
                     nest.screen.make_dirty()
                 end 
             }
@@ -207,7 +191,9 @@ local function App(wide, offset)
         end
         
         _patrec{
-            x = 16, y = { 1, 8 }, pattern = pattern,
+            x = tall and { 1, 16 } or (wide and 16 or 8), 
+            y = tall and 16 or (wide and { 1, 8 } or { 1, 4 }), 
+            pattern = pattern, varibright = varibright
         }
     end
 end

@@ -42,14 +42,10 @@ function pattern_time:resume()
 end
 
 pattern, mpat = {}, {}
-for i = 1,8 do
+for i = 1,16 do
     pattern[i] = pattern_time.new() 
     mpat[i] = multipattern.new(pattern[i])
 end
-
-voices = 4
-buffers = 4
-slices = 7
 
 view = {}
 vertical = false
@@ -59,13 +55,24 @@ norns_view = 1
 local g = grid.connect()
 local a = arc.connect()
 
-function g64()
-    return g and g.device and g.device.cols < 16 or false
-end
+wide = g and g.device and g.device.cols >= 16 or false
+tall = g and g.device and g.device.rows >= 16 or false
+arc2 = not wide
 
--- local greg = function(n)
---     return reg.play[sc.buffer[n]][sc.slice:get(n)]
--- end
+-- test grid64
+-- wide = false
+-- arc2 = true
+-- end test
+-- test grid256
+-- wide = true
+-- tall = true
+-- end test
+
+varibright = wide
+
+voices = tall and 6 or 4
+buffers = voices
+slices = 7
 
 local set_start_scoped = {}
 local set_end_scoped = {}
@@ -120,8 +127,16 @@ App.norns = include 'ndls/lib/ui/norns'            --norns UI
 --set up nest v2 UI
 
 local _app = {
-    grid = App.grid(not g64(), 0),
-    arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
+    --grid = App.grid(not g64(), 0),
+    grid = App.grid{ 
+        wide = wide, tall = tall,
+        varibright = varibright 
+    },
+    arc = App.arc{ 
+        map = not arc2 and { 'vol', 'cut', 'st', 'len' } or { 'st', 'len', 'vol', 'cut' }, 
+        rotated = arc2,
+        grid_wide = wide,
+    },
     norns = App.norns(),
 }
 
