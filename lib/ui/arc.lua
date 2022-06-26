@@ -112,7 +112,7 @@ local function App(args)
     end
 
     local _params = {}
-    for y = 1,4 do --track
+    for y = 1,voices do --track
         _params[y] = {}
 
         for x = 1,4 do --map item
@@ -123,7 +123,7 @@ local function App(args)
 
     return function()
         if wide then
-            for y = 1,4 do for x = 1,4 do
+            for y = 1,voices do for x = 1,4 do
                 if view[y][x] > 0 then
                     _params[y][x]()
                 end

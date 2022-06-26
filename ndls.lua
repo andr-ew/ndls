@@ -42,14 +42,10 @@ function pattern_time:resume()
 end
 
 pattern, mpat = {}, {}
-for i = 1,8 do
+for i = 1,16 do
     pattern[i] = pattern_time.new() 
     mpat[i] = multipattern.new(pattern[i])
 end
-
-voices = 4
-buffers = 4
-slices = 7
 
 view = {}
 vertical = false
@@ -60,14 +56,23 @@ local g = grid.connect()
 local a = arc.connect()
 
 wide = g and g.device and g.device.cols >= 16 or false
+tall = g and g.device and g.device.rows >= 16 or false
 arc2 = not wide
 
 -- test grid64
 -- wide = false
 -- arc2 = true
 -- end test
+-- test grid256
+-- wide = true
+-- tall = true
+-- end test
 
 varibright = wide
+
+voices = tall and 6 or 4
+buffers = voices
+slices = 7
 
 local set_start_scoped = {}
 local set_end_scoped = {}
@@ -123,7 +128,10 @@ App.norns = include 'ndls/lib/ui/norns'            --norns UI
 
 local _app = {
     --grid = App.grid(not g64(), 0),
-    grid = App.grid{ wide = wide, varibright = varibright },
+    grid = App.grid{ 
+        wide = wide, tall = tall,
+        varibright = varibright 
+    },
     arc = App.arc{ 
         map = not arc2 and { 'vol', 'cut', 'st', 'len' } or { 'st', 'len', 'vol', 'cut' }, 
         rotated = arc2,

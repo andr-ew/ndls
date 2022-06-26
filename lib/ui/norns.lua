@@ -177,6 +177,9 @@ local function App()
         --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
     }
 
+    local norns_view_pages = {}
+    for i = 1,voices do norns_view_pages[i] = i end
+
     return function()
         -- _alt{
         --     n = 1, 
@@ -210,7 +213,7 @@ local function App()
             options = page_names, state = { tab, function(v) tab = v end }
         }
         _norns_view_tab{
-            x = e[4].x, y = e[4].y, n = 4, options = { 1, 2, 3, 4 }, 
+            x = e[4].x, y = e[4].y, n = 4, options = norns_view_pages, 
             state = { 
                 norns_view, 
                 function(v) 

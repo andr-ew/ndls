@@ -109,6 +109,8 @@ function Components.grid.view()
     local held = {}
 
     return function(props)
+        local tall = props.tall
+
         local g = nest.grid.device()
 
         local vertical = props.vertical[1]
@@ -118,25 +120,27 @@ function Components.grid.view()
             local x, y, z = nest.grid.input_args()
             
             if
-                x >= props.x and x <= props.x + 3 
-                    and y >= props.y and y <= props.y + 3 
+                x >= props.x and x <= props.x + (tall and 5 or 3) 
+                    and y >= props.y and y <= props.y + (tall and 5 or 3)
             then
                 local dx, dy = x - props.x + 1, y - props.y + 1
 
                 if z == 1 then
                     table.insert(held, { x = dx, y = dy })
 
-                    if #held > 1 then
-                        if held[1].x == held[2].x then 
-                            vertical = true
-                            set_vertical(true)
-                        elseif held[1].y == held[2].y then 
-                            vertical = false
-                            set_vertical(false) 
+                    if not tall then
+                        if #held > 1 then
+                            if held[1].x == held[2].x then 
+                                vertical = true
+                                set_vertical(true)
+                            elseif held[1].y == held[2].y then 
+                                vertical = false
+                                set_vertical(false) 
+                            end
                         end
                     end
 
-                    for i = 1,4 do --y
+                    for i = 1,tall and 6 or 4 do --y
                         for j = 1,4 do --x 
                             props.view[i][j] = (
                                 vertical and dx == j
@@ -155,7 +159,7 @@ function Components.grid.view()
                 end
             end
         elseif nest.grid.is_drawing() then
-            for i = 0,3 do for j = 0,3 do 
+            for i = 0,tall and 5 or 3 do for j = 0,3 do 
                 g:led(props.x + j, props.y + i, props.view[i + 1][j + 1] * props.lvl)
             end end
         end
