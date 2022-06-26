@@ -4,6 +4,8 @@
 
 spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim)
 
+currently in beta - your feedback is highly appreciated! feel free to create an issue here or send me an email andrewcshike@gmail.com :)
+
 ## hardware
 
 **required**
