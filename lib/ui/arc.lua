@@ -1,4 +1,8 @@
-local function App(map)
+local function App(args)
+    local map = args.map
+    local rotated = args.rotated
+    local wide = args.grid_wide
+
     local Destinations = {}
 
     function Destinations.vol(n, x)
@@ -74,6 +78,7 @@ local function App(map)
                 recording = sc.punch_in[b].recording,
                 recorded = sc.punch_in[b].recorded,
                 reg = reg.rec[b],
+                rotated = rotated,
                 --rec_flag = params:get('rec '..n)
             }
         end
@@ -100,6 +105,7 @@ local function App(map)
                 recording = sc.punch_in[b].recording,
                 recorded = sc.punch_in[b].recorded,
                 reg = reg.rec[b],
+                rotated = rotated,
                 --rec_flag = params:get('rec '..n)
             }
         end
@@ -116,11 +122,18 @@ local function App(map)
     end
 
     return function()
-        for y = 1,4 do for x = 1,4 do
-            if view[y][x] > 0 then
+        if wide then
+            for y = 1,4 do for x = 1,4 do
+                if view[y][x] > 0 then
+                    _params[y][x]()
+                end
+            end end
+        else
+            local y = norns_view
+            for x = 1,4 do
                 _params[y][x]()
             end
-        end end
+        end
     end
 end
 

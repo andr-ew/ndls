@@ -59,15 +59,15 @@ norns_view = 1
 local g = grid.connect()
 local a = arc.connect()
 
-varibright = (g and g.device and g.device.cols >= 16) and true or false
+wide = g and g.device and g.device.cols >= 16 or false
+arc2 = not wide
 
-function g64()
-    return g and g.device and g.device.cols < 16 or false
-end
+-- test grid64
+-- wide = false
+-- arc2 = true
+-- end test
 
--- local greg = function(n)
---     return reg.play[sc.buffer[n]][sc.slice:get(n)]
--- end
+varibright = wide
 
 local set_start_scoped = {}
 local set_end_scoped = {}
@@ -123,8 +123,12 @@ App.norns = include 'ndls/lib/ui/norns'            --norns UI
 
 local _app = {
     --grid = App.grid(not g64(), 0),
-    grid = App.grid{ wide = false, varibright = false },
-    arc = App.arc({ 'vol', 'cut', 'st', 'len' }),
+    grid = App.grid{ wide = wide, varibright = varibright },
+    arc = App.arc{ 
+        map = not arc2 and { 'vol', 'cut', 'st', 'len' } or { 'st', 'len', 'vol', 'cut' }, 
+        rotated = arc2,
+        grid_wide = wide,
+    },
     norns = App.norns(),
 }
 

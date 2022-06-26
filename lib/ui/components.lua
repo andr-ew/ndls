@@ -272,6 +272,7 @@ function Components.arc.st(args)
         local recorded = props.recorded
         --local rec_flag = props.rec_flag
         local reg = props.reg
+        local off = props.rotated and 16 or 0
         
         if nest.arc.has_input() then
             local n, d = nest.arc.input_args()
@@ -295,7 +296,7 @@ function Components.arc.st(args)
                         reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
                     )
                     for x = st,en do
-                        a:led(props.n, (x - 1) % 64 + 1, props.lvl[1])
+                        a:led(props.n, (x - 1) % 64 + 1 - off, props.lvl[1])
                     end
                 end
             else
@@ -310,7 +311,7 @@ function Components.arc.st(args)
                 )
                 local show = props.show_phase
                 for x = st,en do
-                    a:led(props.n, (x - 1) % 64 + 1, props.lvl[(x==ph and show) and 2 or 1])
+                    a:led(props.n, (x - 1) % 64 + 1 - off, props.lvl[(x==ph and show) and 2 or 1])
                 end
             end
         end
@@ -325,6 +326,7 @@ function Components.arc.len(mpat)
         local recorded = props.recorded
         --local rec_flag = props.rec_flag
         local reg = props.reg
+        local off = props.rotated and 16 or 0
         
         if nest.arc.has_input() then
             local n, d = nest.arc.input_args()
@@ -342,8 +344,8 @@ function Components.arc.len(mpat)
                     local en = props.x[1] - 1 + math.ceil(
                         reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
                     )
-                    a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
-                    a:led(props.n, (en - 1) % 64 + 1, props.lvl_st)
+                    a:led(props.n, (st - 1) % 64 + 1 - off, props.lvl_st)
+                    a:led(props.n, (en - 1) % 64 + 1 - off, props.lvl_st)
                 end
             else
                 local st = props.x[1] + math.ceil(
@@ -356,10 +358,10 @@ function Components.arc.len(mpat)
                     props.phase * (props.x[2] - props.x[1])
                 )
 
-                a:led(props.n, (st - 1) % 64 + 1, props.lvl_st)
-                a:led(props.n, (en - 1) % 64 + 1, props.lvl_en)
+                a:led(props.n, (st - 1) % 64 + 1 - off, props.lvl_st)
+                a:led(props.n, (en - 1) % 64 + 1 - off, props.lvl_en)
                 if props.show_phase then 
-                    a:led(props.n, (ph - 1) % 64 + 1, props.lvl_ph)
+                    a:led(props.n, (ph - 1) % 64 + 1 - off, props.lvl_ph)
                 end
             end
         end
