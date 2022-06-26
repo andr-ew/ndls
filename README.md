@@ -91,6 +91,8 @@ page graphics
 - f: filter graph
 - p: mixer (track pans)
 
+should probabaly switch to using decibels for vol
+
 ## future maybe
 
 sample loading
