@@ -84,6 +84,7 @@ edit all
 - i need a better name for this than edit all lol
   - "track edit", "global edit" ?
 - holding K1 could also reveal a second bank of 8 pattern recorders  ;)
+- for st/len instead of an all edit control K1 shows window edit for buffer start & end points
 
 page graphics
 - v: mixer (track volumes)
@@ -95,7 +96,7 @@ should probabaly switch to using decibels for vol
 
 slew option for most controls (lua-side)
 - allows for smooth changes between slices/presets
-- I'm dubious of adding more complexity to the main UI & I'm not sure how helpful it would be as a params system config, but might still be worth it
+- I'm dubious of adding more complexity to the main UI & I'm not sure how helpful it would be as a params menu config, but might still be worth it
 
 ## future maybe
 
