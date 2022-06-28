@@ -10,7 +10,7 @@ currently in beta - your feedback is highly appreciated! feel free to create an 
 
 **required**
 
-- norns
+- norns (220321 or later)
 - grid (128, 64, 256, or midigrid)
 
 **also supported**
