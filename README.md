@@ -93,6 +93,10 @@ page graphics
 
 should probabaly switch to using decibels for vol
 
+slew option for most controls (lua-side)
+- allows for smooth changes between slices/presets
+- I'm dubious of adding more complexity to the main UI & I'm not sure how helpful it would be as a params system config, but might still be worth it
+
 ## future maybe
 
 sample loading
