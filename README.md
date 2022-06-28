@@ -4,7 +4,7 @@
 
 spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim)
 
-currently in beta - your feedback is highly appreciated! feel free to create an issue here or send me an email andrewcshike@gmail.com :) also be sure to check out the [issues](https://github.com/andr-ew/ndls/issues) section to see if your issue has already been logged ~
+currently in beta - your feedback is highly appreciated! feel free to create an issue here or send me an email andrewcshike@gmail.com :) if you're running into trouble, be sure to check out the [issues](https://github.com/andr-ew/ndls/issues) section to see if your issue has already been logged ~
 
 ## hardware
 
