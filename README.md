@@ -113,9 +113,27 @@ alternate pagination
   - d (delay)
     - norns: bnd, old
     - arc: bnd, old, start, len
-- E1 is back to being a crossfader (maybe)
-  - could also consider mapping E1 to a useful param for the current track (vol or old)
-  - on 64 grids, E1 must select control page
+
+OR pagination matrix with an lfo page 🤪 (mwfl)
+- pages (alt)
+  - m (mix)
+    - E: old, volume, pan
+    - K: x vol, x pan
+    - arc: volumes 1-4 (only page that maps arc across tracks. selected track is lit for clarity)
+  - w (window)
+    - E: end, start, len
+    - K: x start, x len
+    - arc: volume, pan, start, len
+  - f (filter)
+    - E: q, response, cut
+    - K: x response, x cut
+    - arc: cut, q, start, len
+  - l (lfo)
+    - E: amt, rate, dest
+    - K: x rate, x dest
+    - arc: rate, amt, dest, shape
+- on 64 grid, keys just change the control page focus rather than randomize
+
 
 ## future maybe
 
