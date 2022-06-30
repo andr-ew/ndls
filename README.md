@@ -114,6 +114,8 @@ alternate pagination
     - norns: bnd, old
     - arc: bnd, old, start, len
 - E1 is back to being a crossfader (maybe)
+  - could also consider mapping E1 to a useful param for the current track (vol or old)
+  - on 64 grids, E1 must select control page
 
 ## future maybe
 
