@@ -103,7 +103,7 @@ alternate pagination
 - pages
   - m (mix)
     - norns: volume, pan
-    - arc: volumes 1-4 (only page that maps arc across tracks. current track is lit for clarity)
+    - arc: volumes 1-4 (only page that maps arc across tracks. selected track is lit for clarity)
   - w (window)
     - norns: start, len
     - arc: volume, pan, start, len
