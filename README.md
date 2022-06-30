@@ -98,6 +98,23 @@ slew option for most controls (lua-side)
 - allows for smooth changes between slices/presets
 - I'm dubious of adding more complexity to the main UI & I'm not sure how helpful it would be as a params menu config, but might still be worth it
 
+alternate pagination
+- one 4x4 matrix for grid & arc. vertical selects track 1-4, horizontal selects control page (mwfd)
+- pages
+  - m (mix)
+    - norns: volume, pan
+    - arc: volumes 1-4 (only page that maps arc across tracks. current track is lit for clarity)
+  - w (window)
+    - norns: start, len
+    - arc: volume, pan, start, len
+  - f (filter)
+    - norns: cut, q
+    - arc: cut, q, start, len
+  - d (delay)
+    - norns: bnd, old
+    - arc: bnd, old, start, len
+- E1 is back to being a crossfader (maybe)
+
 ## future maybe
 
 sample loading
