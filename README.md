@@ -131,7 +131,7 @@ OR pagination matrix with an lfo page 🤪 (mwfl)
   - l (lfo)
     - E: amt, rate, dest
     - K: x rate, x dest
-    - arc: rate, amt, dest, shape
+    - arc: rate, amt, start, len
 - on 64 grid, keys just change the control page focus rather than randomize
 
 
