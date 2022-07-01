@@ -100,6 +100,7 @@ slew option for most controls (lua-side)
 
 alternate pagination
 - one 4x4 matrix for grid & arc. vertical selects track 1-4, horizontal selects control page (mwfd)
+- use the saved space to move send & return up top + add two more slices/presets
 - pages
   - m (mix)
     - norns: volume, pan
