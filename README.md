@@ -1,41 +1,5 @@
 # ndls
 
-4-track asyncronous tape looper, delay, loop splicer. pattern memory, performace oriented + configurable. and it's ~ bendy ~
-
-(spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim))
-
-## hardware
-
-**required**
-- norns
-- grid (128, 64, 256, or midigrid)
-
-**also supported**
-- arc
-- midi footswitch
-
-## grid
-
-![documentation image](doc/ndls.png)
-
-## norns
-
-**track view**
-- **E1:** page
-- **E2-E3:** track parameter
-  - **pages**
-    - **v:** vol, old
-      - **K2-K3:** randomize
-    - **s:** start, length
-      - **K2-K3:** randomize 
-    - **f:** cutoff, resonance
-      - **K2:** randomize cutoff
-      - **K3:** filter type
-    - **p:** pitch, pan
-      - **K2:** randomize octave
-      - **K3:** randomize pan
-- **K1:** edit all
-
 ## notes
 
 arc assignable to any of the track parameters
