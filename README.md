@@ -135,6 +135,7 @@ OR pagination matrix with an lfo page 🤪 (mwfl)
     - arc: rate, amt, start, len
       - or: rate for all 4 lfos (i.e. cycles). it would look cool... so that seems like reason enough
 - on 64 grid, keys just change the control page focus rather than randomize
+  - K1+K2/3 could randomize normal rather than randomize all
 
 
 ## future maybe
