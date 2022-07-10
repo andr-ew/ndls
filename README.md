@@ -10,8 +10,8 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 **required**
 
-- norns (220321 or later)
-- grid (128, 64, 256, or midigrid)
+- [norns](https://github.com/p3r7/awesome-monome-norns) (220321 or later)
+- [grid](https://monome.org/docs/grid/) (128, 64, 256, or midigrid)
 
 **also supported**
 
