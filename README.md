@@ -84,20 +84,19 @@ OR pagination matrix with an lfo page 🤪 (mwfl)
   - m (mix)
     - E: old, volume, pan
     - K: x vol, x pan
-    - arc: volumes 1-4 (only page that maps arc across tracks. selected track is lit for clarity)
+    - arc: volumes 1-4 (selected track lit)
   - w (window)
     - E: st, pos, len
     - K: x pos, x len
-    - arc: volume, pan, start, len
+    - arc: volume, pan, pos, len
   - f (filter)
     - E: q, response, cut
     - K: x response, x cut
-    - arc: cut, q, start, len
+    - arc: cut, q, pos, len
   - l (lfo)
     - E: amt, rate, dest
     - K: x rate, x dest
-    - arc: rate, amt, start, len
-      - or: rate for all 4 lfos (i.e. cycles). it would look cool... so that seems like reason enough
+    - arc: rate 1-4 (selected track lit)
 - on 64 grid, keys just change the control page focus rather than randomize
   - K1+K2/3 could randomize normal rather than randomize all
 
