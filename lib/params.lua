@@ -147,6 +147,7 @@ for i = 1, voices do
             local z = sc.buffer[n]
             if v==1 and sc.punch_in[z].recording then
                 sc.punch_in:set(z, 0)
+                sc.slice:reset(n)
             end
 
             sc.lvlmx[n].play = v; sc.lvlmx:update(n)

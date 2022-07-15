@@ -42,6 +42,7 @@ function Components.norns.waveform(args)
     
     sc.samples:init(width)
 
+    --FIXME: not checking if in nest is in drawing mode ! tisk tisk
     return function(props)
         local lvl = props.lvl or { window = 15, phase = 4, wave = 1 }
         local reg = props.reg
