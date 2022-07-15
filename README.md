@@ -86,8 +86,8 @@ OR pagination matrix with an lfo page 🤪 (mwfl)
     - K: x vol, x pan
     - arc: volumes 1-4 (only page that maps arc across tracks. selected track is lit for clarity)
   - w (window)
-    - E: end, start, len
-    - K: x start, x len
+    - E: st, pos, len
+    - K: x pos, x len
     - arc: volume, pan, start, len
   - f (filter)
     - E: q, response, cut
