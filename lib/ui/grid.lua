@@ -6,20 +6,6 @@ local function App(args)
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
 
-    view = tall and {
-        { 1, 1, 1, 1 },
-        { 0, 0, 0, 0 },
-        { 0, 0, 0, 0 },
-        { 0, 0, 0, 0 },
-        { 0, 0, 0, 0 },
-        { 0, 0, 0, 0 },
-    } or {
-        { 1, 1, 1, 1 },
-        { 0, 0, 0, 0 },
-        { 0, 0, 0, 0 },
-        { 0, 0, 0, 0 },
-    }
-
     local function Voice(n)
         local top, bottom = n, n + voices
 
@@ -72,7 +58,7 @@ local function App(args)
             for b = 1, buffers do
                 _slices[b] = to.pattern(mpat, 'slice '..n..' '..b, Grid.number, function()
                     return {
-                        x = tall and { 9, 14 } or (wide and { 7, 13 } or { 5, 8 }), 
+                        x = tall and { 9, 14 } or (wide and { 7, 15 } or { 5, 8 }), 
                         y = bottom,
                         state = {
                             sc.slice[n][b],
@@ -101,20 +87,20 @@ local function App(args)
         if wide then
             _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
                 return {
-                    x = tall and 15 or 14, y = bottom, lvl = shaded,
+                    x = tall and 15 or 14, y = top, lvl = shaded,
                     state = of.param('send '..n),
                 }
             end)
             _params.ret = to.pattern(mpat, 'return '..n, Grid.toggle, function()
                 return {
-                    x = tall and 16 or 15, y = bottom, lvl = shaded,
+                    x = tall and 16 or 15, y = top, lvl = shaded,
                     state = of.param('return '..n),
                 }
             end)
         end
         _params.rev = to.pattern(mpat, 'rev '..n, Grid.toggle, function()
             return {
-                x = wide and 7 or 2, y = top, edge = 'falling', lvl = shaded,
+                x = wide and 5 or 2, y = top, edge = 'falling', lvl = shaded,
                 state = { params:get('rev '..n) },
                 action = function(v, t)
                     sc.slew(n, (t < 0.2) and 0.025 or t)
@@ -126,7 +112,7 @@ local function App(args)
             local off = wide and 6 or 4
             _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
                 return {
-                    x = wide and { 8, 15 } or { 3, 7 }, y = top, filtersame = true,
+                    x = wide and { 6, 13 } or { 3, 7 }, y = top, filtersame = true,
                     state = { params:get('rate '..n) + off },
                     action = function(v, t)
                         sc.slew(n, t)
@@ -137,21 +123,20 @@ local function App(args)
         end
 
         return function()
-            for _, _param in pairs(_params) do _param() end
-            
             if varibright then
                 if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
                     _phase{ 
-                        x = wide and { 1, 16 } or { 1, 8 }, y = top,
-                        phase = sc.phase[n].rel, lvl = 4,
+                        x = wide and { 6, 13 } or { 3, 7 }, y = top, lvl = 4,
+                        phase = reg.play:phase_relative(n, sc.phase[n].abs, 'fraction'),
                     }
                 end
             end
+
+            for _, _param in pairs(_params) do _param() end
         end
     end
 
-    local _view = wide and Components.grid.view()
-    local _norns_view = Grid.number()
+    local _view = Grid.number()
     
     local _voices = {}
     for i = 1, voices do
@@ -163,27 +148,27 @@ local function App(args)
     return function()
         if wide then
             _view{
-                x = 3, y = 1, lvl = mid2,
-                view = view, tall = tall,
-                vertical = { vertical, function(v) vertical = v end },
-                action = function(vertical, x, y)
-                    if not vertical then norns_view = y end
-
-                    nest.arc.make_dirty()
-                    nest.screen.make_dirty()
-                end
+                x = { 1, 4 }, y = { 1, voices }, lvl = mid2,
+                state = { 
+                    { y = voices - view.track + 1, x = view.page },
+                    function(v) 
+                        view.track = voices - v.y + 1
+                        view.page = v.x
+                    end 
+                }
+            }
+        else
+            _view{
+                x = 1, y = { 1, voices }, lvl = mid2,
+                state = { 
+                    voices - view.track + 1, 
+                    function(v) 
+                        norns_view = voices - v + 1 
+                        nest.screen.make_dirty()
+                    end 
+                }
             }
         end
-        _norns_view{
-            x = 1, y = { 1, voices }, lvl = mid2,
-            state = { 
-                voices - norns_view + 1, 
-                function(v) 
-                    norns_view = voices - v + 1 
-                    nest.screen.make_dirty()
-                end 
-            }
-        }
 
         
         for i, _voice in ipairs(_voices) do

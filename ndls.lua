@@ -47,10 +47,8 @@ for i = 1,16 do
     mpat[i] = multipattern.new(pattern[i])
 end
 
-view = {}
-vertical = false
 alt = false
-norns_view = 1
+view = { track = 1, page = 1 }
 
 local g = grid.connect()
 local a = arc.connect()
@@ -72,7 +70,7 @@ varibright = wide
 
 voices = tall and 6 or 4
 buffers = voices
-slices = 7
+slices = 9
 
 local set_start_scoped = {}
 local set_end_scoped = {}
@@ -141,7 +139,7 @@ local _app = {
 }
 
 nest.connect_grid(_app.grid, g, 60)
-nest.connect_arc(_app.arc, a, 90)
+--nest.connect_arc(_app.arc, a, 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
 nest.connect_screen(_app.norns)

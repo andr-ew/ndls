@@ -45,7 +45,6 @@ local function App()
     --]]
     
     local page_names = { 'v', 's', 'f', 'p' }
-    local tab = 1
     local _tab = Text.enc.option()
     local _norns_view_tab = Text.enc.option()
 
@@ -193,7 +192,7 @@ local function App()
         -- }
         
         do
-            local n = norns_view
+            local n = view.track
             local b = sc.buffer[n]
             _waveform{
                 reg = reg.rec[b], samples = sc.samples[b],
@@ -208,22 +207,22 @@ local function App()
             }
         end
 
-        _tab{
-            x = e[1].x, y = e[1].y, n = 1, sens = 0.5,
-            options = page_names, state = { tab, function(v) tab = v end }
-        }
-        _norns_view_tab{
-            x = e[4].x, y = e[4].y, n = 4, options = norns_view_pages, 
-            state = { 
-                norns_view, 
-                function(v) 
-                    norns_view = v 
-                    nest.grid.make_dirty()
-                end 
-            }
-        }
+        -- _tab{
+        --     x = e[4].x, y = e[4].y, n = 4, sens = 0.5,
+        --     options = page_names, state = { view.page, function(v) view.page = v end }
+        -- }
+        -- _norns_view_tab{
+        --     x = e[4].x, y = e[4].y, n = 5, options = norns_view_pages, 
+        --     state = { 
+        --         view.track, 
+        --         function(v) 
+        --             view.track = v 
+        --             nest.grid.make_dirty()
+        --         end 
+        --     }
+        -- }
 
-        _voices[norns_view]{ tab = tab//1 }
+        _voices[view.track]{ tab = view.page//1 }
     end
 end
 
