@@ -25,6 +25,7 @@ local function App()
         {  },
         { x = x[1.5], y = y[4] },
         { x = x[2.5], y = y[4] },
+        { x = x[2.5], y = y[1] }
     }
 
     --local _alt = Key.momentary()
@@ -44,7 +45,6 @@ local function App()
     end
     --]]
     
-    local page_names = { 'v', 's', 'f', 'p' }
     local _tab = Text.enc.option()
     local _norns_view_tab = Text.enc.option()
 
@@ -65,31 +65,39 @@ local function App()
         local n = args.n
 
         local _pages = {}
-        for i = 1, #page_names do _pages[i] = {} end
+        for i = 1, 4 do _pages[i] = {} end
 
-        --v
+        --mix
         do
             local _pg = _pages[1]
-            _pg.cut = Ctl{ id = 'vol', voice = n, n = 2 }
-            _pg.old = Ctl{ id = 'old', voice = n, n = 3 }
+            _pg.old = Ctl{ id = 'old', voice = n, n = 1 }
+            _pg.vol = Ctl{ id = 'vol', voice = n, n = 2 }
+            _pg.pan = Ctl{ id = 'pan', voice = n, n = 3 }
         end
-        --s
+        --window
         local function S(args)
             _st_view = Text.enc.number()
+            _win_view = Text.enc.number()
             _len_view = Text.enc.number()
             _randomize = Text.key.trigger()
 
             return function()
                 if sc.punch_in[sc.buffer[args.voice]].recorded then
                     _st_view{
-                        n = 2, x = e[2].x, y = e[2].y,
+                        n = 1, x = e[1].x, y = e[1].y,
                         label = 'st', 
+                        state = { get_start(args.voice, 'seconds') },
+                        input_enabled = false,
+                    }
+                    _win_view{
+                        n = 2, x = e[2].x, y = e[2].y,
+                        label = 'win', 
                         state = { get_start(args.voice, 'seconds') },
                         input_enabled = false,
                     }
                     _len_view{
                         n = 3, x = e[3].x, y = e[3].y,
-                        label = 'len', 
+                        label = 'end', 
                         state = { get_len(args.voice, 'seconds') },
                         input_enabled = false,
                     }
@@ -99,8 +107,12 @@ local function App()
 
                         local st = { get_start(args.voice), get_set_start(args.voice) }
                         local en = { get_end(args.voice), get_set_end(args.voice) }
-                        
-                        if n == 2 then
+                       
+                        if n == 1 then
+                            st[2](st[1] + d * args.sens)
+
+                            nest.screen.make_dirty()
+                        elseif n == 2 then
                             st[2](st[1] + d * args.sens)
                             en[2](en[1] + d * args.sens)
 
@@ -133,7 +145,7 @@ local function App()
         end
         _pages[2].s = S{ sens = 0.01, voice = n }
 
-        --f
+        --filter
         do
             local _pg = _pages[3]
             _pg.cut = Ctl{ id = 'cut', voice = n, n = 2 }
@@ -151,13 +163,10 @@ local function App()
                 end)
             end
         end
-        --p
+        --LFOs
         do
             local _pg = _pages[4]
-            _pg.pan = Ctl{ id = 'pan', voice = n, n = 2 }
-            _pg.bnd = Ctl{ id = 'bnd', voice = n, n = 3 }
-            --TODO: display pitch bend summed with rate 
-            -- (more intutive alongside the octave randomizer key)
+            --_pg.bnd = Ctl{ id = 'bnd', voice = n, n = 3 }
         end
 
         return function(props)
@@ -179,6 +188,10 @@ local function App()
     local norns_view_pages = {}
     for i = 1,voices do norns_view_pages[i] = i end
 
+    local page_names = { 'MIX', 'WINDOW', 'FILTER', 'LFO' }
+    local _page_label = Text.label()
+    local _track_label = Text.label()
+
     return function()
         -- _alt{
         --     n = 1, 
@@ -190,6 +203,27 @@ local function App()
         --         end
         --     }
         -- }
+
+
+        if nest.screen.is_drawing() then
+            for p = 1, 4 do
+                for t = 1, voices do
+                    local x = (p-1)*2 + x[3] - (3*2)
+                    local y = (t-1)*2 + y[1] - 2
+                    local hl = (p == view.page) and (t == view.track)
+                    screen.level(hl and 15 or 4)
+                    screen.pixel(x, y)
+                    screen.fill()
+                end
+            end
+        end
+
+        _page_label{
+            x = e[4].x, y = e[4].y, label = page_names[view.page], lvl = 4,
+        }
+        _track_label{
+            x = k[4].x, y = k[4].y, label = view.track, lvl = 8,
+        }
         
         do
             local n = view.track
