@@ -25,6 +25,8 @@ in the maiden REPL, type:
 ;install https://github.com/andr-ew/ndls/releases/download/v0.1.0-beta/complete-source-code.zip
 ```
 
+if you wish to install a different version, see the [releases](https://github.com/andr-ew/ndls/releases) tab
+
 ## documentation
 
 ### grid + arc
