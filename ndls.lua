@@ -131,7 +131,7 @@ local _app = {
         varibright = varibright 
     },
     arc = App.arc{ 
-        map = not arc2 and { 'vol', 'cut', 'st', 'len' } or { 'st', 'len', 'vol', 'cut' }, 
+        arc2 = arc2,
         rotated = arc2,
         grid_wide = wide,
     },
@@ -139,7 +139,7 @@ local _app = {
 }
 
 nest.connect_grid(_app.grid, g, 60)
---nest.connect_arc(_app.arc, a, 90)
+nest.connect_arc(_app.arc, a, 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
 nest.connect_screen(_app.norns)

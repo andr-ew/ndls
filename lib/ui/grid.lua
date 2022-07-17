@@ -87,13 +87,13 @@ local function App(args)
         if wide then
             _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
                 return {
-                    x = tall and 15 or 14, y = top, lvl = shaded,
+                    x = tall and 15 or 14, y = top, lvl = { 0, 15 },
                     state = of.param('send '..n),
                 }
             end)
             _params.ret = to.pattern(mpat, 'return '..n, Grid.toggle, function()
                 return {
-                    x = tall and 16 or 15, y = top, lvl = shaded,
+                    x = tall and 16 or 15, y = top, lvl = varibright and { 0, 4 } or hl,
                     state = of.param('return '..n),
                 }
             end)

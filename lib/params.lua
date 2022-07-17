@@ -47,6 +47,16 @@ params:add {
     end
 }
 
+params:add{
+    type = 'control', id = 'rec transition',
+    controlspec = cs.def { default = 1, min = 0, max = 5 },
+    action = function(v)
+        for i = 1, voices do
+            softcut.recpre_slew_time(i, v)
+        end
+    end
+}
+
 for i = 1, voices do
     params:add_separator('voice '..i)
     params:add {

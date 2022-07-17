@@ -135,14 +135,13 @@ sc.setup = function()
     audio.level_cut(1)
     audio.level_adc_cut(1)
 
-    --TODO input from single channel
     for i = 1, voices do
         softcut.enable(i, 1)
         softcut.rec(i, 1)
         softcut.play(i, 1)
         softcut.loop(i, 1)
         softcut.level_slew_time(i, sc.lvl_slew)
-        softcut.recpre_slew_time(i, sc.lvl_slew)
+        --softcut.recpre_slew_time(i, 1)
         softcut.rate(i, 1)
         softcut.post_filter_dry(i, 0)
         softcut.pre_filter_fc_mod(i, 0)
@@ -184,6 +183,7 @@ end
 
 
 --FIXME: punch-in with rate < 0 results in blank buffer
+--TODO: manual initialization (via "end" controls)
 sc.punch_in = { -- [buf] = {}
     min_size = 0.5,
     { 

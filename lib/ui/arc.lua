@@ -1,23 +1,9 @@
 local function App(args)
-    local map = args.map
     local rotated = args.rotated
     local wide = args.grid_wide
+    local arc2 = args.arc2
 
-    local Destinations = {}
-
-    function Destinations.vol(n, x)
-        local _num = to.pattern(mpat, 'vol '..n, Arc.number, function() 
-            return {
-                n = tonumber(vertical and n or x),
-                sens = 0.25, max = 2.5, cycle = 1.5,
-                state = of.param('vol '..n),
-            }
-        end)
-
-        return function() _num() end
-    end
-
-    function Destinations.cut(n, x)
+    local function Cut(n, x)
         local _cut = to.pattern(mpat, 'cut '..n, Arc.control, function() 
             return {
                 n = tonumber(vertical and n or x),
@@ -27,41 +13,20 @@ local function App(args)
                 state = of.param('cut '..n),
             }
         end)
-
         local _filt = Components.arc.filter()
 
-        local _type = to.pattern(mpat, 'type '..n, Arc.option, function() 
-            return {
-                n = tonumber(vertical and n or x),
-                options = 4, sens = 1/64,
-                x = { 27, 41 }, lvl = 12,
-                --[[
-                state = {
-                    params:get('type '..n),
-                    function(v) params:set('type '..n, v//1) end
-                },
-                --]]
-                action = function(v) params:set('type '..n, v//1) end
-            }
-        end)
-
         return function() 
+            _cut()
             _filt{
                 n = tonumber(vertical and n or x),
                 x = { 42, 24+64 },
                 type = params:get('type '..n),
                 cut = params:get('cut '..n),
             }
-
-            if alt then 
-                _type()
-            else
-                _cut() 
-            end
         end
     end
 
-    function Destinations.st(n, x)
+    local function Win(n, x)
         _st = Components.arc.st(mpat)
 
         return function() 
@@ -84,7 +49,7 @@ local function App(args)
         end
     end
 
-    function Destinations.len(n, x)
+    local function End(n, x)
         _len = Components.arc.len(mpat)
 
         return function() 
@@ -111,27 +76,86 @@ local function App(args)
         end
     end
 
-    local _params = {}
-    for y = 1,voices do --track
-        _params[y] = {}
+    local function Vol(n, x)
+        local _vol = to.pattern(mpat, 'vol '..n, Arc.number, function() 
+            return {
+                n = x,
+                sens = 0.25, max = 2.5, cycle = 1.5,
+                state = of.param('vol '..n),
+                lvl = view.track == n and 15 or 4,
+            }
+        end)
 
-        for x = 1,4 do --map item
+        return function() _vol() end
+    end
 
-            _params[y][x] = Destinations[map[x]](y, x)
+    local Pages = {}
+    function Pages.mix()
+        local _vols = {}
+        for n = 1,4 do
+            _vols[n] = Vol(n, n)
+        end
+
+        return function() 
+            for _,_vol in ipairs(_vols) do _vol() end
         end
     end
 
+    function Pages.window(n)
+        local _vol = Vol(n, 1)
+        local _pan = to.pattern(mpat, 'pan '..n, Arc.control, function()
+            return {
+                n = 2,
+                state = of.param('pan '..n),
+                controlspec = of.controlspec('pan '..n),
+            }
+        end)
+        local _win = Win(n, 3)
+        local _end = End(n, 4)
+
+        return function()
+            _vol(); _pan(); _win(); _end()
+        end
+    end
+
+    function Pages.filter(n)
+        local _cut = Cut(n, 1)
+        local _q = to.pattern(mpat, 'q '..n, Arc.control, function()
+            return {
+                n = 2,
+                state = of.param('q '..n),
+                controlspec = of.controlspec('q '..n),
+                lvl = { 4, 4, 15 },
+                x = { 42,  56 },
+            }
+        end)
+        local _win = Win(n, 3)
+        local _end = End(n, 4)
+
+        return function()
+            _cut(); _q(); _win(); _end()
+        end
+    end
+
+    local _pages = {}
+    _pages.mix = Pages.mix()
+    _pages.window = {}
+    _pages.filter = {}
+
+    for n = 1, voices do
+        _pages.window[n] = Pages.window(n)
+        _pages.filter[n] = Pages.filter(n)
+    end
+
     return function()
-        if wide then
-            for y = 1,voices do for x = 1,4 do
-                if view[y][x] > 0 then
-                    _params[y][x]()
-                end
-            end end
-        else
-            local y = norns_view
-            for x = 1,4 do
-                _params[y][x]()
+        if not arc2 then
+            if view.page == 1 then
+                _pages.mix()
+            elseif view.page == 2 then
+                _pages.window[view.track]()
+            elseif view.page == 3 then
+                _pages.filter[view.track]()
+            elseif view.page == 4 then
             end
         end
     end
