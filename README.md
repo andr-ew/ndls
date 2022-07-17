@@ -20,7 +20,7 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 ## install
 
-in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
+in the maiden REPL, type `;install https://github.com/andr-ew/ndls/releases/download/v0.1.0-beta/complete-source-code.zip`
 
 ## documentation
 
