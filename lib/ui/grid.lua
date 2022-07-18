@@ -76,9 +76,9 @@ local function App(args)
 
             return function()
                 local b = sc.buffer[n]
-                if sc.punch_in[b].recorded then
-                    _fill{ x = wide and 7 or 5, y = bottom, lvl = 4 }
+                _fill{ x = wide and 7 or 5, y = bottom, lvl = 4 }
 
+                if sc.punch_in[b].recorded then
                     _slices[b]()
                 end
             end
@@ -87,13 +87,13 @@ local function App(args)
         if wide then
             _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
                 return {
-                    x = tall and 15 or 14, y = top, lvl = { 0, 15 },
+                    x = tall and 15 or 14, y = top, lvl = { 4, 15 },
                     state = of.param('send '..n),
                 }
             end)
             _params.ret = to.pattern(mpat, 'return '..n, Grid.toggle, function()
                 return {
-                    x = tall and 16 or 15, y = top, lvl = varibright and { 0, 4 } or hl,
+                    x = tall and 16 or 15, y = top, lvl = { 0, 15 },
                     state = of.param('return '..n),
                 }
             end)

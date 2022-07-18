@@ -184,11 +184,12 @@ end
 
 --FIXME: punch-in with rate < 0 results in blank buffer
 --TODO: manual initialization (via "end" controls)
+--FIXME: intital recording at very low rates (?)
+--FIXME: intial recording in non-default buffer clears default buffer (?)
 sc.punch_in = { -- [buf] = {}
     min_size = 0.5,
     { 
-        recording = false, recorded = false, manual = false, play = 0, t = 0, 
-        --tap_blink = 0, tap_clock = nil, tap_buf = {} 
+        recording = false, recorded = false, manual = false, play = 0, t = 0,
     },
     update_play = function(s, z)
         for n,v in ipairs(sc.buffer) do if v == z then
@@ -234,37 +235,6 @@ sc.punch_in = { -- [buf] = {}
             s[buf].recording = false
         end
     end,
-    -- untap = function(s, pair)
-    --     local buf = sc.buf[pair]
-
-    --     s[buf].tap_buf = {}
-    --     if s[buf].tap_clock then clock.cancel(s[buf].tap_clock) end
-    --     s[buf].tap_clock = nil
-    --     s[buf].tap_blink = 0
-    -- end,
-    -- tap = function(s, pair, t)
-    --     local buf = sc.buf[pair]
-
-    --     if t < 1 and t > 0 then
-    --         table.insert(s[buf].tap_buf, t)
-    --         if #s[buf].tap_buf > 2 then table.remove(s[buf].tap_buf, 1) end
-    --         local avg = 0
-    --         for i,v in ipairs(s[buf].tap_buf) do avg = avg + v end
-    --         avg = avg / #s[buf].tap_buf
-
-    --         reg.play:set_length(pair*2, avg)
-
-    --         if s[buf].tap_clock then clock.cancel(s[buf].tap_clock) end
-    --         s[buf].tap_clock = clock.run(function() 
-    --             while true do
-    --                 s[buf].tap_blink = 1
-    --                 clock.sleep(avg*0.5)
-    --                 s[buf].tap_blink = 0
-    --                 clock.sleep(avg*0.5)
-    --             end
-    --         end)
-    --     else s:untap(pair) end
-    -- end,
     clear = function(s, z)
         local buf = z
 
@@ -285,22 +255,10 @@ sc.punch_in = { -- [buf] = {}
         --reg.play[buf]:set_length(0)
         --reg.zoom[buf]:set_length(0)
     end,
-    --save = function(s)
-    --    local data = {}
-    --    for i,v in ipairs(s) do data[i] = s[i].manual end
-    --    return data
-    --end,
-    --load = function(s, data)
-    --    for i,v in ipairs(data) do
-    --        s[i].manual = v
-    --        if v==true then 
-    --            s:manual(i)
-    --        else 
-    --            --s:clear(i) 
-    --            if sc.buf[i]==i then params:delta('clear '..i) end
-    --        end
-    --    end
-    --end
+    save_audio = function(path)
+    end,
+    load_audio = function(path)
+    end
 }
 
 --punch_in shallow copy first index for each zone
@@ -311,9 +269,6 @@ for i = 2, buffers do
     end
 end
 
---the objects below this line have no accociated param/control, so they can be modified directly anywhere in the program
-
-
 local function update_assignment(n)
     local sl = reg.play[sc.buffer[n]][sc.slice:get(n)]
     cartographer.assign(sl, n)
@@ -322,22 +277,18 @@ local function update_assignment(n)
 end
 
 sc.buffer = { --[voice] = buffer
-    set = function(s, n, v)
-        if s[n] ~= v then
-            s[n] = v
-
-            update_assignment(n)
-        end
+    --TODO: depricate
+    set = function(s, n, v) params:set('buffer '..n, v) end,
+    update = function(s, n)
+        update_assignment(n)
     end
 }
 sc.slice = { --[voice][buffer] = slice
-    set = function(s, n, b, v)
-        if s[n][b] ~= v then
-            s[n][b] = v
-
-            if b == sc.buffer[n] then
-                update_assignment(n)
-            end
+    --TODO: depricate
+    set = function(s, n, b, v) params:set('slice '..n..' buffer '..b, v) end,
+    update = function(s, n, b)
+        if b == sc.buffer[n] then
+            update_assignment(n)
         end
     end,
     randomize = function(s, vc, sl, target)
