@@ -7,7 +7,7 @@
 --
 -- endless and/or noodles
 --
--- version 0.1.1-beta-alt-pagination.1 @andrew
+-- version 0.1.2-beta-persistence @andrew
 
 --device globals (edit for midigrid)
 
