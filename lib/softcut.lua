@@ -390,7 +390,6 @@ sc.slice = { --[voice][buffer] = slice
 
             if not do_len then 
                 --p:set_length(ll) 
-                print(last_len_f)
                 params:set('end '..pfx, st_f + last_len_f, silent)
             end
         end

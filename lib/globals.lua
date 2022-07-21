@@ -1,3 +1,10 @@
+alt = false
+view = { track = 1, page = 1 }
+
+voices = tall and 6 or 4
+buffers = voices
+slices = 9
+
 function pattern_time:resume()
     if self.count > 0 then
         self.prev_time = util.time()
@@ -8,18 +15,54 @@ function pattern_time:resume()
     end
 end
 
-pattern, mpat = {}, {}
+pattern, mpat, pattern_states = {}, {}, { main = {}, alt = {} }
 for i = 1,16 do
     pattern[i] = pattern_time.new() 
     mpat[i] = multipattern.new(pattern[i])
 end
+for i = 1,8 do
+    pattern_states.main[i] = 0
+    pattern_states.alt[i] = 0
+end
 
-alt = false
-view = { track = 1, page = 1 }
+--TODO: read & write based on pset #, call on params.action_read/action_write
+do
+    function pattern_write()
+        local data = {
+            pattern = {},
+            pattern_states = pattern_states,
+        }
+        for i,pat in ipairs(pattern) do
+            local d = {}
+            d.count = pat.count
+            d.event = pat.event
+            d.time = pat.time
+            d.time_factor = pat.time_factor
+            d.step = pat.step
+            d.play = pat.play
+            
+            data.pattern[i] = d
+        end
 
-voices = tall and 6 or 4
-buffers = voices
-slices = 9
+        tab.save(data, norns.state.data..'patterns.data')
+    end
+    function pattern_read()
+        local data = tab.load(norns.state.data..'patterns.data')
+        if data then
+            pattern_states = data.pattern_states
+
+            for i,pat in ipairs(data.pattern) do
+                for k,v in pairs(pat) do
+                    pattern[i][k] = v
+                end
+
+                if pattern[i].play > 0 then
+                    pattern[i]:start()
+                end
+            end
+        end
+    end
+end
 
 --this seems to be affecting slice across voices. there needs to be a dedicated play region per voice, per buffer
 function update_reg(voice, buf, slice)

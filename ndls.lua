@@ -93,10 +93,12 @@ function init()
     sc.read()
 
     params:bang()
+    pattern_read()
 end
 
 function cleanup()
     params:write()
 
     sc.write()
+    pattern_write()
 end

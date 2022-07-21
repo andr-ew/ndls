@@ -178,6 +178,7 @@ local function App(args)
         _patrec{
             x = tall and { 1, 16 } or (wide and 16 or 8), 
             y = tall and 16 or (wide and { 1, 8 } or { 1, 4 }), 
+            state = { pattern_states.main },
             pattern = pattern, varibright = varibright
         }
     end
