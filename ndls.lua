@@ -86,25 +86,17 @@ nest.connect_screen(_app.norns)
 --init/cleanup
 
 function init()
-    sc.setup()
+    sc.init()
 
     params:read()
-    for i = 1, voices do
-        --params:set('vol '..i, 1)
-        --params:set('bnd '..i, 0)
-        --params:set('cut '..i, 1)
-        --params:set('type '..i, 1)
-        --params:set('rate '..i, 0)
-        --params:set('rev '..i, 0)
-        params:set('rec '..i, 0)
-        params:set('play '..i, 0)
-        --params:set('crossfade assign '..i, i <3 and 2 or 3)
-    end
-    --params:set('crossfade', 0)
+
+    sc.read()
 
     params:bang()
 end
 
 function cleanup()
     params:write()
+
+    sc.write()
 end

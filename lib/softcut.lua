@@ -131,7 +131,7 @@ for b = 1, buffers do
 end
 
 sc.lvl_slew = 0.1
-sc.setup = function()
+sc.init = function()
     audio.level_cut(1)
     audio.level_adc_cut(1)
 
@@ -165,6 +165,48 @@ sc.setup = function()
         end
     end)
     softcut.poll_start_phase()
+end
+
+do
+    --TODO: read & write based on pset #, call on params.action_read/action_write
+
+    local pfx = 'ndls_buffer_'
+
+    sc.write = function()
+        local dir = norns.state.path..'audio/ndls/ndls/'
+
+        if not util.file_exists(dir) then
+            util.make_dir(dir)
+        end
+
+        for b = 1,buffers do
+            if sc.punch_in[b].recorded then
+                local f = dir..pfx..b
+                reg.rec[b]:write(f)
+                print('write '..f)
+            end
+        end
+    end
+    sc.read = function()
+        local dir = norns.state.path..'audio/ndls/ndls/'
+
+        local loaded = {}
+        for b = 1,buffers do
+            local f = dir..pfx..b
+            if util.file_exists(f) then
+                reg.rec[b]:read(f, nil, nil, 'source')
+                loaded[b] = true
+                sc.punch_in:was_loaded(b)
+                print('read '..f)
+            end
+        end
+        for i = 1, voices do
+            if not loaded[sc.buffer[i]] then
+                params:set('rec '..i, 0)
+                params:set('play '..i, 0)
+            end
+        end
+    end
 end
 
 sc.send = function(command, ...)
@@ -255,9 +297,12 @@ sc.punch_in = { -- [buf] = {}
         --reg.play[buf]:set_length(0)
         --reg.zoom[buf]:set_length(0)
     end,
-    save_audio = function(path)
-    end,
-    load_audio = function(path)
+    was_loaded = function(s, b)
+        s[b].recorded = true
+        s[b].recording = false
+        s[b].manual = false
+        
+        s[b].play = 1; s:update_play(b)
     end
 }
 
