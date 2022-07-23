@@ -23,8 +23,8 @@ arc2 = a and a.device and string.match(a.device.name, 'arc 2')
 --arc2 = true
 -- end test
 -- test grid256
-wide = true
-tall = true
+-- wide = true
+-- tall = true
 -- end test
 
 varibright = true
