@@ -14,6 +14,7 @@ local function App()
     y[2] = nil
     y[3] = mar.top + h*(5.5/8)
     y[4] = mar.top + h*(7/8)
+    y[5] = 64 - mar.bottom - 2
 
     local e = {
         { x = x[1], y = y[1] },
@@ -206,6 +207,7 @@ local function App()
 
 
         if nest.screen.is_drawing() then
+            --draw view display
             for p = 1, 4 do
                 for t = 1, voices do
                     local x = (p-1)*2 + x[3] - (3*2)
@@ -214,6 +216,40 @@ local function App()
                     screen.level(hl and 15 or 4)
                     screen.pixel(x, y)
                     screen.fill()
+                end
+            end
+            --draw preset display
+            do
+                local n = view.track
+                local b = sc.buffer[n]
+                local sl = sc.slice[n][b]
+
+                if sc.punch_in[b].recorded then
+                    if wide then
+                        for i = 1, slices do
+                            local x = i + x[3] - slices
+                            local y = y[5] - 2
+                            local hl = i == sl
+                            local frst = i == 1
+                            screen.level(hl and 15 or frst and 8 or 4)
+                            screen.pixel(x, y)
+                            screen.fill()
+                        end
+                    else
+                        for ix = 1, 3 do
+                            for iy = 1,3 do
+                                local x = (ix-1)*2 + x[3] - (2*2)
+                                local y = (iy-1)*2 + y[5] - (3*2)
+                                local sx = (sl-1) % 3 + 1
+                                local sy = (sl - 1) // 3 + 1
+                                local hl = (ix == sx) and (iy == sy)
+                                local frst = (ix == 1) and (iy == 1)
+                                screen.level(hl and 15 or frst and 8 or 4)
+                                screen.pixel(x, y)
+                                screen.fill()
+                            end
+                        end
+                    end
                 end
             end
         end
