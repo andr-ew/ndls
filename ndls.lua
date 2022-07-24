@@ -77,7 +77,7 @@ local _app = {
     norns = App.norns(),
 }
 
-nest.connect_grid(_app.grid, g, 60)
+nest.connect_grid(_app.grid, g)
 nest.connect_arc(_app.arc, a, 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
