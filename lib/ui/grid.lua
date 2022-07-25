@@ -218,13 +218,13 @@ local function App(args)
             _patrec{
                 x = 8, y = { 1, 4 },
                 pattern = { p[1], p[2], p[3], p[4] }, 
-                state = { st[1], st[2], st[3], st[4] },
+                state = {{ st[1], st[2], st[3], st[4] }},
                 varibright = varibright
             }
             _patrec2{
                 x = { 5, 7 }, y = 4,
                 pattern = { p[5], p[6], p[7] }, 
-                state = { st[5], st[6], st[7] }, 
+                state = {{ st[5], st[6], st[7] }}, 
                 varibright = varibright
             }
         end
