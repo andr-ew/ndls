@@ -3,6 +3,8 @@ local function App(args)
     local wide = args.grid_wide
     local arc2 = args.arc2
 
+    rotated = false --TODO: rotate mix & filter controls for arc2
+
     local function Cut(n, x)
         local _cut = to.pattern(mpat, 'cut '..n, Arc.control, function() 
             return {
@@ -90,31 +92,56 @@ local function App(args)
     end
 
     local Pages = {}
-    function Pages.mix()
-        local _vols = {}
-        for n = 1,4 do
-            _vols[n] = Vol(n, n)
-        end
 
-        return function() 
-            for _,_vol in ipairs(_vols) do _vol() end
+    function Pages.mix(n)
+        if arc2 then
+            local _vol = Vol(n, 1)
+            local _pan = to.pattern(mpat, 'pan '..n, Arc.control, function()
+                return {
+                    n = 2,
+                    state = of.param('pan '..n),
+                    controlspec = of.controlspec('pan '..n),
+                }
+            end)
+
+            return function()
+                _vol(); _pan()
+            end
+        else
+            local _vols = {}
+            for n = 1,4 do
+                _vols[n] = Vol(n, n)
+            end
+
+            return function() 
+                for _,_vol in ipairs(_vols) do _vol() end
+            end
         end
     end
 
     function Pages.window(n)
-        local _vol = Vol(n, 1)
-        local _pan = to.pattern(mpat, 'pan '..n, Arc.control, function()
-            return {
-                n = 2,
-                state = of.param('pan '..n),
-                controlspec = of.controlspec('pan '..n),
-            }
-        end)
-        local _win = Win(n, 3)
-        local _end = End(n, 4)
+        if arc2 then
+            local _win = Win(n, 1)
+            local _end = End(n, 2)
 
-        return function()
-            _vol(); _pan(); _win(); _end()
+            return function()
+                _win(); _end()
+            end
+        else
+            local _vol = Vol(n, 1)
+            local _pan = to.pattern(mpat, 'pan '..n, Arc.control, function()
+                return {
+                    n = 2,
+                    state = of.param('pan '..n),
+                    controlspec = of.controlspec('pan '..n),
+                }
+            end)
+            local _win = Win(n, 3)
+            local _end = End(n, 4)
+
+            return function()
+                _vol(); _pan(); _win(); _end()
+            end
         end
     end
 
@@ -129,16 +156,26 @@ local function App(args)
                 x = { 42,  56 },
             }
         end)
-        local _win = Win(n, 3)
-        local _end = End(n, 4)
+        local _win = not arc2 and Win(n, 3)
+        local _end = not arc2 and End(n, 4)
 
         return function()
-            _cut(); _q(); _win(); _end()
+            _cut(); _q(); 
+            if not arc2 then
+                _win(); _end()
+            end
         end
     end
 
     local _pages = {}
-    _pages.mix = Pages.mix()
+    if arc2 then
+        _pages.mix = {}
+        for n = 1, voices do
+            _pages.mix[n] = Pages.mix(n)
+        end
+    else
+        _pages.mix = Pages.mix()
+    end
     _pages.window = {}
     _pages.filter = {}
 
@@ -148,15 +185,17 @@ local function App(args)
     end
 
     return function()
-        if not arc2 then
-            if view.page == 1 then
+        if view.page == 1 then
+            if arc2 then
+                _pages.mix[view.track]()
+            else
                 _pages.mix()
-            elseif view.page == 2 then
-                _pages.window[view.track]()
-            elseif view.page == 3 then
-                _pages.filter[view.track]()
-            elseif view.page == 4 then
             end
+        elseif view.page == 2 then
+            _pages.window[view.track]()
+        elseif view.page == 3 then
+            _pages.filter[view.track]()
+        elseif view.page == 4 then
         end
     end
 end

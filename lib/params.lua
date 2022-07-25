@@ -28,7 +28,8 @@ do
     end
 end
 
-local ir_op = { 'left', 'right' } 
+--TODO: input routing per-voice 🧠
+local ir_op = { 'left', 'right' }
 params:add {
     type = 'option', id = 'input routing', options = ir_op,
     action = function(v)
@@ -59,6 +60,7 @@ params:add{
 
 for i = 1, voices do
     params:add_separator('voice '..i)
+
     params:add {
         id = 'vol '..i,
         type = 'control', controlspec = cs.def { default = 1, max = 2.5 },
@@ -216,4 +218,24 @@ for i = 1, voices do
             nest.grid.make_dirty()
         end
     }
+    params:add {
+        id = 'buffer '..i,
+        type = 'number', min = 1, max = buffers, default = i,
+        action = function(v)
+            --if s[n] ~= v then
+            sc.buffer[i] = v; sc.buffer:update(i)
+            -- end
+        end
+    }
+    for b = 1,buffers do
+        params:add {
+            id = 'slice '..i..' buffer '..b,
+            type = 'number', min = 1, max = slices, default = 1,
+            action = function(v)
+                --if s[n] ~= v then
+                sc.slice[i][b] = v; sc.slice:update(i, b)
+                -- end
+            end
+        }
+    end
 end
