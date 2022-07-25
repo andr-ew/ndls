@@ -28,7 +28,8 @@ do
     end
 end
 
-local ir_op = { 'left', 'right' } 
+--TODO: input routing per-voice 🧠
+local ir_op = { 'left', 'right' }
 params:add {
     type = 'option', id = 'input routing', options = ir_op,
     action = function(v)

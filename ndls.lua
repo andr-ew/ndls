@@ -11,23 +11,23 @@
 
 --device globals (edit for midigrid)
 
-local g = grid.connect()
-local a = arc.connect()
+g = grid.connect()
+a = arc.connect()
 
 wide = g and g.device and g.device.cols >= 16 or false
 tall = g and g.device and g.device.rows >= 16 or false
-arc2 = not wide
+arc2 = a and a.device and string.match(a.device.name, 'arc 2')
 
 -- test grid64
--- wide = false
--- arc2 = true
+wide = false
+arc2 = true
 -- end test
 -- test grid256
 -- wide = true
 -- tall = true
 -- end test
 
-varibright = wide
+varibright = true
 
 --system libs
 
@@ -77,7 +77,7 @@ local _app = {
     norns = App.norns(),
 }
 
-nest.connect_grid(_app.grid, g, 60)
+nest.connect_grid(_app.grid, g) --, 60) --TEST
 nest.connect_arc(_app.arc, a, 90)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
