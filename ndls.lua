@@ -19,8 +19,8 @@ tall = g and g.device and g.device.rows >= 16 or false
 arc2 = a and a.device and string.match(a.device.name, 'arc 2')
 
 -- test grid64
-wide = false
-arc2 = true
+-- wide = false
+-- arc2 = true
 -- end test
 -- test grid256
 -- wide = true
