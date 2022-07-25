@@ -113,7 +113,7 @@ end
 local reg = {}
 reg.blank = cartographer.divide(cartographer.buffer[1], buffers)
 reg.rec = cartographer.subloop(reg.blank)
-reg.play = cartographer.subloop(reg.rec, slices)
+reg.play = cartographer.subloop(reg.rec, voices)
 
 for b = 1, buffers do
     --adjust punch_in time quantum based on rate
@@ -131,7 +131,7 @@ for b = 1, buffers do
 end
 
 sc.lvl_slew = 0.1
-sc.setup = function()
+sc.init = function()
     audio.level_cut(1)
     audio.level_adc_cut(1)
 
@@ -165,6 +165,48 @@ sc.setup = function()
         end
     end)
     softcut.poll_start_phase()
+end
+
+do
+    --TODO: read & write based on pset #, call on params.action_read/action_write
+
+    local pfx = 'ndls_buffer_'
+
+    sc.write = function()
+        local dir = norns.state.path..'audio/ndls/ndls/'
+
+        if not util.file_exists(dir) then
+            util.make_dir(dir)
+        end
+
+        for b = 1,buffers do
+            if sc.punch_in[b].recorded then
+                local f = dir..pfx..b
+                reg.rec[b]:write(f)
+                print('write '..f)
+            end
+        end
+    end
+    sc.read = function()
+        local dir = norns.state.path..'audio/ndls/ndls/'
+
+        local loaded = {}
+        for b = 1,buffers do
+            local f = dir..pfx..b
+            if util.file_exists(f) then
+                reg.rec[b]:read(f, nil, nil, 'source')
+                loaded[b] = true
+                sc.punch_in:was_loaded(b)
+                print('read '..f)
+            end
+        end
+        for i = 1, voices do
+            if not loaded[sc.buffer[i]] then
+                params:set('rec '..i, 0)
+                params:set('play '..i, 0)
+            end
+        end
+    end
 end
 
 sc.send = function(command, ...)
@@ -255,9 +297,12 @@ sc.punch_in = { -- [buf] = {}
         --reg.play[buf]:set_length(0)
         --reg.zoom[buf]:set_length(0)
     end,
-    save_audio = function(path)
-    end,
-    load_audio = function(path)
+    was_loaded = function(s, b)
+        s[b].recorded = true
+        s[b].recording = false
+        s[b].manual = false
+        
+        s[b].play = 1; s:update_play(b)
     end
 }
 
@@ -269,11 +314,18 @@ for i = 2, buffers do
     end
 end
 
-local function update_assignment(n)
-    local sl = reg.play[sc.buffer[n]][sc.slice:get(n)]
+local function update_assignment(n, dont_update_reg)
+    local b = sc.buffer[n]
+    local sl = reg.play[b][n]
     cartographer.assign(sl, n)
     
-    sc.punch_in:update_play(sc.buffer[n])
+    sc.punch_in:update_play(b)
+
+    if not dont_update_reg then
+        for s = 1, slices do
+            update_reg(n, b, s)
+        end
+    end
 end
 
 sc.buffer = { --[voice] = buffer
@@ -291,36 +343,70 @@ sc.slice = { --[voice][buffer] = slice
             update_assignment(n)
         end
     end,
+    expand = function(s, vc, sl)
+        local b = sc.buffer[vc]
+        local pfx = vc..' buffer '..b..' slice '..sl
+
+        local silent = true
+        params:set('start '..pfx, 0, silent)
+        params:set('end '..pfx, 1, silent)
+        update_reg(vc, b, sl)
+    end,
     randomize = function(s, vc, sl, target)
         local b = sc.buffer[vc]
-        local p = reg.play[b][sl]
-        local available = reg.rec[b]:get_length()
-        local ll = p:get_length('seconds')
+        local b_sl = reg.rec[b]
+        --local p = reg.play[b]
+
+        local pfx = vc..' buffer '..b..' slice '..sl
+
+        local available = b_sl:get_length()
+        local last_s_f = params:get('start '..pfx)
+        local last_e_f = params:get('end '..pfx)
+        local last_len_f = last_e_f - last_s_f
+        local ll = b_sl:fraction_to_seconds(last_len_f)
+
         local do_st = target == 'st' or target == 'both'
         local do_len = target == 'len' or target == 'both'
-        local len, st
+        local len, len_f, st, st_f
         if do_len then
             local min = math.min(params:get('len min'), params:get('len max'))
             local max = math.max(params:get('len min'), params:get('len max'))
             len = math.random()*(max-min) + min
+            len_f = b_sl:seconds_to_fraction(len)
         end
         if do_st then
             local min = 0
             local max = math.max(0, available - (do_len and len or ll))
             st = math.random()*(max-min) + min
+            st_f = b_sl:seconds_to_fraction(st)
         end
 
-        if do_st then p:expand() end
+        local silent = true
+
+        --if do_st then p:expand() end
         if do_st then 
-            p:set_start(st, 'seconds') 
-            if not do_len then p:set_length(ll) end
+            --p:set_start(st, 'seconds') 
+            params:set('start '..pfx, st_f, silent)
+
+            if not do_len then 
+                --p:set_length(ll) 
+                params:set('end '..pfx, st_f + last_len_f, silent)
+            end
         end
-        if do_len then p:set_length(len, 'seconds') end
+        if do_len then 
+            --p:set_length(len, 'seconds') 
+            local sst_f = do_st and st_f or last_s_f
+            params:set('end '..pfx, sst_f + len_f, silent)
+        end
+
+        update_reg(vc, b, sl)
     end,
     --call after loop punch_out
+    --TODO: reset when entering recorded buffer for the first time
     reset = function(s, n)
         s:set(n, sc.buffer[n], 1)
 
+        s:expand(n, 1)
         for sl = 2, slices do s:randomize(n, sl, 'both') end
     end,
     get = function(s, n)
@@ -336,7 +422,7 @@ for n = 1,voices do
         sc.slice[n][b] = 1
     end
 
-    update_assignment(n)
+    update_assignment(n, true)
 end
 
 sc.samples = { -- [buffer] = { samples }

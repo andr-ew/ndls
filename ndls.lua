@@ -7,7 +7,7 @@
 --
 -- endless and/or noodles
 --
--- version 0.1.1-beta-alt-pagination.1 @andrew
+-- version 0.1.2-beta-persistence @andrew
 
 --device globals (edit for midigrid)
 
@@ -86,26 +86,19 @@ nest.connect_screen(_app.norns)
 --init/cleanup
 
 function init()
-    sc.setup()
+    sc.init()
 
     params:read()
-    for i = 1, voices do
-        params:set('vol '..i, 1)
-        params:set('bnd '..i, 0)
-        params:set('cut '..i, 1)
-        params:set('type '..i, 1)
-        params:set('rate '..i, 0)
-        params:set('rev '..i, 0)
-        params:set('rec '..i, 0)
-        params:set('play '..i, 0)
-        params:set('buffer '..i, i)
-        --params:set('crossfade assign '..i, i <3 and 2 or 3)
-    end
-    --params:set('crossfade', 0)
+
+    sc.read()
 
     params:bang()
+    pattern_read()
 end
 
 function cleanup()
     params:write()
+
+    sc.write()
+    pattern_write()
 end

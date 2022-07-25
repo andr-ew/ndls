@@ -204,22 +204,27 @@ local function App(args)
             _voice{}
         end
         
+
         if wide then
             _patrec{
                 x = tall and { 1, 16 } or 16, 
                 y = tall and 16 or { 1, 8 }, 
+                state = { pattern_states.main },
                 pattern = pattern, varibright = varibright
             }
         else
             local p = pattern
+            local st = pattern_states.main
             _patrec{
                 x = 8, y = { 1, 4 },
                 pattern = { p[1], p[2], p[3], p[4] }, 
+                state = { st[1], st[2], st[3], st[4] },
                 varibright = varibright
             }
             _patrec2{
                 x = { 5, 7 }, y = 4,
                 pattern = { p[5], p[6], p[7] }, 
+                state = { st[5], st[6], st[7] }, 
                 varibright = varibright
             }
         end

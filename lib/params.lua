@@ -238,4 +238,18 @@ for i = 1, voices do
             end
         }
     end
+    for b = 1,buffers do
+        for s = 1, slices do
+            params:add {
+                id = 'start '..i..' buffer '..b..' slice '..s,
+                type = 'control', controlspec = cs.def{ min = 0, max = 1, default = 0 },
+                action = function() update_reg(i, b, s) end
+            }
+            params:add {
+                id = 'end '..i..' buffer '..b..' slice '..s,
+                type = 'control', controlspec = cs.def{ min = 0, max = 1, default = 1 },
+                action = function() update_reg(i, b, s) end
+            }
+        end
+    end
 end
