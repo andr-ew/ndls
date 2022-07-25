@@ -115,13 +115,13 @@ get_set_end = function(voice)
     local sl = sc.slice:get(voice)
     return set_end_scoped[voice][b][sl]
 end
-get_start = function(voice, units)
+get_start = function(voice, units, abs)
     units = units or 'fraction'
-    return reg.play:get_start(voice, units)
+    return reg.play:get_start(voice, units, abs)
 end
-get_end = function(voice, units)
+get_end = function(voice, units, abs)
     units = units or 'fraction'
-    return reg.play:get_end(voice, units)
+    return reg.play:get_end(voice, units, abs)
 end
 get_len = function(voice, units)
     units = units or 'fraction'

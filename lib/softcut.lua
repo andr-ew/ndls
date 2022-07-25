@@ -43,7 +43,7 @@ sc = {
         end
     },
     lvlmx = {
-        { vol = 1, play = 0, recorded = 0, send = 1, cf_assign = 1, mix_vol = 1 },
+        { vol = 1, play = 1, recorded = 0, send = 1, cf_assign = 1, mix_vol = 1 },
         cf = 0,
         update = function(s, n)
             local v = s[n].vol * s[n].play * s[n].recorded
@@ -96,6 +96,15 @@ sc = {
                 softcut.pre_filter_lp(n, 1)
             end
         end
+    },
+    loopmx = {
+        { loop = 1 },
+        update = function(s, n)
+            softcut.loop(n, s[n].loop)
+            if s[n].loop > 0 then
+                sc.trigger(n)
+            end
+        end
     }
 }
 
@@ -139,7 +148,7 @@ sc.init = function()
         softcut.enable(i, 1)
         softcut.rec(i, 1)
         softcut.play(i, 1)
-        softcut.loop(i, 1)
+        --softcut.loop(i, 1)
         softcut.level_slew_time(i, sc.lvl_slew)
         --softcut.recpre_slew_time(i, 1)
         softcut.rate(i, 1)
@@ -203,7 +212,6 @@ do
         for i = 1, voices do
             if not loaded[sc.buffer[i]] then
                 params:set('rec '..i, 0)
-                params:set('play '..i, 0)
             end
         end
     end
@@ -221,6 +229,13 @@ end
 
 sc.fade = function(n, length)
     sc.send('fade_time', n, math.min(0.01, length))
+end
+
+sc.trigger = function(n)
+    print('trigger', n)
+    local st = get_start(n, 'seconds', 'absolute')
+    local en = get_end(n, 'seconds', 'absolute')
+    softcut.position(n, sc.ratemx[n].rate > 0 and st or en)
 end
 
 
@@ -337,10 +352,15 @@ sc.buffer = { --[voice] = buffer
 }
 sc.slice = { --[voice][buffer] = slice
     --TODO: depricate
-    set = function(s, n, b, v) params:set('slice '..n..' buffer '..b, v) end,
+    set = function(s, n, b, v) 
+        local id = 'slice '..n..' buffer '..b
+        params:set(id, v, true) 
+        params:lookup_param(id):bang()
+    end,
     update = function(s, n, b)
         if b == sc.buffer[n] then
             update_assignment(n)
+            sc.trigger(n)
         end
     end,
     expand = function(s, vc, sl)

@@ -14,21 +14,32 @@ local function App(args)
         local _params = {}
         _params.rec = to.pattern(mpat, 'rec '..n, Grid.toggle, function()
             return {
-                x = 1, y = bottom, 
-                state = of.param('rec '..n),
+                x = 1, y = bottom, edge = 'falling',
+                state = { params:get('rec '..n) },
+                action = function(v, t)
+                    if t < 0.5 then params:set('rec '..n, v)
+                    else params:delta('clear '..n, 1) end
+                end
             }
         end)
-        _params.play = to.pattern(mpat, 'play '..n, Grid.toggle, function()
+        _params.loop = to.pattern(mpat, 'loop '..n, Grid.toggle, function()
             return {
                 x = 2, y = bottom, lvl = shaded,
                 state = {
-                    sc.punch_in[sc.buffer[n]].recorded and params:get('play '..n) or 0,
+                    sc.punch_in[sc.buffer[n]].recorded and params:get('loop '..n) or 0,
                     function(v)
                         local recorded = sc.punch_in[sc.buffer[n]].recorded
                         local recording = sc.punch_in[sc.buffer[n]].recording
 
-                        if recorded or recording then 
-                            params:set('play '..n, v)
+                        if recorded then 
+                            params:set('loop '..n, v)
+                        elseif recording then
+                            local z = sc.buffer[n]
+                            params:set('loop '..n, v)
+
+                            --TODO: refactor reset call into sc.punch_in
+                            sc.punch_in:set(z, 0)
+                            sc.slice:reset(n)
                         end
                     end
                 },
@@ -62,6 +73,7 @@ local function App(args)
                         x = tall and { 9, 16 } or (wide and { 7, 15 } or { 5, 7 }), 
                         y = wide and bottom or { 1, 3 },
                         lvl = wide and { 0, 15 } or (varibright and { 0, 15 } or { 15, 0 }),
+                        filtersame = false,
                         state = wide and {
                             sl,
                             function(v)
@@ -152,7 +164,9 @@ local function App(args)
             if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
                 if (wide) or (view.page ~= 1) then
                     _phase{ 
-                        x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, lvl = 4,
+                        x = wide and { 6, 13 } or { 2, 8 }, 
+                        y = wide and top or bottom, 
+                        lvl = 4,
                         phase = reg.play:phase_relative(n, sc.phase[n].abs, 'fraction'),
                     }
                 end
@@ -163,7 +177,7 @@ local function App(args)
             else
                 if view.page == 1 then
                     _params.rec()
-                    _params.play()
+                    _params.loop()
                     _params.buffer()
                     _params.send()
                     _params.ret()

@@ -137,13 +137,11 @@ for i = 1, voices do
             if not sc.punch_in[z].recorded then
                 sc.punch_in:set(z, v)
 
+                --TODO: refactor reset call into sc.punch_in
                 if v==0 and sc.punch_in[z].recorded then 
                     sc.slice:reset(n)
-                    params:set('play '..i, 1) 
+                    params:set('loop '..i, 1) --TODO: won't need this later
                 end
-            elseif sc.lvlmx[n].play == 0 and v == 1 then
-                sc.punch_in:clear(z)
-                sc.punch_in:set(z, 1)
             end
 
             nest.grid.make_dirty()
@@ -151,23 +149,49 @@ for i = 1, voices do
         end
     }
     params:add {
-        id = 'play '..i,
-        type = 'binary', behavior = 'toggle', 
-        action = function(v)
+        id = 'clear '..i,
+        type = 'binary', behavior = 'trigger', 
+        action = function()
             local n = i
-
             local z = sc.buffer[n]
-            if v==1 and sc.punch_in[z].recording then
-                sc.punch_in:set(z, 0)
-                sc.slice:reset(n)
-            end
 
-            sc.lvlmx[n].play = v; sc.lvlmx:update(n)
+            params:set('rec '..i, 0) 
+            sc.punch_in:clear(z)
 
             nest.grid.make_dirty()
             nest.screen.make_dirty()
         end
     }
+    params:add {
+        id = 'loop '..i,
+        type = 'binary', behavior = 'toggle', default = 1,
+        action = function(v)
+            local n = i
+
+            sc.loopmx[n].loop = v; sc.loopmx:update(n)
+
+            nest.grid.make_dirty()
+            nest.screen.make_dirty()
+        end
+    }
+    -- params:add {
+    --     id = 'play '..i,
+    --     type = 'binary', behavior = 'toggle', 
+    --     action = function(v)
+    --         local n = i
+
+    --         local z = sc.buffer[n]
+    --         if v==1 and sc.punch_in[z].recording then
+    --             sc.punch_in:set(z, 0)
+    --             sc.slice:reset(n)
+    --         end
+
+    --         sc.lvlmx[n].play = v; sc.lvlmx:update(n)
+
+    --         nest.grid.make_dirty()
+    --         nest.screen.make_dirty()
+    --     end
+    -- }
     params:add {
         id = 'rate '..i,
         type = 'number', min = -7, max = 2, default = 0, 
