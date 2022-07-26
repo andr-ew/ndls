@@ -5,6 +5,9 @@ voices = tall and 6 or 4
 buffers = voices
 slices = 9
 
+tracks = voices
+presets = slices
+
 function pattern_time:resume()
     if self.count > 0 then
         self.prev_time = util.time()
@@ -148,7 +151,7 @@ freeze_patrol = {
         for _,k in ipairs{ 'grid', 'screen', 'arc' } do
             if now - s.t[k] > freeze_thresh then
                 if not (k=='screen' and _menu.mode) then --checking _menu.mode probs dangerous 👺
-                    print(k..' is frozen !!!')
+                    print(k..' is frozen !!! 🥶')
                 end
             end
         end
