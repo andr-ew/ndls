@@ -69,10 +69,13 @@ local function App(args)
             for b = 1, buffers do
                 _slices[b] = to.pattern(mpat, 'slice '..n..' '..b, Grid.number, function()
                     local sl = sc.slice[n][b]
+                    local hi = varibright and 15 or 0
+                    local lo = varibright and 0 or 15
+
                     return {
                         x = tall and { 9, 16 } or (wide and { 7, 15 } or { 5, 7 }), 
                         y = wide and bottom or { 1, 3 },
-                        lvl = wide and { 0, 15 } or (varibright and { 0, 15 } or { 15, 0 }),
+                        lvl = { lo, sc.phase[n].delta==0 and lo or hi },
                         filtersame = false,
                         state = wide and {
                             sl,

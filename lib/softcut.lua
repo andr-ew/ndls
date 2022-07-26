@@ -6,14 +6,17 @@ local sc
 
 sc = {
     phase = {
-        { rel = 0, abs = 0 },
+        { rel = 0, abs = 0, delta = 0, last = 0 },
         set = function(s, n, v)
             s[n].abs = v
             s[n].rel = reg.rec:phase_relative(n, v, 'fraction')
+            s[n].delta = v - s[n].last
 
             nest.grid.make_dirty()
             nest.arc.make_dirty()
             nest.screen.make_dirty()
+            
+            s[n].last = v
         end
     },
     inmx = {
@@ -160,7 +163,7 @@ sc.init = function()
 
         sc.slew(i, 0.2)
 
-        softcut.phase_quant(i, 1/100)
+        --softcut.phase_quant(i, 1/100)
     end
 
     -- softcut.event_position(function(i, ph)
@@ -168,12 +171,22 @@ sc.init = function()
     --         sc.phase:set(i, ph)
     --     end
     -- end)
-    softcut.event_phase(function(i, ph)
+    -- softcut.event_phase(function(i, ph)
+    --     if i <= voices then
+    --         sc.phase:set(i, ph)
+    --     end
+    -- end)
+    -- softcut.poll_start_phase()
+
+    softcut.event_position(function(i, ph)
         if i <= voices then
             sc.phase:set(i, ph)
         end
     end)
-    softcut.poll_start_phase()
+    clock.run(function() while true do for i = 1,4 do
+        softcut.query_position(i)
+        clock.sleep(1/90/2) -- 2x fps of arc
+    end end end)
 end
 
 do
@@ -232,7 +245,6 @@ sc.fade = function(n, length)
 end
 
 sc.trigger = function(n)
-    print('trigger', n)
     local st = get_start(n, 'seconds', 'absolute')
     local en = get_end(n, 'seconds', 'absolute')
     softcut.position(n, sc.ratemx[n].rate > 0 and st or en)
