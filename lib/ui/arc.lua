@@ -197,6 +197,10 @@ local function App(args)
             _pages.filter[view.track]()
         elseif view.page == 4 then
         end
+
+        if nest.arc.is_drawing() then
+            freeze_patrol:ping('arc')
+        end
     end
 end
 

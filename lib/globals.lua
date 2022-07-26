@@ -128,3 +128,35 @@ get_len = function(voice, units)
     return reg.play:get_length(voice, units)
 end
 
+fps = { grid = 30, arc = 90, screen = 30, patrol = 30 }
+
+local freeze_thresh = 1/10
+freeze_patrol = {
+    t = { 
+        grid = util.time(),  
+        screen = util.time(),
+        arc = util.time()
+    },
+    delta = { grid = 0, screen = 0, arc = 0 },
+    ping = function(s, k)
+        local now = util.time()
+        --s.tlast[k] = s.t[k]
+        s.t[k] = now
+    end,
+    patrol = function(s) 
+        local now = util.time()
+        for _,k in ipairs{ 'grid', 'screen', 'arc' } do
+            if now - s.t[k] > freeze_thresh then
+                if not (k=='screen' and _menu.mode) then --checking _menu.mode probs dangerous 👺
+                    print(k..' is frozen !!!')
+                end
+            end
+        end
+    end
+}
+clock.run(function() 
+    while true do
+        freeze_patrol:patrol() 
+        clock.sleep(1/fps.patrol)
+    end
+end)

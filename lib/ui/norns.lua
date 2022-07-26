@@ -252,6 +252,8 @@ local function App()
                     end
                 end
             end
+
+            freeze_patrol:ping('screen')
         end
 
         _page_label{

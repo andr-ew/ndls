@@ -245,6 +245,10 @@ local function App(args)
                 varibright = varibright
             }
         end
+
+        if nest.grid.is_drawing() then
+            freeze_patrol:ping('grid')
+        end
     end
 end
 

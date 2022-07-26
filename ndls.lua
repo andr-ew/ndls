@@ -77,11 +77,11 @@ local _app = {
     norns = App.norns(),
 }
 
-nest.connect_grid(_app.grid, g) --, 60) --TEST
-nest.connect_arc(_app.arc, a, 90)
+nest.connect_grid(_app.grid, g, fps.grid)
+nest.connect_arc(_app.arc, a, fps.arc)
 nest.connect_enc(_app.norns)
 nest.connect_key(_app.norns)
-nest.connect_screen(_app.norns)
+nest.connect_screen(_app.norns, fps.screen)
 
 --init/cleanup
 
