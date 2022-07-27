@@ -29,6 +29,36 @@ for i = 1,8 do
 end
 
 wparams = windowparams:new()
+mparams = metaparams:new()
+
+preset = { --[voice][buffer] = slice
+    --TODO: depricate
+    set = function(s, n, b, v) 
+        local id = 'preset '..n..' buffer '..b
+        params:set(id, v, true) 
+        params:lookup_param(id):bang()
+    end,
+    update = function(s, n, b)
+        if b == sc.buffer[n] then
+            mparams:bang(n)
+            wparams:bang(n)
+            sc.trigger(n)
+        end
+    end,
+    --TODO: reset all mparam tracks of buffer on buffer clear, 
+    --      reset all wpram tracks of buffer on buffer punch-out
+    reset = function(s, n)
+        local b = sc.buffer[n]
+        s:set(n, b, 1)
+        
+        mparams:reset(n, b)
+        wparams:reset(n, b)
+    end,
+    get = function(s, n)
+        local b = sc.buffer[n]
+        return s[n][b]
+    end
+}
 
 --TODO: read & write based on pset #, call on params.action_read/action_write
 do

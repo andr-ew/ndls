@@ -10,22 +10,6 @@ do
         id = 'len max', type = 'control', 
         controlspec = cs.def{ min = 0.5, max = 10, default = 0.75 },
     }
-
-    for i = 1, voices do
-        params:add_separator('voice '..i)
-        params:add{
-            id = 'rand st '..i, type = 'binary', behavior = 'trigger',
-            action = function()
-                sc.slice:randomize(i, sc.slice:get(i), 'st')
-            end
-        }
-        params:add{
-            id = 'rand len '..i, type = 'binary', behavior = 'trigger',
-            action = function()
-                sc.slice:randomize(i, sc.slice:get(i), 'len')
-            end
-        }
-    end
 end
 
 --TODO: input routing per-voice 🧠
@@ -139,7 +123,7 @@ for i = 1, voices do
 
                 --TODO: refactor reset call into sc.punch_in
                 if v==0 and sc.punch_in[z].recorded then 
-                    sc.slice:reset(n)
+                    preset:reset(n)
                     params:set('loop '..i, 1) --TODO: won't need this later
                 end
             end
@@ -253,11 +237,11 @@ for i = 1, voices do
     }
     for b = 1,buffers do
         params:add {
-            id = 'slice '..i..' buffer '..b,
-            type = 'number', min = 1, max = slices, default = 1,
+            id = 'preset '..i..' buffer '..b,
+            type = 'number', min = 1, max = presets, default = 1,
             action = function(v)
                 --if s[n] ~= v then
-                sc.slice[i][b] = v; sc.slice:update(i, b)
+                preset[i][b] = v; preset:update(i, b)
                 -- end
             end
         }

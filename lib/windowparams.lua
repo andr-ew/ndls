@@ -62,6 +62,8 @@ function windowparams:new()
             end
         end
     end
+
+    --TODO: wrapped base setters
     local set_start = {}
     local set_end = {}
     for t = 1, tracks do
@@ -106,12 +108,12 @@ function windowparams:bang(t)
     nest.screen.make_dirty(); nest.arc.make_dirty()
 end
 
-function windowparams:expand(t, p, silent)
-    p = p or sc.slice:get(t)
+function windowparams:expand(t, b, p, silent)
+    b = b or sc.buffer[vc]
+    p = p or preset:get(t)
     local vc = t
     local sl = p
 
-    local b = sc.buffer[vc]
     local id_start = self.preset_id[t][b][p].st
     local id_end = self.preset_id[t][b][p].en
 
@@ -124,9 +126,10 @@ function windowparams:expand(t, p, silent)
     end
 end
 
-function windowparams:randomize(t, target, p, silent)
+function windowparams:randomize(t, target, b, p, silent)
     target = target or 'both'
-    p = p or sc.slice:get(t)
+    b = b or sc.buffer[vc]
+    p = p or preset:get(t)
     local vc = t
     local sl = p
 
@@ -182,14 +185,14 @@ function windowparams:randomize(t, target, p, silent)
     end
 end
 
-function windowparams:reset(t)
+function windowparams:reset(t, b)
     local silent = true
-    self:expand(t, 1)
-    for p = 2, presets do self:randomize(t, 'both', p, silent) end
+    self:expand(t, b, 1, silent)
+    for p = 2, presets do self:randomize('both', t, b, p, silent) end
     self:bang(t)
 end
 
-function windowparams:set_base(id)
+function windowparams:get_base_setter(id, t)
 end
 function windowparams:get_preset_setter(id, track)
     local b = sc.buffer[track]
@@ -200,7 +203,7 @@ function windowparams:get_preset_setter(id, track)
         return self.preset_setter_end[track][b][p]
     end
 end
-function windowparams:get_base(id)
+function windowparams:get_base(id, t)
 end
 function windowparams:get(id, track, units, abs)
     units = units or 'fraction'

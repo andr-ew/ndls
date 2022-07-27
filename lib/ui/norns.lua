@@ -146,10 +146,10 @@ local function App()
                             action = function(v, t, d, add, rem, l)
                                 if #l == 2 then
                                     --sc.slice:randomize(n, sc.slice:get(n), 'both')
-                                    wparams:randomize(n, 'both')
+                                    wparams:randomize('both', n)
                                 else
                                     -- sc.slice:randomize(n, sc.slice:get(n), add==2 and 'len' or 'st')
-                                    wparams:randomize(n, add==2 and 'len' or 'st')
+                                    wparams:randomize(add==2 and 'len' or 'st', n)
                                 end
                             end
                         }

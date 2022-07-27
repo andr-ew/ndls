@@ -343,50 +343,31 @@ for i = 2, buffers do
     end
 end
 
-local function update_assignment(n, dont_update_reg)
+local function update_assignment(n)
     local b = sc.buffer[n]
     local sl = reg.play[b][n]
     cartographer.assign(sl, n)
     
     sc.punch_in:update_play(b)
 
-    if not dont_update_reg then
-        wparams:bang(n)
-    end
+    -- if not dont_update_reg then
+    --     wparams:bang(n)
+    -- end
 end
 
 sc.buffer = { --[voice] = buffer
     --TODO: depricate
     set = function(s, n, v) params:set('buffer '..n, v) end,
     update = function(s, n)
+        mparams:bang(n)
         update_assignment(n)
+        wparams:bang(n)
     end
 }
-sc.slice = { --[voice][buffer] = slice
-    --TODO: depricate
-    set = function(s, n, b, v) 
-        local id = 'slice '..n..' buffer '..b
-        params:set(id, v, true) 
-        params:lookup_param(id):bang()
-    end,
-    update = function(s, n, b)
-        if b == sc.buffer[n] then
-            update_assignment(n)
-            sc.trigger(n)
-        end
-    end,
-    --call after loop punch_out
-    --TODO: reset when entering recorded buffer for the first time
-    reset = function(s, n)
-        s:set(n, sc.buffer[n], 1)
-        
-        wparams:reset(n)
-    end,
-    get = function(s, n)
-        local b = sc.buffer[n]
-        return s[n][b]
-    end
-}
+
+--TODO: depricate
+sc.slice = preset
+
 for n = 1,voices do
     sc.buffer[n] = n
 
@@ -395,7 +376,7 @@ for n = 1,voices do
         sc.slice[n][b] = 1
     end
 
-    update_assignment(n, true)
+    update_assignment(n)
 end
 
 sc.samples = { -- [buffer] = { samples }
