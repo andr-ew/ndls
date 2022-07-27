@@ -98,7 +98,7 @@ local function App()
                     }
                     _len_view{
                         n = 3, x = e[3].x, y = e[3].y,
-                        label = 'end', 
+                        label = 'len', 
                         state = { get_len(args.voice, 'seconds') },
                         input_enabled = false,
                     }
