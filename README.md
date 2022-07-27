@@ -1,6 +1,6 @@
 # ndls (0.1.0-beta)
 
-4-track asyncronous tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
+4-track, grid-based, asyncronous tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
 
 a spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim), [anaphora](https://github.com/andr-ew/prosody#anaphora), and several unreleased precursors.
 
