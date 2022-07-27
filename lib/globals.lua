@@ -28,6 +28,8 @@ for i = 1,8 do
     pattern_states.alt[i] = 0
 end
 
+wparams = windowparams:new()
+
 --TODO: read & write based on pset #, call on params.action_read/action_write
 do
     function pattern_write()
@@ -69,7 +71,7 @@ end
 
 fps = { grid = 30, arc = 90, screen = 30, patrol = 30 }
 
-local freeze_thresh = 1/10
+local freeze_thresh = 1
 freeze_patrol = {
     t = { 
         grid = util.time(),  

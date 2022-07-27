@@ -262,5 +262,9 @@ for i = 1, voices do
             end
         }
     end
-    --TODO: add windowparams
 end
+
+params:add_separator()
+
+wparams:add_base_params()
+wparams:add_preset_params()

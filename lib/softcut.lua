@@ -245,8 +245,10 @@ sc.fade = function(n, length)
 end
 
 sc.trigger = function(n)
-    local st = get_start(n, 'seconds', 'absolute')
-    local en = get_end(n, 'seconds', 'absolute')
+    -- local st = get_start(n, 'seconds', 'absolute')
+    -- local en = get_end(n, 'seconds', 'absolute')
+    local st = wparams:get('start', n, 'seconds', 'absolute')
+    local en = wparams:get('end', n, 'seconds', 'absolute')
     softcut.position(n, sc.ratemx[n].rate > 0 and st or en)
 end
 
@@ -349,9 +351,7 @@ local function update_assignment(n, dont_update_reg)
     sc.punch_in:update_play(b)
 
     if not dont_update_reg then
-        for s = 1, slices do
-            update_reg(n, b, s)
-        end
+        wparams:bang(n)
     end
 end
 
@@ -380,7 +380,7 @@ sc.slice = { --[voice][buffer] = slice
     reset = function(s, n)
         s:set(n, sc.buffer[n], 1)
         
-        --TODO: reset windowparams
+        wparams:reset(n)
     end,
     get = function(s, n)
         local b = sc.buffer[n]

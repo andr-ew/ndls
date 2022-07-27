@@ -28,12 +28,12 @@ function windowparams:new()
             m.base_id[t][b] = {
                 win = (
                     'window'
-                    ..'_track_'..t
+                    ..'_t_'..t
                     ..'_base_'..b
                 ),
                 len = (
                     'length'
-                    ..'_track_'..t
+                    ..'_t_'..t
                     ..'_base_'..b
                 )
             }
@@ -48,15 +48,15 @@ function windowparams:new()
                 m.preset_id[t][b][p] = {
                     st = (
                         'start'
-                        ..'_track_'..t
-                        ..'_buffer_'..b
-                        ..'_preset_'..p
+                        ..'_t_'..t
+                        ..'_b_'..b
+                        ..'_pre_'..p
                     ),
                     en = (
                         'end'
-                        ..'_track_'..t
-                        ..'_buffer_'..b
-                        ..'_preset_'..p
+                        ..'_t_'..t
+                        ..'_b_'..b
+                        ..'_pre_'..p
                     )
                 }
             end
@@ -65,12 +65,12 @@ function windowparams:new()
     local set_start = {}
     local set_end = {}
     for t = 1, tracks do
-        set_start[n] = {}
-        set_end[n] = {}
+        set_start[t] = {}
+        set_end[t] = {}
 
         for b = 1, buffers do
-            set_start[n][b] = {}
-            set_end[n][b] = {}
+            set_start[t][b] = {}
+            set_end[t][b] = {}
 
             for p = 1, presets do
                 set_start[t][b][p] = multipattern.wrap_set(
@@ -92,12 +92,12 @@ function windowparams:new()
 end
 
 function windowparams:bang(t)
-    local b = sc.buffer[voice]
-    local p = sc.slice:get(voice)
+    local b = sc.buffer[t]
+    local p = sc.slice:get(t)
 
-    --TODO: sum with base vals
-    local st = params:get(m.preset_id[t][b][p].st)
-    local en = params:get(m.preset_id[t][b][p].en)
+    --TODO: sum with base vals, modulation
+    local st = params:get(self.preset_id[t][b][p].st)
+    local en = params:get(self.preset_id[t][b][p].en)
 
     reg.play[b][t]:expand()
     reg.play[b][t]:set_start(st, 'fraction')
@@ -106,20 +106,27 @@ function windowparams:bang(t)
     nest.screen.make_dirty(); nest.arc.make_dirty()
 end
 
-local function expand(t, p)
+function windowparams:expand(t, p, silent)
+    p = p or sc.slice:get(t)
     local vc = t
     local sl = p
 
     local b = sc.buffer[vc]
-    local id_start = m.preset_id[t][b][p].st
-    local id_end = m.preset_id[t][b][p].en
+    local id_start = self.preset_id[t][b][p].st
+    local id_end = self.preset_id[t][b][p].en
 
     local silent = true
     params:set(id_start, 0, silent)
     params:set(id_end, 1, silent)
+    
+    if not silent then
+        self:bang(t)
+    end
 end
 
-local function randomize(t, p, target)
+function windowparams:randomize(t, target, p, silent)
+    target = target or 'both'
+    p = p or sc.slice:get(t)
     local vc = t
     local sl = p
 
@@ -127,8 +134,8 @@ local function randomize(t, p, target)
     local b_sl = reg.rec[b]
     --local p = reg.play[b]
 
-    local id_start = m.preset_id[t][b][p].st
-    local id_end = m.preset_id[t][b][p].en
+    local id_start = self.preset_id[t][b][p].st
+    local id_end = self.preset_id[t][b][p].en
 
     local available = b_sl:get_length()
     local last_s_f = params:get(id_start)
@@ -152,28 +159,33 @@ local function randomize(t, p, target)
         st_f = b_sl:seconds_to_fraction(st)
     end
 
-    local silent = true
+    local si = true
 
     --if do_st then p:expand() end
     if do_st then 
         --p:set_start(st, 'seconds') 
-        params:set(id_start, st_f, silent)
+        params:set(id_start, st_f, si)
 
         if not do_len then 
             --p:set_length(ll) 
-            params:set(id_end, st_f + last_len_f, silent)
+            params:set(id_end, st_f + last_len_f, si)
         end
     end
     if do_len then 
         --p:set_length(len, 'seconds') 
         local sst_f = do_st and st_f or last_s_f
-        params:set(id_end, sst_f + len_f, silent)
+        params:set(id_end, sst_f + len_f, si)
+    end
+
+    if not silent then
+        self:bang(t)
     end
 end
 
 function windowparams:reset(t)
-    expand(t, 1)
-    for p = 2, presets do randomize(t, p, 'both') end
+    local silent = true
+    self:expand(t, 1)
+    for p = 2, presets do self:randomize(t, 'both', p, silent) end
     self:bang(t)
 end
 
@@ -197,7 +209,7 @@ function windowparams:get(id, track, units, abs)
         return reg.play:get_start(track, units, abs)
     elseif id == 'end' then
         return reg.play:get_end(track, units, abs)
-    elseif id == 'len' then
+    elseif id == 'length' then
         return reg.play:get_length(track, units)
     end
 end

@@ -52,6 +52,8 @@ cartographer, Slice = include 'lib/cartographer/cartographer'
 
 --script files
 
+--metaparams  = include 'ndls/lib/metaparams'        --abstraction around params
+windowparams = include 'ndls/lib/windowparams'     --abstraction around params
 include 'ndls/lib/globals'                         --global variables
 sc, reg = include 'ndls/lib/softcut'               --softcut utilities
 include 'ndls/lib/params'                          --create params

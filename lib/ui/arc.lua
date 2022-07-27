@@ -40,8 +40,16 @@ local function App(args)
                 phase = sc.phase[n].rel,
                 show_phase = sc.lvlmx[n].play == 1,
                 sens = 1/1000,
-                st = { get_start(n), get_set_start(n) },
-                en = { get_end(n), get_set_end(n) },
+                st = { 
+                    --get_start(n), get_set_start(n) 
+                    wparams:get('start', n), 
+                    wparams:get_preset_setter('start', n)
+                },
+                en = { 
+                    --get_end(n), get_set_end(n) 
+                    wparams:get('end', n), 
+                    wparams:get_preset_setter('end', n)
+                },
                 recording = sc.punch_in[b].recording,
                 recorded = sc.punch_in[b].recorded,
                 reg = reg.rec[b],
@@ -67,8 +75,16 @@ local function App(args)
                 lvl_st = alt and 15 or 4,
                 lvl_en = alt and 4 or 15,
                 lvl_ph = 4,
-                st = { get_start(n), get_set_start(n) },
-                en = { get_end(n), get_set_end(n) },
+                st = { 
+                    --get_start(n), get_set_start(n) 
+                    wparams:get('start', n), 
+                    wparams:get_preset_setter('start', n)
+                },
+                en = { 
+                    --get_end(n), get_set_end(n) 
+                    wparams:get('end', n), 
+                    wparams:get_preset_setter('end', n)
+                },
                 recording = sc.punch_in[b].recording,
                 recorded = sc.punch_in[b].recorded,
                 reg = reg.rec[b],

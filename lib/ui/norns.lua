@@ -87,27 +87,38 @@ local function App()
                     _st_view{
                         n = 1, x = e[1].x, y = e[1].y,
                         label = 'st', 
-                        state = { get_start(args.voice, 'seconds') },
+                        --state = { get_start(args.voice, 'seconds') },
+                        state = { wparams:get('start', args.voice, 'seconds') },
                         input_enabled = false,
                     }
                     _win_view{
                         n = 2, x = e[2].x, y = e[2].y,
                         label = 'win', 
-                        state = { get_start(args.voice, 'seconds') },
+                        --state = { get_start(args.voice, 'seconds') },
+                        state = { wparams:get('start', args.voice, 'seconds') },
                         input_enabled = false,
                     }
                     _len_view{
                         n = 3, x = e[3].x, y = e[3].y,
                         label = 'len', 
-                        state = { get_len(args.voice, 'seconds') },
+                        --state = { get_len(args.voice, 'seconds') },
+                        state = { wparams:get('length', args.voice, 'seconds') },
                         input_enabled = false,
                     }
 
                     if nest.enc.has_input() then
                         local n, d = nest.enc.input_args()
 
-                        local st = { get_start(args.voice), get_set_start(args.voice) }
-                        local en = { get_end(args.voice), get_set_end(args.voice) }
+                        local st = { 
+                            wparams:get('start', args.voice), 
+                            --get_set_start(args.voice) 
+                            wparams:get_preset_setter('start', args.voice)
+                        }
+                        local en = { 
+                            -- get_end(args.voice), get_set_end(args.voice) 
+                            wparams:get('end', args.voice), 
+                            wparams:get_preset_setter('end', args.voice)
+                        }
                        
                         if n == 1 then
                             st[2](st[1] + d * args.sens)
@@ -134,9 +145,11 @@ local function App()
                             y = k[2].y, x = { { k[2].x }, { k[3].x } },
                             action = function(v, t, d, add, rem, l)
                                 if #l == 2 then
-                                    sc.slice:randomize(n, sc.slice:get(n), 'both')
+                                    --sc.slice:randomize(n, sc.slice:get(n), 'both')
+                                    wparams:randomize(n, 'both')
                                 else
-                                    sc.slice:randomize(n, sc.slice:get(n), add==2 and 'len' or 'st')
+                                    -- sc.slice:randomize(n, sc.slice:get(n), add==2 and 'len' or 'st')
+                                    wparams:randomize(n, add==2 and 'len' or 'st')
                                 end
                             end
                         }
@@ -268,7 +281,9 @@ local function App()
             local b = sc.buffer[n]
             _waveform{
                 reg = reg.rec[b], samples = sc.samples[b],
-                st = get_start(n), en = get_end(n), phase = sc.phase[n].rel,
+                --st = get_start(n), en = get_end(n), 
+                st = wparams:get('start', n), en = wparams:get('end', n),
+                phase = sc.phase[n].rel,
                 recording = sc.punch_in[b].recording,
                 recorded = sc.punch_in[b].recorded,
                 show_phase = sc.lvlmx[n].play == 1,
