@@ -174,6 +174,7 @@ end
 function windowparams:reset(t)
     expand(t, 1)
     for p = 2, presets do randomize(t, p, 'both') end
+    self:bang(t)
 end
 
 function windowparams:set_base(id)
