@@ -45,14 +45,14 @@ preset = { --[voice][buffer] = slice
             sc.trigger(n)
         end
     end,
-    --TODO: reset all mparam tracks of buffer on buffer clear, 
-    --      reset all wpram tracks of buffer on buffer punch-out
     reset = function(s, n)
         local b = sc.buffer[n]
         s:set(n, b, 1)
         
-        mparams:reset(n, b)
-        wparams:reset(n, b)
+        for i = 1, voices do
+            mparams:reset(i, b)
+            wparams:reset(i, b)
+        end
     end,
     get = function(s, n)
         local b = sc.buffer[n]

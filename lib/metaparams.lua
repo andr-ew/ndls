@@ -40,6 +40,8 @@ function metaparam:new(args)
     --for k,v in pairs(args) do m[k] = v end
     m.args = args
 
+    m.id = self.args.name
+
     m.mappable_id = {}
     for t = 1,tracks do
         m.mappable_id[t] = self.args.name..'_track_'..t
@@ -92,15 +94,13 @@ function metaparam:new(args)
     return m
 end
 
-function metaparam:reset(t)
-    for b = 1,buffers do
-        local b_id = self.base_id[t][b]
-        self.args.resets.default(b_id)
+function metaparam:reset(t, b)
+    local b_id = self.base_id[t][b]
+    self.args.resets.default(b_id, t, b)
 
-        for p = 1, presets do
-            p_id = self.preset_id[t][b][p]
-            self.args.resets.default(p_id)
-        end
+    for p = 1, presets do
+        p_id = self.preset_id[t][b][p]
+        self.args.resets.default(p_id, t, b)
     end
 end
 
@@ -180,7 +180,8 @@ function metaparam:add_mappable_param(t)
     params:add(args)
 end
 
---TODO: preset include option params
+--TODO: view option params
+--TODO: reset option params
 
 local metaparams = {}
 
@@ -193,18 +194,39 @@ function metaparams:new()
     return ms
 end
 
-function metaparams:bang(track)
-end
-function metaparams:reset(track)
+function metaparams:add(args)
+    local m = metaparam:new(args)
+
+    table.insert(self.list, m)
+    self.lookup[m.id] = m
 end
 
-function metaparams:get_base_setter(id, track)
+function metaparams:bang(track, id)
+    if id then
+        self.lookup[id]:bang(track)
+    else
+        for _,m in ipairs(self.list) do m:bang(track) end
+    end
 end
-function metaparams:get_preset_setter(id, track)
+function metaparams:reset(track, buffer, id)
+    if id then
+        self.lookup[id]:reset(track, buffer)
+    else
+        for _,m in ipairs(self.list) do m:reset(track, buffer) end
+    end
 end
-function metaparams:get_base(id, track)
+
+function metaparams:get_base_setter(track, id)
+    return self.lookup[id]:get_base_setter(track)
 end
-function metaparams:get(id, track)
+function metaparams:get_preset_setter(track, id)
+    return self.lookup[id]:get_preset_setter(track)
+end
+function metaparams:get_base(track, id)
+    return self.lookup[id]:get_base(track)
+end
+function metaparams:get(track, id)
+    return self.lookup[id]:get(track)
 end
 
 function metaparams:add_base_params()
@@ -231,7 +253,6 @@ function metaparams:add_preset_params()
         end
     end
 end
-
 function metaparams:add_mappable_params(t)
     --params:add_separator('track '..t..' (midi mapping)')
 
