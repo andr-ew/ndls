@@ -61,10 +61,10 @@ sc = {
         end
     },
     oldmx = {
-        { old = 1, old2 = 1, rec = 0 },
+        { old = 1, rec = 0 },
         update = function(s, n)
             sc.send('rec_level', n, s[n].rec)
-            sc.send('pre_level', n, (s[n].rec == 0) and 1 or (s[n].old * s[n].old2))
+            sc.send('pre_level', n, (s[n].rec == 0) and 1 or (s[n].old))
             sc.sendmx[n].old = s[n].old
         end
     },

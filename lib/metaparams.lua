@@ -1,25 +1,34 @@
 local metaparam = {}
 
 function metaparam:new(args)
-    if not args.sum then
-        if args.type == 'control' then
-            args.sum = function(self, a, b, c)
-                return self.args.controlspec:map(
-                    self.args.controlspec:unmap(a + b + c)
-                )
-            end
-        elseif args.type == 'number' then
-            args.sum = function(self, a, b, c)
-                return util.clamp(a + b + c, self.args.min, self.args.max)
-            end
-        elseif args.type == 'option' then
-            args.sum = function(self, a, b, c)
-                return util.wrap(a + b + c - 1, 1, #self.args.options)
-            end
-        elseif args.type == 'binary' then
-            args.sum = function(self, a, b, c)
-                return (a + b + c) % 2
-            end
+    if args.type == 'control' then
+        args.cs_base = args.cs_base or args.controlspec
+        args.cs_preset = args.cs_preset or args.controlspec
+        args.sum = args.sum or function(self, a, b, c)
+            return self.args.controlspec:map(
+                self.args.controlspec:unmap(a + b + c)
+            )
+        end
+    elseif args.type == 'number' then
+        args.min_base = args.min_base or args.min
+        args.min_preset = args.min_preset or args.min
+        args.max_base = args.max_base or args.max
+        args.max_preset = args.max_preset or args.max
+        args.default_base = args.default_base or args.default
+        args.default_preset = args.default_preset or args.default
+        args.sum = args.sum or function(self, a, b, c)
+            return util.clamp(a + b + math.floor(c), self.args.min, self.args.max)
+        end
+    elseif args.type == 'option' then
+        args.sum = args.sum or function(self, a, b, c)
+            local cc = util.clamp(math.floor(c), 0, #self.args.options)
+            return util.wrap(a + b + cc - 1, 1, #self.args.options)
+        end
+    elseif args.type == 'binary' then
+        args.default_base = args.default_base or args.default
+        args.default_preset = args.default_preset or args.default
+        args.sum = args.sum or function(self, a, b, c)
+            return (a + b + math.floor(c)) % 2
         end
     end
     
@@ -142,6 +151,9 @@ function metaparam:add_base_param(t, b)
     elseif args.type == 'number' then
         args.min = self.args.min_base
         args.max = self.args.max_base
+        args.default = self.args.default_base
+    elseif args.type == 'binary' then
+        args.default = self.args.default_base
     end
     args.action = function() self:bang(t) end
 
@@ -159,6 +171,9 @@ function metaparam:add_preset_param(t, b, s)
     elseif args.type == 'number' then
         args.min = self.args.min_preset
         args.max = self.args.max_preset
+        args.default = self.args.default_base
+    elseif args.type == 'binary' then
+        args.default = self.args.default_preset
     end
     args.action = function() self:bang(t) end
 
