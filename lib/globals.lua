@@ -1,5 +1,7 @@
 alt = false
 view = { track = 1, page = 1 }
+page_names = { 'MIX', 'WINDOW', 'FILTER', 'LFO' }
+MIX, WINDOW, FILTER, LFO = 1, 2, 3, 4
 
 voices = tall and 6 or 4
 buffers = voices
@@ -30,6 +32,18 @@ end
 
 wparams = windowparams:new()
 mparams = metaparams:new()
+
+function mparams_scope(id)
+    --TODO: check options param
+    return alt and 'base' or 'preset'
+end
+function of_mparam(track, id)
+    local scope = mparams_scope(id)
+    return { 
+        mparams:get(track, id, scope),
+        mparams:get_setter(track, id, scope)
+    }
+end
 
 preset = { --[voice][buffer] = slice
     --TODO: depricate

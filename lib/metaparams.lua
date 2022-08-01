@@ -49,13 +49,14 @@ function metaparam:new(args)
     --for k,v in pairs(args) do m[k] = v end
     m.args = args
 
-    m.id = self.args.name
+    m.id = self.args.id
 
     m.mappable_id = {}
     for t = 1,tracks do
         m.mappable_id[t] = self.args.name..'_track_'..t
     end
 
+    --TODO: optional slew time
     m.base_id = {}
     m.base_setter = {}
     for t = 1,tracks do
@@ -73,7 +74,6 @@ function metaparam:new(args)
             )
         end
     end
-
     m.preset_id = {}
     m.preset_setter = {}
     for t = 1,tracks do
@@ -113,27 +113,68 @@ function metaparam:reset(t, b)
     end
 end
 
-function metaparam:get_base_setter(track)
-    local b = sc.buffer[track]
-    return self.base_setter[track][b]
-end
-function metaparam:get_preset_setter(track)
+-- function metaparam:get_base_setter(track)
+--     local b = sc.buffer[track]
+--     return self.base_setter[track][b]
+-- end
+-- function metaparam:get_preset_setter(track)
+--     local b = sc.buffer[track]
+--     local p = sc.slice:get(track)
+--     return self.preset_setter[track][b][p]
+-- end
+
+function metaparam:get_setter(track, scope)
+    scope = scope or 'preset'
     local b = sc.buffer[track]
     local p = sc.slice:get(track)
-    return self.preset_setter[track][b][p]
+    local table_name = (scope == 'preset') and 'preset_setter' or 'base_setter'
+
+    return self[table_name][track][b][p]
 end
-function metaparam:get_base(t)
-end
-function metaparam:get(track)
+
+function metaparam:get(track, scope)
+    scope = scope or 'sum'
     local b = sc.buffer[track]
     local p = sc.slice:get(track)
 
-    return self.args.sum(
-        self, 
-        params:get(self.base_id[track][b]),
-        params:get(self.preset_id[track][b][s]),
-        self.modulation()
-    )
+    if scope == 'sum' then
+        return self.args.sum(
+            self, 
+            params:get(self.base_id[track][b]),
+            params:get(self.preset_id[track][b][s]),
+            self.modulation()
+        )
+    elseif scope == 'base' then
+        return params:get(self.base_id[track][b])
+    elseif scope == 'preset' then
+        return params:get(self.preset_id[track][b][s])
+    end
+end
+function metaparam:get_controlspec(scope)
+    scope = scope or 'sum'
+
+    if scope == 'sum' then
+        return self.args.controlspec
+    elseif scope == 'base' then
+        return self.args.cs_base
+    elseif scope == 'preset' then
+        return self.args.cs_preset
+    end
+end
+function metaparam:get_options()
+    return self.args.options
+end
+
+for _, name in ipairs{ 'min', 'max', 'default' } do
+    metaparam['get_'..name] = function(self, scope)
+        if scope == 'sum' then
+            return self.args[name]
+        elseif scope == 'base' then
+            return self.args[name..'_base']
+        elseif scope == 'preset' then
+            return self.args[name..'_preset']
+        end
+    end
 end
 
 function metaparam:bang(track)
@@ -231,17 +272,24 @@ function metaparams:reset(track, buffer, id)
     end
 end
 
-function metaparams:get_base_setter(track, id)
-    return self.lookup[id]:get_base_setter(track)
+function metaparams:get_setter(track, id, scope)
+    return self.lookup[id]:get_setter(track, scope)
 end
-function metaparams:get_preset_setter(track, id)
-    return self.lookup[id]:get_preset_setter(track)
+function metaparams:get_controlspec(id, scope)
+    return self.lookup[id]:get_controlspec(scope)
 end
-function metaparams:get_base(track, id)
-    return self.lookup[id]:get_base(track)
+function metaparams:get_options(id)
+    return self.lookup[id]:get_options()
 end
-function metaparams:get(track, id)
-    return self.lookup[id]:get(track)
+for _, name in ipairs{ 'min', 'max', 'default' } do
+    local f_name = 'get_'..name
+    metaparams[f_name] = function(self, id, scope)
+        local m = self.lookup[id]
+        return m[f_name](m, scope)
+    end
+end
+function metaparams:get(track, id, scope)
+    return self.lookup[id]:get(track, scope)
 end
 
 function metaparams:add_base_params()
