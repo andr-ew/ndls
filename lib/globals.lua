@@ -33,15 +33,14 @@ end
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-function mparams_scope(id)
-    --TODO: check options param
-    return alt and 'base' or 'preset'
+function mparams_scope(mode, id)
+    --TODO: check view options param
+    return alt and 'base' or ((mode == 'get') and 'sum' or 'preset')
 end
 function of_mparam(track, id)
-    local scope = mparams_scope(id)
     return { 
-        mparams:get(track, id, scope),
-        mparams:get_setter(track, id, scope)
+        mparams:get(track, id, mparams_scope('get', id)),
+        mparams:get_setter(track, id, mparams_scope('set', id))
     }
 end
 

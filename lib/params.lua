@@ -7,7 +7,7 @@ do
         id = 'vol',
         type = 'control', controlspec = cs.def{ default = 1, max = 2.5 },
         sum = mult,
-        action = function(v)
+        action = function(i, v)
             sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
@@ -18,7 +18,7 @@ do
         controlspec = cs.def{ 
             min = -1, max = 1, default = 0,
         },
-        action = function(v)
+        action = function(i, v)
             sc.panmx[i].pan = v; sc.panmx:update(i)
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
@@ -27,10 +27,8 @@ do
         id = 'old',
         type = 'control', controlspec = cs.def{ default = 0.8, max = 1 },
         sum = mult,
-        action = function(v)
-            --for i = 1, voices do
-                sc.oldmx[i].old = v; sc.oldmx:update(i)
-            --end
+        action = function(i, v)
+            sc.oldmx[i].old = v; sc.oldmx:update(i)
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
     }
@@ -38,7 +36,7 @@ do
         id = 'cut', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 1, quantum = 1/100/2, step = 0 },
         cs_preset = cs.def{ min = -1, max = 1, default = 0, quantum = 1/100/2/2, step = 0 },
-        action = function(v)
+        action = function(i, v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
@@ -47,7 +45,7 @@ do
         id = 'q', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 0.4 },
         cs_preset = cs.def{ min = -1, max = 1, default = 0 },
-        action = function(v)
+        action = function(i, v)
             softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
         end
@@ -55,7 +53,7 @@ do
     local types = { 'lp', 'bp', 'hp', 'dry' }
     mparams:add{
         id = 'type', type = 'option', options = types, 
-        action = function(v)
+        action = function(i, v)
             for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
             softcut['post_filter_'..types[v]](i, 1)
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -64,9 +62,7 @@ do
     mparams:add{
         id = 'loop',
         type = 'binary', behavior = 'toggle', default = 1, default_preset = 0,
-        action = function(v)
-            local n = i
-
+        action = function(n, v)
             sc.loopmx[n].loop = v; sc.loopmx:update(n)
 
             nest.grid.make_dirty()
@@ -78,7 +74,7 @@ do
         type = 'number', 
         min = -7, max = 2, default = 0, 
         min_preset = -9, max_preset = 9, default_preset = 0,
-        action = function(v)
+        action = function(i, v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
             nest.grid.make_dirty()
         end
@@ -86,11 +82,19 @@ do
     mparams:add{
         id = 'rev',
         type = 'binary', behavior = 'toggle',
-        action = function(v) 
+        action = function(i, v) 
             sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
             nest.grid.make_dirty()
         end
     }
+    mparams:add{
+        id = 'rate_slew', type = 'control', 
+        controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
+        action = function(i, v)
+            sc.slew(i, v)
+        end
+    }
+
     --TODO: send/return as single metaparam (option type)
 end
 
@@ -113,7 +117,7 @@ do
     end
 
     --TODO: view group
-    --TODO: slew group
+    --TODO: glide group
     --TODO: data goes in group here
 end
 
@@ -208,9 +212,11 @@ for i = 1, voices do
         id = 'buffer '..i,
         type = 'number', min = 1, max = buffers, default = i,
         action = function(v)
-            --if s[n] ~= v then
             sc.buffer[i] = v; sc.buffer:update(i)
-            -- end
+
+            nest.arc.make_dirty()
+            nest.screen.make_dirty()
+            nest.grid.make_dirty()
         end
     }
     for b = 1,buffers do
@@ -218,9 +224,11 @@ for i = 1, voices do
             id = 'preset '..i..' buffer '..b,
             type = 'number', min = 1, max = presets, default = 1,
             action = function(v)
-                --if s[n] ~= v then
                 preset[i][b] = v; preset:update(i, b)
-                -- end
+
+                nest.arc.make_dirty()
+                nest.screen.make_dirty()
+                nest.grid.make_dirty()
             end
         }
     end

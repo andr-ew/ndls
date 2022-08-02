@@ -42,7 +42,7 @@ local function App()
                 n = props.n, x = e[props.n].x, y = e[props.n].y,
                 label = props.id, 
                 state = of_mparam(props.voice, props.id),
-                controlspec = mparams:get_controlspec(props.id, mparams_scope(props.id)),
+                controlspec = mparams:get_controlspec(props.id, mparams_scope('get', props.id)),
             }
         end
     end
@@ -50,18 +50,18 @@ local function App()
     local function Voice(args)
         local n = args.n
 
-        _old = Ctl()
-        _vol = Ctl()
-        _pan = Ctl()
+        local _old = Ctl()
+        local _vol = Ctl()
+        local _pan = Ctl()
 
-        _st_view = Text.enc.number()
-        _win_view = Text.enc.number()
-        _len_view = Text.enc.number()
-        _randomize = Text.key.trigger()
+        local _st_view = Text.enc.number()
+        local _win_view = Text.enc.number()
+        local _len_view = Text.enc.number()
+        local _randomize = Text.key.trigger()
 
-        _cut = Ctl()
-        _q = Ctl()
-        _typ = Text.key.option()
+        local _cut = Ctl()
+        local _q = Ctl()
+        local _typ = Text.key.option()
 
         return function(props)
             if props.tab == MIX then

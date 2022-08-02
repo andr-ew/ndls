@@ -6,13 +6,78 @@ local function App(args)
     local mid = varibright and 4 or 15
     local mid2 = varibright and 8 or 15
 
+    local function Presets(args)
+        local n = args.voice
+        local hi = varibright and 15 or 0
+        local lo = varibright and 0 or 15
+        local top, bottom = n, n + voices
+
+        local _presets = {}
+        local set_preset = {}
+
+        for b = 1, buffers do
+            local id = 'preset '..n..' buffer '..b
+
+            _presets[b] = Grid.number()
+            set_preset[b] = multipattern.wrap_set(mpat, id, 
+                wide and function(v)
+                    params:set(id, v, true) 
+                    params:lookup_param(id):bang()
+                end or function(v)
+                    local vv = v.x + (((3 - v.y + 1) - 1) * 3)
+
+                    params:set(id, vv, true) 
+                    params:lookup_param(id):bang()
+                end
+            )
+        end
+        local _fill = Grid.fill()
+        local _fill2 = not wide and Grid.fill()
+
+        return function()
+            local b = sc.buffer[n]
+            local recd = sc.punch_in[b].recorded
+            local sl = sc.preset[n][b]
+
+            if wide then
+                _fill{ x = tall and 9 or 7, y = bottom, lvl = 4 }
+                
+                if recd then 
+                    _presets[b]{
+                        x = tall and { 9, 16 } or { 7, 15 }, 
+                        y = bottom,
+                        lvl = { lo, sc.phase[n].delta==0 and lo or hi },
+                        filtersame = false,
+                        state = { sl, set_preset[b] }
+                    }
+                end
+            elseif view.track == n then
+                if varibright then 
+                    _fill{ x = { 5, 7 }, y = { 1, 3 }, lvl = 4 } 
+                    _fill2{ x = 5, y = 1, lvl = 8 }
+                end
+                
+                if recd then 
+                    _presets[b]{
+                        x = { 5, 7 }, y = { 1, 3 },
+                        lvl = { lo, sc.phase[n].delta==0 and lo or hi },
+                        filtersame = false,
+                        state = {
+                            { x = (sl-1) % 3 + 1, y = 3 - ((sl - 1) // 3 + 1) + 1 },
+                            set_preset[b]
+                        }
+                    }
+                end
+            end
+        end
+    end
+
     local function Voice(n)
         local top, bottom = n, n + voices
 
         local _phase = Components.grid.phase()
         
-        local _params = {}
-        _params.rec = to.pattern(mpat, 'rec '..n, Grid.toggle, function()
+        local _rec = to.pattern(mpat, 'rec '..n, Grid.toggle, function()
             return {
                 x = 1, y = bottom, edge = 'falling',
                 state = { params:get('rec '..n) },
@@ -22,146 +87,28 @@ local function App(args)
                 end
             }
         end)
-        _params.loop = to.pattern(mpat, 'loop '..n, Grid.toggle, function()
-            return {
-                x = 2, y = bottom, lvl = shaded,
-                state = {
-                    sc.punch_in[sc.buffer[n]].recorded and params:get('loop '..n) or 0,
-                    function(v)
-                        local recorded = sc.punch_in[sc.buffer[n]].recorded
-                        local recording = sc.punch_in[sc.buffer[n]].recording
 
-                        if recorded then 
-                            params:set('loop '..n, v)
-                        elseif recording then
-                            local z = sc.buffer[n]
-                            params:set('loop '..n, v)
+        local _loop = Grid.toggle()
 
-                            --TODO: refactor reset call into sc.punch_in
-                            sc.punch_in:set(z, 0)
-                            sc.slice:reset(n)
-                        end
-                    end
-                },
-            }
+        local set_buffer = multipattern.wrap_set(mpat, 'buffer '..n, function(v)
+            params:set('buffer '..n, v)
         end)
-        do
-            _params.buffer = to.pattern(mpat, 'buffer '..n, Grid.number, function()
-                return {
-                    x = tall and { 3, 8 } or { 3, 6 }, y = bottom,
-                    state = {
-                        sc.buffer[n],
-                        function(v)
-                            sc.buffer:set(n, v)
+        local _buffer = Grid.number()
 
-                            nest.arc.make_dirty()
-                            nest.screen.make_dirty()
-                        end
-                    }
-                }
-            end)
-        end
-        local function Slices(args)
-            local n = args.voice
+        local _presets = Presets{ voice = n }
 
-            local _slices = {}
-
-            for b = 1, buffers do
-                _slices[b] = to.pattern(mpat, 'slice '..n..' '..b, Grid.number, function()
-                    local sl = sc.slice[n][b]
-                    local hi = varibright and 15 or 0
-                    local lo = varibright and 0 or 15
-
-                    return {
-                        x = tall and { 9, 16 } or (wide and { 7, 15 } or { 5, 7 }), 
-                        y = wide and bottom or { 1, 3 },
-                        lvl = { lo, sc.phase[n].delta==0 and lo or hi },
-                        filtersame = false,
-                        state = wide and {
-                            sl,
-                            function(v)
-                                sc.slice:set(n, b, v)
-
-                                nest.arc.make_dirty()
-                                nest.screen.make_dirty()
-                            end
-                        } or {
-                            { x = (sl-1) % 3 + 1, y = 3 - ((sl - 1) // 3 + 1) + 1 },
-                            function(v)
-                                local vv = v.x + (((3 - v.y + 1) - 1) * 3)
-
-                                sc.slice:set(n, b, vv)
-
-                                nest.arc.make_dirty()
-                                nest.screen.make_dirty()
-                            end
-                        }
-                    }
-                end)
-            end
-            local _fill = Grid.fill()
-            local _fill2 = not wide and Grid.fill()
-
-            return function()
-                local b = sc.buffer[n]
-                local recd = sc.punch_in[b].recorded
-
-                if wide then
-                    _fill{ x = tall and 9 or 7, y = bottom, lvl = 4 }
-                    
-                    if recd then _slices[b]() end
-                elseif view.track == n then
-                    if varibright then 
-                        _fill{ 
-                            x = { 5, 7 }, y = { 1, 3 }, lvl = 4 
-                        } 
-                        _fill2{ x = 5, y = 1, lvl = 8 }
-                    end
-                    
-                    if recd then _slices[b]() end
-                end
-            end
-        end
-        _params.slices = Slices{ voice = n }
-        _params.send = to.pattern(mpat, 'send '..n, Grid.toggle, function()
-            return {
-                x = wide and (tall and 15 or 14) or 7, y = wide and top or bottom, 
-                lvl = { 4, 15 },
-                state = of.param('send '..n),
-            }
+        local set_send = multipattern.wrap_set(mpat, 'send '..n,, function(v)
+            params:set('send '..n, v)
         end)
-        _params.ret = to.pattern(mpat, 'return '..n, Grid.toggle, function()
-            return {
-                x = wide and (tall and 16 or 15) or 8, y = wide and top or bottom, 
-                lvl = { 0, 15 },
-                state = of.param('return '..n),
-            }
+        local _send = Grid.toggle()
+
+        local set_ret = multipattern.wrap_set(mpat, 'return '..n,, function(v)
+            params:set('return '..n, v)
         end)
-        _params.rev = to.pattern(mpat, 'rev '..n, Grid.toggle, function()
-            return {
-                x = wide and 5 or 1, y = wide and top or bottom, 
-                edge = 'falling', lvl = shaded,
-                state = { params:get('rev '..n) },
-                action = function(v, t)
-                    sc.slew(n, (t < 0.2) and 0.025 or t)
-                    params:set('rev '..n, v)
-                end,
-            }
-        end)
-        do
-            local off = wide and 6 or 5
-            _params.rate = to.pattern(mpat, 'rate '..n, Grid.number, function()
-                return {
-                    x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, 
-                    filtersame = true,
-                    state = { params:get('rate '..n) + off },
-                    action = function(v, t)
-                        sc.slew(n, t)
-                        params:set('rate '..n, v - off)
-                    end,
-                }
-            end)
-        end
+        local _ret = Grid.toggle()
+
+        local _rev = Grid.toggle()
+        local _rate = Grid.number()
 
         return function()
             if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
@@ -175,22 +122,75 @@ local function App(args)
                 end
             end
             
-            if wide then
-                for _, _param in pairs(_params) do _param() end
-            else
-                if view.page == 1 then
-                    _params.rec()
-                    _params.loop()
-                    _params.buffer()
-                    _params.send()
-                    _params.ret()
-                else
-                    _params.rev()
-                    _params.rate()
-                end
+            if wide or (view.page == 1) then
+                _rec()
+                _loop{
+                    x = 2, y = bottom, lvl = shaded,
+                    state = {
+                        sc.punch_in[sc.buffer[n]].recorded and (
+                            mparams:get(n, 'loop', mparams_scope('get', 'loop')),
+                        ) or 0,
+                        function(v)
+                            local recorded = sc.punch_in[sc.buffer[n]].recorded
+                            local recording = sc.punch_in[sc.buffer[n]].recording
 
-                _params.slices()
+                            mparams:get_setter(n, 'loop', mparams_scope('set', 'loop'))(v)
+
+                            if recorded then 
+                            elseif recording then
+                                local z = sc.buffer[n]
+
+                                --TODO: refactor reset call into sc.punch_in
+                                sc.punch_in:set(z, 0)
+                                sc.preset:reset(n)
+                            end
+                        end
+                    },
+                }
+                _buffer{
+                    x = tall and { 3, 8 } or { 3, 6 }, y = bottom,
+                    state = { params:get('buffer '..n), set_buffer }
+                }
+                _send{
+                    x = wide and (tall and 15 or 14) or 7, y = wide and top or bottom, 
+                    lvl = { 4, 15 },
+                    state = { params:get('send '..n), set_send }
+                }
+                _ret{
+                    x = wide and (tall and 16 or 15) or 8, y = wide and top or bottom, 
+                    lvl = { 0, 15 },
+                    state = { params:get('return '..n), set_ret }
+                }
             end
+            if wide or (view.page ~= 1) then
+                _rev{
+                    x = wide and 5 or 1, y = wide and top or bottom, 
+                    edge = 'falling', lvl = shaded,
+                    state = { 
+                        mparams:get(n, 'rev', mparams_scope('get', 'rev')),
+                    },
+                    action = function(v, t)
+                        mparams:get_setter(n, 'rate_slew', 'preset')((t < 0.2) and 0.025 or t)
+                        mparams:get_setter(n, 'rev', mparams_scope('set', 'rev'))(v)
+                    end,
+                }
+                do
+                    local off = wide and 6 or 5
+                    _rate{
+                        x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, 
+                        filtersame = true,
+                        state = { 
+                            mparams:get(n, 'rate', mparams_scope('get', 'rate')) + off 
+                        },
+                        action = function(v, t)
+                            mparams:get_setter(n, 'rate_slew', 'preset')(t)
+                            mparams:get_setter(n, 'rate', mparams_scope('set', 'rate'))(v - off)
+                        end,
+                    }
+                end
+            end
+
+            _presets()
         end
     end
 
@@ -216,11 +216,7 @@ local function App(args)
             }
         }
 
-        
-        for i, _voice in ipairs(_voices) do
-            _voice{}
-        end
-        
+        for i, _voice in ipairs(_voices) do _voice() end
 
         if wide then
             _patrec{

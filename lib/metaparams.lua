@@ -57,6 +57,7 @@ function metaparam:new(args)
     end
 
     --TODO: optional slew time
+    
     m.base_id = {}
     m.base_setter = {}
     for t = 1,tracks do
@@ -112,17 +113,8 @@ function metaparam:reset(t, b)
         self.args.resets.default(p_id, t, b)
     end
 end
-
--- function metaparam:get_base_setter(track)
---     local b = sc.buffer[track]
---     return self.base_setter[track][b]
--- end
--- function metaparam:get_preset_setter(track)
---     local b = sc.buffer[track]
---     local p = sc.slice:get(track)
---     return self.preset_setter[track][b][p]
--- end
-
+            
+--TODO: argument to disable pattern recording when setting
 function metaparam:get_setter(track, scope)
     scope = scope or 'preset'
     local b = sc.buffer[track]
@@ -316,11 +308,14 @@ function metaparams:add_preset_params()
         end
     end
 end
-function metaparams:add_mappable_params(t)
+
+function metaparams:add_mappable_param(t, id)
     --params:add_separator('track '..t..' (midi mapping)')
 
-    for _,m in ipairs(self.list) do
-        m:add_mappable_param(t)
+    if id then
+        self.lookup[id]:add_mappable_param(t)
+    else
+        for _,m in ipairs(self.list) do m:add_mappable_param(t) end
     end
 end
 
