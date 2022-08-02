@@ -96,6 +96,7 @@ do
     }
 
     --TODO: send/return as single metaparam (option type)
+    --TODO: rec overdub flag
 end
 
 -- add preset options
@@ -104,8 +105,9 @@ do
 
     --TODO: resets group
 
-    params:add_group('randomization', 2 + voices*3)
+    params:add_group('randomization', 3)
     do
+        params:add_separator('window')
         params:add{
             id = 'len min', type = 'control', 
             controlspec = cs.def{ min = 0, max = 1, default = 0.15 },
@@ -154,6 +156,8 @@ do
             end
         end
     }
+
+    --TODO: rate glide enable/disable
 end
 
 -- add mappable params

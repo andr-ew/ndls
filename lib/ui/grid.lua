@@ -75,8 +75,6 @@ local function App(args)
     local function Voice(n)
         local top, bottom = n, n + voices
 
-        local _phase = Components.grid.phase()
-        
         local _rec = to.pattern(mpat, 'rec '..n, Grid.toggle, function()
             return {
                 x = 1, y = bottom, edge = 'falling',
@@ -88,14 +86,10 @@ local function App(args)
             }
         end)
 
-        local _loop = Grid.toggle()
-
         local set_buffer = multipattern.wrap_set(mpat, 'buffer '..n, function(v)
             params:set('buffer '..n, v)
         end)
         local _buffer = Grid.number()
-
-        local _presets = Presets{ voice = n }
 
         local set_send = multipattern.wrap_set(mpat, 'send '..n,, function(v)
             params:set('send '..n, v)
@@ -107,8 +101,11 @@ local function App(args)
         end)
         local _ret = Grid.toggle()
 
+        local _phase = Components.grid.phase()
+        local _loop = Grid.toggle()
         local _rev = Grid.toggle()
         local _rate = Grid.number()
+        local _presets = Presets{ voice = n }
 
         return function()
             if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
@@ -122,7 +119,7 @@ local function App(args)
                 end
             end
             
-            if wide or (view.page == 1) then
+            if wide or (view.page == MIX) then
                 _rec()
                 _loop{
                     x = 2, y = bottom, lvl = shaded,
@@ -162,7 +159,7 @@ local function App(args)
                     state = { params:get('return '..n), set_ret }
                 }
             end
-            if wide or (view.page ~= 1) then
+            if wide or (view.page ~= MIX) then
                 _rev{
                     x = wide and 5 or 1, y = wide and top or bottom, 
                     edge = 'falling', lvl = shaded,
@@ -179,12 +176,14 @@ local function App(args)
                     _rate{
                         x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, 
                         filtersame = true,
+                        --TODO: get alt and base or sum, 
+                        --      set alt and base or sum (scaled into preset setter)
                         state = { 
-                            mparams:get(n, 'rate', mparams_scope('get', 'rate')) + off 
+                            mparams:get(n, 'rate', 'base') + off 
                         },
                         action = function(v, t)
                             mparams:get_setter(n, 'rate_slew', 'preset')(t)
-                            mparams:get_setter(n, 'rate', mparams_scope('set', 'rate'))(v - off)
+                            mparams:get_setter(n, 'rate', 'base')(v - off)
                         end,
                     }
                 end
