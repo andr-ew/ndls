@@ -37,7 +37,7 @@ local function App(args)
         return function()
             local b = sc.buffer[n]
             local recd = sc.punch_in[b].recorded
-            local sl = sc.preset[n][b]
+            local sl = preset[n][b]
 
             if wide then
                 _fill{ x = tall and 9 or 7, y = bottom, lvl = 4 }
@@ -91,12 +91,12 @@ local function App(args)
         end)
         local _buffer = Grid.number()
 
-        local set_send = multipattern.wrap_set(mpat, 'send '..n,, function(v)
+        local set_send = multipattern.wrap_set(mpat, 'send '..n, function(v)
             params:set('send '..n, v)
         end)
         local _send = Grid.toggle()
 
-        local set_ret = multipattern.wrap_set(mpat, 'return '..n,, function(v)
+        local set_ret = multipattern.wrap_set(mpat, 'return '..n, function(v)
             params:set('return '..n, v)
         end)
         local _ret = Grid.toggle()
@@ -125,13 +125,13 @@ local function App(args)
                     x = 2, y = bottom, lvl = shaded,
                     state = {
                         sc.punch_in[sc.buffer[n]].recorded and (
-                            mparams:get(n, 'loop', mparams_scope('get', 'loop')),
+                            mparams:get(n, 'loop', mparams_scope('loop'))
                         ) or 0,
                         function(v)
                             local recorded = sc.punch_in[sc.buffer[n]].recorded
                             local recording = sc.punch_in[sc.buffer[n]].recording
 
-                            mparams:get_setter(n, 'loop', mparams_scope('set', 'loop'))(v)
+                            mparams:get_setter(n, 'loop', mparams_scope('loop'))(v)
 
                             if recorded then 
                             elseif recording then
@@ -139,7 +139,7 @@ local function App(args)
 
                                 --TODO: refactor reset call into sc.punch_in
                                 sc.punch_in:set(z, 0)
-                                sc.preset:reset(n)
+                                preset:reset(n)
                             end
                         end
                     },
@@ -164,11 +164,11 @@ local function App(args)
                     x = wide and 5 or 1, y = wide and top or bottom, 
                     edge = 'falling', lvl = shaded,
                     state = { 
-                        mparams:get(n, 'rev', mparams_scope('get', 'rev')),
+                        mparams:get(n, 'rev', mparams_scope('rev')),
                     },
                     action = function(v, t)
                         mparams:get_setter(n, 'rate_slew', 'preset')((t < 0.2) and 0.025 or t)
-                        mparams:get_setter(n, 'rev', mparams_scope('set', 'rev'))(v)
+                        mparams:set(n, 'rev', mparams_scope('rev'), v)
                     end,
                 }
                 do
@@ -176,14 +176,12 @@ local function App(args)
                     _rate{
                         x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, 
                         filtersame = true,
-                        --TODO: get alt and base or sum, 
-                        --      set alt and base or sum (scaled into preset setter)
-                        state = { 
-                            mparams:get(n, 'rate', 'base') + off 
+                        state = {
+                            mparams:get(n, 'rate', mparams_scope('rate', true)) + off 
                         },
                         action = function(v, t)
                             mparams:get_setter(n, 'rate_slew', 'preset')(t)
-                            mparams:get_setter(n, 'rate', 'base')(v - off)
+                            mparams:set(n, 'rate', mparams_scope('rate', true), v - off)
                         end,
                     }
                 end

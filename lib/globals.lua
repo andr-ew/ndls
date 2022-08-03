@@ -33,14 +33,21 @@ end
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-function mparams_scope(mode, id)
-    --TODO: check view options param
-    return alt and 'base' or ((mode == 'get') and 'sum' or 'preset')
+function mparams_scope(id, set_sum)
+
+    --TODO: react to view options param, buffer state
+    local base = alt
+
+    if base then
+        return 'base'
+    else
+        return (nest.is_drawing() or set_sum) and 'sum' or 'preset'
+    end
 end
 function of_mparam(track, id)
     return { 
-        mparams:get(track, id, mparams_scope('get', id)),
-        mparams:get_setter(track, id, mparams_scope('set', id))
+        mparams:get(track, id, mparams_scope(id)),
+        mparams:get_setter(track, id, mparams_scope(id))
     }
 end
 
@@ -138,9 +145,9 @@ freeze_patrol = {
         end
     end
 }
-clock.run(function() 
-    while true do
-        freeze_patrol:patrol() 
-        clock.sleep(1/fps.patrol)
-    end
-end)
+-- clock.run(function() 
+--     while true do
+--         freeze_patrol:patrol() 
+--         clock.sleep(1/fps.patrol)
+--     end
+-- end)

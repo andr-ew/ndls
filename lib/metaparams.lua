@@ -49,11 +49,11 @@ function metaparam:new(args)
     --for k,v in pairs(args) do m[k] = v end
     m.args = args
 
-    m.id = self.args.id
+    m.id = args.id
 
     m.mappable_id = {}
     for t = 1,tracks do
-        m.mappable_id[t] = self.args.name..'_track_'..t
+        m.mappable_id[t] = args.id..'_track_'..t
     end
 
     --TODO: optional slew time
@@ -65,7 +65,7 @@ function metaparam:new(args)
         m.base_setter[t] = {}
         for b = 1,buffers do
             local id = (
-                self.args.name
+                args.id
                 ..'_track_'..t
                 ..'_base_'..b
             )
@@ -85,14 +85,17 @@ function metaparam:new(args)
             m.preset_setter[t][b] = {}
             for p = 1, presets do
                 local id = (
-                    self.args.name
+                    args.id
                     ..'_track_'..t
                     ..'_buffer_'..b
                     ..'_preset_'..p
                 )
                 m.preset_id[t][b][p] = id
                 m.preset_setter[t][b][p] = multipattern.wrap_set(
-                    mpat, id, function(v) params:set(id, v) end
+                    mpat, id, 
+                    function(v) 
+                        params:set(id, v) 
+                    end
                 )
             end
         end
@@ -119,9 +122,28 @@ function metaparam:get_setter(track, scope)
     scope = scope or 'preset'
     local b = sc.buffer[track]
     local p = sc.slice:get(track)
-    local table_name = (scope == 'preset') and 'preset_setter' or 'base_setter'
 
-    return self[table_name][track][b][p]
+    if scope == 'preset' then
+        return self.preset_setter[track][b][p]
+    elseif scope == 'base' then
+        return self.base_setter[track][b]
+    end
+end
+
+function metaparam:set(track, scope, v)
+    local b = sc.buffer[track]
+    --local p = sc.slice:get(track)
+
+    if scope == 'sum' then
+        self:get_setter(track, 'preset')(self.args.unsum(
+            self, 
+            v,
+            params:get(self.base_id[track][b]),
+            self.modulation()
+        ))
+    else
+        self:get_setter(track, scope)(v)
+    end
 end
 
 function metaparam:get(track, scope)
@@ -133,13 +155,13 @@ function metaparam:get(track, scope)
         return self.args.sum(
             self, 
             params:get(self.base_id[track][b]),
-            params:get(self.preset_id[track][b][s]),
+            params:get(self.preset_id[track][b][p]),
             self.modulation()
         )
     elseif scope == 'base' then
         return params:get(self.base_id[track][b])
     elseif scope == 'preset' then
-        return params:get(self.preset_id[track][b][s])
+        return params:get(self.preset_id[track][b][p])
     end
 end
 function metaparam:get_controlspec(scope)
@@ -178,7 +200,6 @@ function metaparam:add_base_param(t, b)
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.base_id[t][b]
-    args.name = args.id
     if args.type == 'control' then
         args.controlspec = self.args.cs_base
     elseif args.type == 'number' then
@@ -189,16 +210,17 @@ function metaparam:add_base_param(t, b)
         args.default = self.args.default_base
     end
     args.action = function() self:bang(t) end
+    
+    print(args.id, t, b)
 
     params:add(args)
 end
 
-function metaparam:add_preset_param(t, b, s)
+function metaparam:add_preset_param(t, b, p)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.preset_id[t][b][p]
-    args.name = args.id
     if args.type == 'control' then
         args.controlspec = self.args.cs_preset
     elseif args.type == 'number' then
@@ -217,7 +239,8 @@ function metaparam:add_mappable_param(t)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
 
-    args.id = self.preset_id[t][b][p]
+    args.id = 'set_'..self.args.id
+    args.name = self.args.id
     args.controlspec = self.args.cs_base
     args.action = function(v)
         for b = 1,buffers do
@@ -267,6 +290,9 @@ end
 function metaparams:get_setter(track, id, scope)
     return self.lookup[id]:get_setter(track, scope)
 end
+function metaparams:set(track, id, scope, v)
+    return self.lookup[id]:set(track, scope, v)
+end
 function metaparams:get_controlspec(id, scope)
     return self.lookup[id]:get_controlspec(scope)
 end
@@ -290,7 +316,7 @@ function metaparams:add_base_params()
     for t = 1, tracks do
         for b = 1,buffers do
             for _,m in ipairs(self.list) do
-                m:add_base_param(t)
+                m:add_base_param(t, b)
             end
         end
     end
@@ -302,7 +328,7 @@ function metaparams:add_preset_params()
         for b = 1,buffers do
             for p = 1, presets do
                 for _,m in ipairs(self.list) do
-                    m:add_preset_param(t, b, s)
+                    m:add_preset_param(t, b, p)
                 end
             end
         end

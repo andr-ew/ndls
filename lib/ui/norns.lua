@@ -42,7 +42,7 @@ local function App()
                 n = props.n, x = e[props.n].x, y = e[props.n].y,
                 label = props.id, 
                 state = of_mparam(props.voice, props.id),
-                controlspec = mparams:get_controlspec(props.id, mparams_scope('get', props.id)),
+                controlspec = mparams:get_controlspec(props.id, mparams_scope(props.id)),
             }
         end
     end
@@ -148,7 +148,7 @@ local function App()
                 _q{ id = 'q', voice = n, n = 3 }
                 _typ{
                     n = 3, y = k[3].y, x = k[3].x, scroll_window = { 1, 1 },
-                    state = of_mparam('type'),
+                    state = of_mparam(n, 'type'),
                     options = mparams:get_options('type'),
                 }
             elseif props.tab == LFO then

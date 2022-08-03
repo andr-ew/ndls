@@ -1,6 +1,6 @@
 -- softcut utilities
 
--- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change (exceptions where noted).
+-- this is an intermediate data structure. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change.
 
 local sc
 
@@ -105,7 +105,7 @@ sc = {
         update = function(s, n)
             softcut.loop(n, s[n].loop)
             if s[n].loop > 0 then
-                sc.trigger(n)
+                --sc.trigger(n)
             end
         end
     }

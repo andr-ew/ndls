@@ -25,7 +25,10 @@ do
     }
     mparams:add{
         id = 'old',
-        type = 'control', controlspec = cs.def{ default = 0.8, max = 1 },
+        type = 'control', 
+        controlspec = cs.def{ default = 0.8, max = 1 },
+        cs_base = cs.def{ default = 0.8, max = 1 },
+        cs_preset = cs.def{ default = 1, max = 1 },
         sum = mult,
         action = function(i, v)
             sc.oldmx[i].old = v; sc.oldmx:update(i)
@@ -74,6 +77,9 @@ do
         type = 'number', 
         min = -7, max = 2, default = 0, 
         min_preset = -9, max_preset = 9, default_preset = 0,
+        unsum = function(self, sum, b, c)
+            return sum - b - c
+        end,
         action = function(i, v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
             nest.grid.make_dirty()
@@ -179,7 +185,6 @@ for i = 1, voices do
                 --TODO: refactor reset call into sc.punch_in
                 if v==0 and sc.punch_in[z].recorded then 
                     preset:reset(n)
-                    params:set('loop '..i, 1) --TODO: won't need this later
                 end
             end
 
