@@ -38,11 +38,14 @@ local function App()
         local _ctl = Text.enc.control()
 
         return function(props)
+            local scope = mparams_scope(props.voice, props.id)
             _ctl{
                 n = props.n, x = e[props.n].x, y = e[props.n].y,
-                label = props.id, 
+                --label = (scope == 'base') and string.upper(props.id) or props.id, 
+                label = props.id,
+                lvl = { (scope == 'base') and 8 or 4, 16 },
                 state = of_mparam(props.voice, props.id),
-                controlspec = mparams:get_controlspec(props.id, mparams_scope(props.id)),
+                controlspec = mparams:get_controlspec(props.id, scope),
             }
         end
     end
@@ -181,6 +184,7 @@ local function App()
                 function(v)
                     alt = v==1
                     nest.arc.make_dirty()
+                    nest.grid.make_dirty()
                 end
             }
         }

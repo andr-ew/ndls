@@ -289,6 +289,14 @@ sc.punch_in = { -- [buf] = {}
             end
         end
     end,
+    is_recorded = function(s, track)
+        local b = sc.buffer[track]
+        return s[b].recorded
+    end,
+    is_recording = function(s, track)
+        local b = sc.buffer[track]
+        return s[b].recording
+    end,
     get = function(s, z)
         return s[z].recording and 1 or 0
     end,

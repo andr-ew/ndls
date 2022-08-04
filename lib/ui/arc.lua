@@ -15,13 +15,13 @@ local function App(args)
                 x = { 42, 24+64 }, sens = 0.25, 
                 redraw_enabled = false,
                 state = of_mparam(n, 'cut'),
-                controlspec = mparams:get_controlspec('cut', mparams_scope('cut')),
+                controlspec = mparams:get_controlspec('cut', mparams_scope(n, 'cut')),
             }
             _filt{
                 n = tonumber(vertical and n or x),
                 x = { 42, 24+64 },
-                type = mparams:get(n, 'type', mparams_scope('type')),
-                cut = mparams:get(n, 'cut', mparams_scope('cut')),
+                type = mparams:get(n, 'type', mparams_scope(n, 'type')),
+                cut = mparams:get(n, 'cut', mparams_scope(n, 'cut')),
             }
         end
     end
@@ -112,7 +112,7 @@ local function App(args)
                     n = 2,
                     state = of_mparam(n, 'pan'),
                     controlspec = mparams:get_controlspec(
-                        'pan', mparams_scope('pan')
+                        'pan', mparams_scope(n, 'pan')
                     ),
                 }
             end
@@ -148,7 +148,7 @@ local function App(args)
                     n = 2,
                     state = of_mparam(n, 'pan'),
                     controlspec = mparams:get_controlspec(
-                        'pan', mparams_scope('pan')
+                        'pan', mparams_scope(n, 'pan')
                     ),
                 }
                 _win(); _end()
@@ -168,7 +168,7 @@ local function App(args)
                 n = 2,
                 state = of_mparam(n, 'q'),
                 controlspec = mparams:get_controlspec(
-                    'q', mparams_scope('q')
+                    'q', mparams_scope(n, 'q')
                 ),
                 lvl = { 4, 4, 15 },
                 x = { 42,  56 },

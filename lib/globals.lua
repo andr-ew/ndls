@@ -33,10 +33,10 @@ end
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-function mparams_scope(id, set_sum)
+function mparams_scope(track, id, set_sum)
 
     --TODO: react to view options param, buffer state
-    local base = alt
+    local base = alt or (not sc.punch_in:is_recorded(track))
 
     if base then
         return 'base'
@@ -46,8 +46,8 @@ function mparams_scope(id, set_sum)
 end
 function of_mparam(track, id)
     return { 
-        mparams:get(track, id, mparams_scope(id)),
-        mparams:get_setter(track, id, mparams_scope(id))
+        mparams:get(track, id, mparams_scope(track, id)),
+        mparams:get_setter(track, id, mparams_scope(track, id))
     }
 end
 

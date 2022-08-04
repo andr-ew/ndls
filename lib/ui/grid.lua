@@ -37,7 +37,7 @@ local function App(args)
 
         return function()
             local b = sc.buffer[n]
-            local recd = sc.punch_in[b].recorded
+            local recd = sc.punch_in:is_recorded(n)
             local sl = preset[n][b]
 
             if wide then
@@ -111,7 +111,7 @@ local function App(args)
         local _presets = Presets{ voice = n }
 
         return function()
-            if sc.lvlmx[n].play == 1 and sc.punch_in[sc.buffer[n]].recorded then
+            if sc.lvlmx[n].play == 1 and sc.punch_in:is_recorded(n) then
                 if (wide) or (view.page ~= 1) then
                     _phase{ 
                         x = wide and { 6, 13 } or { 2, 8 }, 
@@ -127,17 +127,14 @@ local function App(args)
                 _loop{
                     x = 2, y = bottom, lvl = shaded,
                     state = {
-                        sc.punch_in[sc.buffer[n]].recorded and (
-                            mparams:get(n, 'loop', mparams_scope('loop'))
+                        sc.punch_in:is_recorded(n) and (
+                            mparams:get(n, 'loop', mparams_scope(n, 'loop'))
                         ) or 0,
                         function(v)
-                            local recorded = sc.punch_in[sc.buffer[n]].recorded
-                            local recording = sc.punch_in[sc.buffer[n]].recording
+                            mparams:set(n, 'loop', mparams_scope(n, 'loop'), v)
 
-                            mparams:get_setter(n, 'loop', mparams_scope('loop'))(v)
-
-                            if recorded then 
-                            elseif recording then
+                            if sc.punch_in:is_recorded(n) then 
+                            elseif sc.punch_in:is_recorded(n) then
                                 local z = sc.buffer[n]
 
                                 --TODO: refactor reset call into sc.punch_in
@@ -167,11 +164,11 @@ local function App(args)
                     x = wide and 5 or 1, y = wide and top or bottom, 
                     edge = 'falling', lvl = shaded,
                     state = { 
-                        mparams:get(n, 'rev', mparams_scope('rev')),
+                        mparams:get(n, 'rev', mparams_scope(n, 'rev')),
                     },
                     action = function(v, t)
-                        mparams:get_setter(n, 'rate_slew', 'preset')((t < 0.2) and 0.025 or t)
-                        mparams:set(n, 'rev', mparams_scope('rev'), v)
+                        mparams:set(n, 'rate_slew', 'preset', (t < 0.2) and 0.025 or t)
+                        mparams:set(n, 'rev', mparams_scope(n, 'rev'), v)
                     end,
                 }
                 do
@@ -180,11 +177,11 @@ local function App(args)
                         x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, 
                         filtersame = true,
                         state = {
-                            mparams:get(n, 'rate', mparams_scope('rate', true)) + off 
+                            mparams:get(n, 'rate', mparams_scope(n, 'rate', true)) + off 
                         },
                         action = function(v, t)
-                            mparams:get_setter(n, 'rate_slew', 'preset')(t)
-                            mparams:set(n, 'rate', mparams_scope('rate', true), v - off)
+                            mparams:set(n, 'rate_slew', 'preset', t)
+                            mparams:set(n, 'rate', mparams_scope(n, 'rate', true), v - off)
                         end,
                     }
                 end

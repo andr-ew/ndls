@@ -93,6 +93,8 @@ do
             nest.grid.make_dirty()
         end
     }
+
+    --TODO: build into rate mparam slew data
     mparams:add{
         id = 'rate_slew', type = 'control', 
         controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
