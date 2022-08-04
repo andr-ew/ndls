@@ -32,7 +32,8 @@ local function App(args)
             )
         end
         local _fill = Grid.fill()
-        local _fill2 = not wide and Grid.fill()
+        local _fill2 = Grid.fill()
+        local _fill3 = Grid.fill()
 
         return function()
             local b = sc.buffer[n]
@@ -41,6 +42,8 @@ local function App(args)
 
             if wide then
                 _fill{ x = tall and 9 or 7, y = bottom, lvl = 4 }
+                _fill2{ x = (tall and 9 or 7) + 4, y = bottom, lvl = 4 }
+                _fill2{ x = (tall and 9 or 7) + 4 + 4, y = bottom, lvl = 4 }
                 
                 if recd then 
                     _presets[b]{
