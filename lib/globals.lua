@@ -1,5 +1,7 @@
 alt = false
 view = { track = 1, page = 1 }
+page_names = { 'MIX', 'WINDOW', 'FILTER', 'LFO' }
+MIX, WINDOW, FILTER, LFO = 1, 2, 3, 4
 
 voices = tall and 6 or 4
 buffers = voices
@@ -30,6 +32,24 @@ end
 
 wparams = windowparams:new()
 mparams = metaparams:new()
+
+function mparams_scope(track, id, set_sum)
+
+    --TODO: react to view options param, buffer state
+    local base = alt or (not sc.punch_in:is_recorded(track))
+
+    if base then
+        return 'base'
+    else
+        return (nest.is_drawing() or set_sum) and 'sum' or 'preset'
+    end
+end
+function of_mparam(track, id)
+    return { 
+        mparams:get(track, id, mparams_scope(track, id)),
+        mparams:get_setter(track, id, mparams_scope(track, id))
+    }
+end
 
 preset = { --[voice][buffer] = slice
     --TODO: depricate
@@ -125,9 +145,9 @@ freeze_patrol = {
         end
     end
 }
-clock.run(function() 
-    while true do
-        freeze_patrol:patrol() 
-        clock.sleep(1/fps.patrol)
-    end
-end)
+-- clock.run(function() 
+--     while true do
+--         freeze_patrol:patrol() 
+--         clock.sleep(1/fps.patrol)
+--     end
+-- end)

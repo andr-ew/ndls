@@ -6,24 +6,22 @@ local function App(args)
     rotated = false --TODO: rotate mix & filter controls for arc2
 
     local function Cut(n, x)
-        local _cut = to.pattern(mpat, 'cut '..n, Arc.control, function() 
-            return {
+        local _cut = Arc.control()
+        local _filt = Components.arc.filter()
+
+        return function()
+            _cut{
                 n = tonumber(vertical and n or x),
                 x = { 42, 24+64 }, sens = 0.25, 
                 redraw_enabled = false,
-                controlspec = of.controlspec('cut '..n),
-                state = of.param('cut '..n),
+                state = of_mparam(n, 'cut'),
+                controlspec = mparams:get_controlspec('cut', mparams_scope(n, 'cut')),
             }
-        end)
-        local _filt = Components.arc.filter()
-
-        return function() 
-            _cut()
             _filt{
                 n = tonumber(vertical and n or x),
                 x = { 42, 24+64 },
-                type = params:get('type '..n),
-                cut = params:get('cut '..n),
+                type = mparams:get(n, 'type', mparams_scope(n, 'type')),
+                cut = mparams:get(n, 'cut', mparams_scope(n, 'cut')),
             }
         end
     end
@@ -40,13 +38,11 @@ local function App(args)
                 phase = sc.phase[n].rel,
                 show_phase = sc.lvlmx[n].play == 1,
                 sens = 1/1000,
-                st = { 
-                    --get_start(n), get_set_start(n) 
+                st = {
                     wparams:get('start', n), 
                     wparams:get_preset_setter('start', n)
                 },
                 en = { 
-                    --get_end(n), get_set_end(n) 
                     wparams:get('end', n), 
                     wparams:get_preset_setter('end', n)
                 },
@@ -54,7 +50,6 @@ local function App(args)
                 recorded = sc.punch_in[b].recorded,
                 reg = reg.rec[b],
                 rotated = rotated,
-                --rec_flag = params:get('rec '..n)
             }
         end
     end
@@ -75,13 +70,11 @@ local function App(args)
                 lvl_st = alt and 15 or 4,
                 lvl_en = alt and 4 or 15,
                 lvl_ph = 4,
-                st = { 
-                    --get_start(n), get_set_start(n) 
+                st = {
                     wparams:get('start', n), 
                     wparams:get_preset_setter('start', n)
                 },
-                en = { 
-                    --get_end(n), get_set_end(n) 
+                en = {
                     wparams:get('end', n), 
                     wparams:get_preset_setter('end', n)
                 },
@@ -89,22 +82,21 @@ local function App(args)
                 recorded = sc.punch_in[b].recorded,
                 reg = reg.rec[b],
                 rotated = rotated,
-                --rec_flag = params:get('rec '..n)
             }
         end
     end
 
     local function Vol(n, x)
-        local _vol = to.pattern(mpat, 'vol '..n, Arc.number, function() 
-            return {
+        local _vol = Arc.number()
+
+        return function() 
+            _vol{
                 n = x,
                 sens = 0.25, max = 2.5, cycle = 1.5,
-                state = of.param('vol '..n),
+                state = of_mparam(n, 'vol'),
                 lvl = view.track == n and 15 or 4,
             }
-        end)
-
-        return function() _vol() end
+        end
     end
 
     local Pages = {}
@@ -112,16 +104,17 @@ local function App(args)
     function Pages.mix(n)
         if arc2 then
             local _vol = Vol(n, 1)
-            local _pan = to.pattern(mpat, 'pan '..n, Arc.control, function()
-                return {
-                    n = 2,
-                    state = of.param('pan '..n),
-                    controlspec = of.controlspec('pan '..n),
-                }
-            end)
+            local _pan = Arc.control()
 
             return function()
-                _vol(); _pan()
+                _vol()
+                _pan{
+                    n = 2,
+                    state = of_mparam(n, 'pan'),
+                    controlspec = mparams:get_controlspec(
+                        'pan', mparams_scope(n, 'pan')
+                    ),
+                }
             end
         else
             local _vols = {}
@@ -145,38 +138,41 @@ local function App(args)
             end
         else
             local _vol = Vol(n, 1)
-            local _pan = to.pattern(mpat, 'pan '..n, Arc.control, function()
-                return {
-                    n = 2,
-                    state = of.param('pan '..n),
-                    controlspec = of.controlspec('pan '..n),
-                }
-            end)
+            local _pan = Arc.control()
             local _win = Win(n, 3)
             local _end = End(n, 4)
 
             return function()
-                _vol(); _pan(); _win(); _end()
+                _vol()
+                _pan{
+                    n = 2,
+                    state = of_mparam(n, 'pan'),
+                    controlspec = mparams:get_controlspec(
+                        'pan', mparams_scope(n, 'pan')
+                    ),
+                }
+                _win(); _end()
             end
         end
     end
 
     function Pages.filter(n)
         local _cut = Cut(n, 1)
-        local _q = to.pattern(mpat, 'q '..n, Arc.control, function()
-            return {
-                n = 2,
-                state = of.param('q '..n),
-                controlspec = of.controlspec('q '..n),
-                lvl = { 4, 4, 15 },
-                x = { 42,  56 },
-            }
-        end)
+        local _q = Arc.control()
         local _win = not arc2 and Win(n, 3)
         local _end = not arc2 and End(n, 4)
 
         return function()
-            _cut(); _q(); 
+            _cut()
+            _q{
+                n = 2,
+                state = of_mparam(n, 'q'),
+                controlspec = mparams:get_controlspec(
+                    'q', mparams_scope(n, 'q')
+                ),
+                lvl = { 4, 4, 15 },
+                x = { 42,  56 },
+            }
             if not arc2 then
                 _win(); _end()
             end
@@ -201,17 +197,17 @@ local function App(args)
     end
 
     return function()
-        if view.page == 1 then
+        if view.page == MIX then
             if arc2 then
                 _pages.mix[view.track]()
             else
                 _pages.mix()
             end
-        elseif view.page == 2 then
+        elseif view.page == WINDOW then
             _pages.window[view.track]()
-        elseif view.page == 3 then
+        elseif view.page == FILTER then
             _pages.filter[view.track]()
-        elseif view.page == 4 then
+        elseif view.page == LFO then
         end
 
         if nest.arc.is_drawing() then

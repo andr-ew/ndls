@@ -127,10 +127,10 @@ function windowparams:expand(t, b, p, silent)
 end
 
 function windowparams:randomize(t, target, b, p, silent)
+    local vc = t
     target = target or 'both'
     b = b or sc.buffer[vc]
     p = p or preset:get(t)
-    local vc = t
     local sl = p
 
     local b = sc.buffer[vc]
@@ -188,7 +188,7 @@ end
 function windowparams:reset(t, b)
     local silent = true
     self:expand(t, b, 1, silent)
-    for p = 2, presets do self:randomize('both', t, b, p, silent) end
+    for p = 2, presets do self:randomize(t, 'both', b, p, silent) end
     self:bang(t)
 end
 

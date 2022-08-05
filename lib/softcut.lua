@@ -1,6 +1,6 @@
 -- softcut utilities
 
--- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change (exceptions where noted).
+-- this is an intermediate data structure. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change.
 
 local sc
 
@@ -61,10 +61,10 @@ sc = {
         end
     },
     oldmx = {
-        { old = 1, old2 = 1, rec = 0 },
+        { old = 1, rec = 0 },
         update = function(s, n)
             sc.send('rec_level', n, s[n].rec)
-            sc.send('pre_level', n, (s[n].rec == 0) and 1 or (s[n].old * s[n].old2))
+            sc.send('pre_level', n, (s[n].rec == 0) and 1 or (s[n].old))
             sc.sendmx[n].old = s[n].old
         end
     },
@@ -105,7 +105,7 @@ sc = {
         update = function(s, n)
             softcut.loop(n, s[n].loop)
             if s[n].loop > 0 then
-                sc.trigger(n)
+                --sc.trigger(n)
             end
         end
     }
@@ -288,6 +288,14 @@ sc.punch_in = { -- [buf] = {}
                 s[buf].recording = false
             end
         end
+    end,
+    is_recorded = function(s, track)
+        local b = sc.buffer[track]
+        return s[b].recorded
+    end,
+    is_recording = function(s, track)
+        local b = sc.buffer[track]
+        return s[b].recording
     end,
     get = function(s, z)
         return s[z].recording and 1 or 0
