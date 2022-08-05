@@ -41,7 +41,7 @@ local function App(args)
             local sl = preset[n][b]
 
             if wide then
-                _fill{ x = tall and 9 or 7, y = bottom, lvl = 4 }
+                _fill{ x = tall and 9 or 7, y = bottom, lvl = 8 }
                 _fill2{ x = (tall and 9 or 7) + 4, y = bottom, lvl = 4 }
                 _fill2{ x = (tall and 9 or 7) + 4 + 4, y = bottom, lvl = 4 }
                 
