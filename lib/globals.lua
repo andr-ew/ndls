@@ -33,10 +33,17 @@ end
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-function mparams_scope(track, id, set_sum)
+view_options = {}
 
-    --TODO: react to view options param, buffer state
-    local base = alt or (not sc.punch_in:is_recorded(track))
+function mparams_scope(track, id, set_sum)
+    local base
+    if not sc.punch_in:is_recorded(track) then
+        base = true
+    elseif params:get(id..'_view') == view_options.vals.preset then
+        base = alt
+    elseif params:get(id..'_view') == view_options.vals.base then
+        base = not alt
+    end
 
     if base then
         return 'base'
@@ -145,9 +152,9 @@ freeze_patrol = {
         end
     end
 }
--- clock.run(function() 
---     while true do
---         freeze_patrol:patrol() 
---         clock.sleep(1/fps.patrol)
---     end
--- end)
+clock.run(function() 
+    while true do
+        freeze_patrol:patrol() 
+        clock.sleep(1/fps.patrol)
+    end
+end)

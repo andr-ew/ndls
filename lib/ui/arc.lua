@@ -186,6 +186,7 @@ local function App(args)
             _pages.mix[n] = Pages.mix(n)
         end
     else
+        --TODO: this version of component is fixed in the base scope
         _pages.mix = Pages.mix()
     end
     _pages.window = {}

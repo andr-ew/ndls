@@ -3,6 +3,7 @@ do
     local mult = function(self, a, b, c)
         return a * (b + c)
     end
+    --TODO: switch to decibels / exp
     mparams:add{
         id = 'vol',
         type = 'control', controlspec = cs.def{ default = 1, max = 2.5 },
@@ -111,6 +112,24 @@ end
 do
     params:add_separator('preset options')
 
+    do
+        params:add_group('view',  #mparams.list)
+
+        view_options.options = { 'preset', 'base' }
+        view_options.vals = { preset = 1, base = 2 }
+        local prst, base = view_options.vals.preset, view_options.vals.base
+        local defaults = { old = base }
+
+        for _,m in ipairs(mparams.list) do
+            local id = m.id
+            params:add{
+                name = id, id = id..'_view', type = 'option',
+                options = view_options.options, default = defaults[id] or prst,
+            }
+        end
+    end
+
+
     --TODO: resets group
 
     params:add_group('randomization', 3)
@@ -126,8 +145,7 @@ do
         }
     end
 
-    --TODO: view group
-    --TODO: glide group
+    --TODO: slew group
     --TODO: data goes in group here
 end
 
@@ -173,7 +191,7 @@ for i = 1, voices do
     params:add_separator('base values, track '..i)
     --TODO: group each track ?
     params:add{
-        id = 'rec '..i,
+        name = 'rec', id = 'rec '..i,
         type = 'binary', behavior = 'toggle', 
         action = function(v)
             local n = i
@@ -195,7 +213,7 @@ for i = 1, voices do
         end
     }
     params:add{
-        id = 'clear '..i,
+        name = 'clear', id = 'clear '..i,
         type = 'binary', behavior = 'trigger', 
         action = function()
             local n = i
@@ -212,7 +230,7 @@ for i = 1, voices do
     -- TODO: wparam & mparam mappables
 
     params:add{
-        id = 'bnd '..i,
+        name = 'bend', id = 'bnd '..i,
         type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
         action = function(v) 
             sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
@@ -220,7 +238,7 @@ for i = 1, voices do
         end
     }
     params:add{
-        id = 'buffer '..i,
+        name = 'buffer', id = 'buffer '..i,
         type = 'number', min = 1, max = buffers, default = i,
         action = function(v)
             sc.buffer[i] = v; sc.buffer:update(i)
@@ -232,7 +250,7 @@ for i = 1, voices do
     }
     for b = 1,buffers do
         params:add{
-            id = 'preset '..i..' buffer '..b,
+            name = 'buffer '..b..' preset', id = 'preset '..i..' buffer '..b,
             type = 'number', min = 1, max = presets, default = 1,
             action = function(v)
                 preset[i][b] = v; preset:update(i, b)
@@ -244,7 +262,7 @@ for i = 1, voices do
         }
     end
     params:add{
-        id = 'send '..i,
+        name = 'send', id = 'send '..i,
         type = 'binary', behavior = 'toggle', default = 1,
         action = function(v) 
             sc.sendmx[i].send = v; sc.sendmx:update() 
@@ -257,7 +275,7 @@ for i = 1, voices do
         end
     }
     params:add{
-        id = 'return '..i,
+        name = 'return', id = 'return '..i,
         type = 'binary', behavior = 'toggle',
         action = function(v) 
             sc.sendmx[i].ret = v; sc.sendmx:update()

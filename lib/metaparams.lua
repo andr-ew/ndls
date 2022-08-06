@@ -56,7 +56,7 @@ function metaparam:new(args)
         m.mappable_id[t] = args.id..'_track_'..t
     end
 
-    --TODO: optional slew time
+    --TODO: slew time data
     
     m.base_id = {}
     m.base_setter = {}
@@ -250,9 +250,6 @@ function metaparam:add_mappable_param(t)
 
     params:add(args)
 end
-
---TODO: view option params
---TODO: reset option params
 
 local metaparams = {}
 
