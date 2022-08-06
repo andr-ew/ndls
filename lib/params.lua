@@ -108,9 +108,9 @@ do
     --TODO: rec overdub flag
 end
 
--- add preset options
+-- add metaparam options
 do
-    params:add_separator('preset options')
+    params:add_separator('metaparam options')
 
     do
         params:add_group('view',  #mparams.list)
@@ -132,8 +132,9 @@ do
 
     --TODO: resets group
 
-    params:add_group('randomization', 3)
     do
+        params:add_group('randomization', 3)
+
         params:add_separator('window')
         params:add{
             id = 'len min', type = 'control', 
@@ -146,7 +147,20 @@ do
     end
 
     --TODO: slew group
-    --TODO: data goes in group here
+
+    do
+        params:add_group('data', (
+            wparams:base_params_count()
+            + wparams:preset_params_count()
+            + mparams:base_params_count()
+            + mparams:preset_params_count()
+        ))
+
+        wparams:add_base_params()
+        wparams:add_preset_params()
+        mparams:add_base_params()
+        mparams:add_preset_params()
+    end
 end
 
 -- add softcut options
@@ -188,7 +202,8 @@ end
 
 -- add mappable params
 for i = 1, voices do 
-    params:add_separator('base values, track '..i)
+    params:add_separator('mappables, track '..i)
+
     --TODO: group each track ?
     params:add{
         name = 'rec', id = 'rec '..i,
@@ -288,10 +303,3 @@ for i = 1, voices do
         end
     }
 end
-
-params:add_separator('data')
-
-wparams:add_base_params()
-wparams:add_preset_params()
-mparams:add_base_params()
-mparams:add_preset_params()

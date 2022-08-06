@@ -28,13 +28,15 @@ function windowparams:new()
             m.base_id[t][b] = {
                 win = (
                     'window'
-                    ..'_t_'..t
-                    ..'_base_'..b
+                    ..'_t'..t
+                    ..'_buf'..b
+                    ..'_base'
                 ),
                 len = (
                     'length'
-                    ..'_t_'..t
-                    ..'_base_'..b
+                    ..'_t'..t
+                    ..'_buf'..b
+                    ..'_base'
                 )
             }
         end
@@ -48,15 +50,15 @@ function windowparams:new()
                 m.preset_id[t][b][p] = {
                     st = (
                         'start'
-                        ..'_t_'..t
-                        ..'_b_'..b
-                        ..'_pre_'..p
+                        ..'_t'..t
+                        ..'_buf'..b
+                        ..'_pre'..p
                     ),
                     en = (
                         'end'
-                        ..'_t_'..t
-                        ..'_b_'..b
-                        ..'_pre_'..p
+                        ..'_t'..t
+                        ..'_buf'..b
+                        ..'_pre'..p
                     )
                 }
             end
@@ -224,6 +226,7 @@ local cs_base_len = cs.def{ min = -1, max = 1, default = 0 }
 local cs_preset_st = cs.def{ min = 0, max = 1, default = 0 }
 local cs_preset_en = cs.def{ min = 0, max = 1, default = 1 }
 
+function windowparams:base_params_count() return 2 * tracks * buffers end
 function windowparams:add_base_params()
     for t = 1, tracks do
         for b = 1,buffers do
@@ -240,6 +243,7 @@ function windowparams:add_base_params()
         end
     end
 end
+function windowparams:preset_params_count() return 2 * tracks * buffers * presets end
 function windowparams:add_preset_params()
     for t = 1, tracks do
         for b = 1,buffers do
@@ -258,6 +262,7 @@ function windowparams:add_preset_params()
         end
     end
 end
+function windowparams:mappable_params_count() return 2 end
 function windowparams:add_mappable_params(t)
     params:add {
         id = self.mappable_id[t].win, name = 'window',

@@ -66,8 +66,9 @@ function metaparam:new(args)
         for b = 1,buffers do
             local id = (
                 args.id
-                ..'_track_'..t
-                ..'_base_'..b
+                ..'_t'..t
+                ..'_buf'..b
+                ..'_base'
             )
             m.base_id[t][b] = id
             m.base_setter[t][b] = multipattern.wrap_set(
@@ -86,9 +87,9 @@ function metaparam:new(args)
             for p = 1, presets do
                 local id = (
                     args.id
-                    ..'_track_'..t
-                    ..'_buffer_'..b
-                    ..'_preset_'..p
+                    ..'_t'..t
+                    ..'_buf'..b
+                    ..'_pre'..p
                 )
                 m.preset_id[t][b][p] = id
                 m.preset_setter[t][b][p] = multipattern.wrap_set(
@@ -307,9 +308,8 @@ function metaparams:get(track, id, scope)
     return self.lookup[id]:get(track, scope)
 end
 
+function metaparams:base_params_count() return #self.list * tracks * buffers end
 function metaparams:add_base_params()
-    --params:group('values', #self.list * tracks * buffers)
-    
     for t = 1, tracks do
         for b = 1,buffers do
             for _,m in ipairs(self.list) do
@@ -318,9 +318,8 @@ function metaparams:add_base_params()
         end
     end
 end
+function metaparams:preset_params_count() return #self.list * tracks * buffers * presets end
 function metaparams:add_preset_params()
-    --params:group('values', #self.list * tracks * buffers * presets)
-
     for t = 1, tracks do
         for b = 1,buffers do
             for p = 1, presets do
@@ -332,14 +331,9 @@ function metaparams:add_preset_params()
     end
 end
 
-function metaparams:add_mappable_param(t, id)
-    --params:add_separator('track '..t..' (midi mapping)')
-
-    if id then
-        self.lookup[id]:add_mappable_param(t)
-    else
-        for _,m in ipairs(self.list) do m:add_mappable_param(t) end
-    end
+function metaparams:mappable_params_count(t) return #self.list end
+function metaparams:add_mappable_params(t)
+    for _,m in ipairs(self.list) do m:add_mappable_param(t) end
 end
 
 return metaparams
