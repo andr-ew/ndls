@@ -7,6 +7,7 @@ do
     mparams:add{
         id = 'vol',
         type = 'control', controlspec = cs.def{ default = 1, max = 2.5 },
+        random_min_default = 0.5, random_max_default = 1.5,
         sum = mult,
         action = function(i, v)
             sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
@@ -19,6 +20,7 @@ do
         controlspec = cs.def{ 
             min = -1, max = 1, default = 0,
         },
+        random_min_default = -1, random_max_default = 1,
         action = function(i, v)
             sc.panmx[i].pan = v; sc.panmx:update(i)
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -30,6 +32,7 @@ do
         controlspec = cs.def{ default = 0.8, max = 1 },
         cs_base = cs.def{ default = 0.8, max = 1 },
         cs_preset = cs.def{ default = 1, max = 1 },
+        random_min_default = 0.5, random_max_default = 1,
         sum = mult,
         action = function(i, v)
             sc.oldmx[i].old = v; sc.oldmx:update(i)
@@ -40,6 +43,7 @@ do
         id = 'cut', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 1, quantum = 1/100/2, step = 0 },
         cs_preset = cs.def{ min = -1, max = 1, default = 0, quantum = 1/100/2/2, step = 0 },
+        random_min_default = -0.5, random_max_default = 0,
         action = function(i, v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -49,6 +53,7 @@ do
         id = 'q', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 0.4 },
         cs_preset = cs.def{ min = -1, max = 1, default = 0 },
+        random_min_default = -0.3, random_max_default = 0.3,
         action = function(i, v)
             softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -78,6 +83,7 @@ do
         type = 'number', 
         min = -7, max = 2, default = 0, 
         min_preset = -9, max_preset = 9, default_preset = 0,
+        random_min_default = -1, random_max_default = 1,
         unsum = function(self, sum, b, c)
             return sum - b - c
         end,
@@ -118,32 +124,36 @@ do
         view_options.options = { 'preset', 'base' }
         view_options.vals = { preset = 1, base = 2 }
         local prst, base = view_options.vals.preset, view_options.vals.base
-        local defaults = { old = base }
+        local defaults = { old = base, q = base }
 
         for _,m in ipairs(mparams.list) do
             local id = m.id
             params:add{
                 name = id, id = id..'_view', type = 'option',
                 options = view_options.options, default = defaults[id] or prst,
+                allow_pmap = false,
             }
         end
     end
 
-
     --TODO: resets group
 
     do
-        params:add_group('randomization', 3)
+        params:add_group('randomization', 3 + mparams:random_range_params_count())
 
         params:add_separator('window')
         params:add{
             id = 'len min', type = 'control', 
             controlspec = cs.def{ min = 0, max = 1, default = 0.15 },
+            allow_pmap = false,
         }
         params:add{
             id = 'len max', type = 'control', 
             controlspec = cs.def{ min = 0.5, max = 10, default = 0.75 },
+            allow_pmap = false,
         }
+
+        mparams:add_random_range_params()
     end
 
     --TODO: slew group
@@ -174,7 +184,8 @@ do
         action = function(v)
             sc.inmx.route = ir_op[v]
             for i = 1,voices do sc.inmx:update(i) end
-        end
+        end,
+        allow_pmap = false,
     }
 
     params:add{
@@ -184,12 +195,14 @@ do
             for i = 1, voices do
                 sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
             end
-        end
+        end,
+        allow_pmap = false,
     }
 
     params:add{
         type = 'control', id = 'rec transition',
         controlspec = cs.def{ default = 1, min = 0, max = 5 },
+        allow_pmap = false,
         action = function(v)
             for i = 1, voices do
                 softcut.recpre_slew_time(i, v)

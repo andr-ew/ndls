@@ -1,13 +1,49 @@
 local metaparam = {}
+local metaparams = {}
+
+metaparams.resets = {
+    dont_reset = function() end,
+    default = function(self, param_id)
+        local p = params:lookup_param(param_id)
+        local silent = true
+        params:set(
+            param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
+        )
+    end,
+    random = function(self, param_id, t, b, p)
+        silent = true
+        self:randomize(t, b, p, silent)
+    end
+}
 
 function metaparam:new(args)
+    local m = setmetatable({}, { __index = self })
+
+    m.random_min_id = args.id..'_random_min'
+    m.random_max_id = args.id..'_random_max'
+
     if args.type == 'control' then
         args.cs_base = args.cs_base or args.controlspec
         args.cs_preset = args.cs_preset or args.controlspec
+
         args.sum = args.sum or function(self, a, b, c)
             return self.args.controlspec:map(
                 self.args.controlspec:unmap(a + b + c)
             )
+        end
+
+        args.random_min_default = args.random_min_default or args.cs_preset.minval
+        args.random_max_default = args.random_max_default or args.cs_preset.maxval
+        args.randomize = function(self, param_id, silent)
+            local min = math.min(
+                params:get_raw(m.random_min_id), params:get_raw(m.random_max_id)
+            )
+            local max = math.max(
+                params:get_raw(m.random_min_id), params:get_raw(m.random_max_id)
+            )
+            local rand = math.random()*(max-min) + min
+
+            params:set_raw(param_id, rand, silent)
         end
     elseif args.type == 'number' then
         args.min_base = args.min_base or args.min
@@ -16,36 +52,60 @@ function metaparam:new(args)
         args.max_preset = args.max_preset or args.max
         args.default_base = args.default_base or args.default
         args.default_preset = args.default_preset or args.default
+
         args.sum = args.sum or function(self, a, b, c)
             return util.clamp(a + b + math.floor(c), self.args.min, self.args.max)
+        end
+
+        args.random_min_default = args.random_min_default or args.min_preset
+        args.random_max_default = args.random_max_default or args.max_preset
+        args.randomize = function(self, param_id, silent)
+            local min = math.min(
+                params:get(m.random_min_id), params:get(m.random_max_id)
+            )
+            local max = math.max(
+                params:get(m.random_min_id), params:get(m.random_max_id)
+            )
+            local rand = math.random(min, max)
+
+            params:set(param_id, rand, silent)
         end
     elseif args.type == 'option' then
         args.sum = args.sum or function(self, a, b, c)
             local cc = util.clamp(math.floor(c), 0, #self.args.options)
             return util.wrap(a + b + cc - 1, 1, #self.args.options)
         end
+
+        args.randomize = function(self, param_id, silent)
+            local min = 1
+            local max = #self.args.options
+            local rand = math.random(min, max)
+
+            params:set(param_id, rand, silent)
+        end
     elseif args.type == 'binary' then
         args.default_base = args.default_base or args.default
         args.default_preset = args.default_preset or args.default
+
         args.sum = args.sum or function(self, a, b, c)
             return (a + b + math.floor(c)) % 2
         end
+        
+        args.randomize = function(self, param_id, silent)
+            local rand = math.random(0, 1)
+
+            params:set(param_id, rand, silent)
+        end
     end
     
-    args.resets = args.resets or {
-        default = function(param_id)
-            local p = params:lookup_param(param_id)
-            local silent = true
-            params:set(
-                param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
-            )
-        end
+    args.reset = {
+        base = metaparams.resets.dont_reset,
+        preset = metaparams.resets.default,
     }
+    -- args.randomize = function(self, p_id, silent) end
 
     args.action = args.action or function() end
     
-    local m = setmetatable({}, { __index = self })
-
     --for k,v in pairs(args) do m[k] = v end
     m.args = args
 
@@ -108,13 +168,29 @@ function metaparam:new(args)
     return m
 end
 
+-- function metaparam:set_randomize(func)
+--     self.args.randomize = func
+-- end
+function metaparam:randomize(t, b, p, silent)
+    b = b or sc.buffer[t]
+    p = p or preset:get(t)
+
+    local p_id = self.preset_id[t][b][p]
+    self.args.randomize(self, p_id, silent, t, b, p)
+end
+
+function metaparam:set_reset(scope, func)
+    scope = scope or 'preset'
+
+    self.args.reset[scope] = func
+end
 function metaparam:reset(t, b)
     local b_id = self.base_id[t][b]
-    self.args.resets.default(b_id, t, b)
+    self.args.reset.base(self, b_id, t, b)
 
     for p = 1, presets do
-        p_id = self.preset_id[t][b][p]
-        self.args.resets.default(p_id, t, b)
+        local p_id = self.preset_id[t][b][p]
+        self.args.reset.preset(self, p_id, t, b, p)
     end
 end
             
@@ -252,7 +328,34 @@ function metaparam:add_mappable_param(t)
     params:add(args)
 end
 
-local metaparams = {}
+function metaparam:add_random_range_params()
+    params:add_separator(self.args.id)
+
+    local min, max
+    if self.args.type == 'number' then
+        min = self.args.min_preset
+        max = self.args.max_preset
+    end
+
+    params:add{
+        id = self.random_min_id, type = self.args.type, name = self.args.id..' min',
+        controlspec = self.args.type == 'control' and cs.def{
+            min = self.args.cs_preset.minval, max = self.args.cs_preset.maxval, 
+            default = self.args.random_min_default
+        },
+        min = min, max = max, default = self.args.type == 'number' and self.args.random_min_default,
+        allow_pmap = false,
+    }
+    params:add{
+        id = self.random_max_id, type = self.args.type, name = self.args.id..' max',
+        controlspec = self.args.type == 'control' and cs.def{
+            min = self.args.cs_preset.minval, max = self.args.cs_preset.maxval, 
+            default = self.args.random_max_default
+        },
+        min = min, max = max, default = self.args.type == 'number' and self.args.random_max_default,
+        allow_pmap = false,
+    }
+end
 
 function metaparams:new()
     local ms = setmetatable({}, { __index = self })
@@ -277,12 +380,23 @@ function metaparams:bang(track, id)
         for _,m in ipairs(self.list) do m:bang(track) end
     end
 end
+
+function metaparams:set_reset(id, scope, func)
+    return self.lookup[id]:set_reset(scope, func)
+end
 function metaparams:reset(track, buffer, id)
     if id then
         self.lookup[id]:reset(track, buffer)
     else
         for _,m in ipairs(self.list) do m:reset(track, buffer) end
     end
+end
+
+-- function metaparams:set_randomize(id, func)
+--     return self.lookup[id]:set_randomize(func)
+-- end
+function metaparams:randomize(track, id, buffer, preset, silent)
+    return self.lookup[id]:randomize(track, buffer, preset, silent)
 end
 
 function metaparams:get_setter(track, id, scope)
@@ -334,6 +448,24 @@ end
 function metaparams:mappable_params_count(t) return #self.list end
 function metaparams:add_mappable_params(t)
     for _,m in ipairs(self.list) do m:add_mappable_param(t) end
+end
+
+function metaparams:random_range_params_count()
+    local n = 0
+    for _,m in ipairs(self.list) do 
+        if m.args.type == 'number' or m.args.type == 'control' then
+            n = n + 3
+        end
+    end
+
+    return n
+end
+function metaparams:add_random_range_params()
+    for _,m in ipairs(self.list) do 
+        if m.args.type == 'number' or m.args.type == 'control' then
+            m:add_random_range_params() 
+        end
+    end
 end
 
 return metaparams

@@ -6,9 +6,9 @@ local function App()
     local h = 64 - mar.top - mar.bottom
 
     x[1] = mar.left
-    x[1.5] = w * 5/16 + mar.left
+    x[1.5] = w * 5/16 + mar.left + 4
     x[2] = w/2 + mar.left
-    x[2.5] = w * 13/16 + mar.left
+    x[2.5] = w * 13/16 + mar.left + 4
     x[3] = 128 - mar.right
     y[1] = mar.top
     y[2] = nil
@@ -49,6 +49,98 @@ local function App()
             }
         end
     end
+    local function Rand(args)
+        local _rand = Text.key.trigger()
+        local rand = multipattern.wrap_set(
+            mpat, args.id..'_x', function() mparams:randomize(args.voice, args.id) end
+        )
+
+        return function(props)
+            if mparams_scope(args.voice, args.id) ~= 'base' then
+                _rand{
+                    label = 'x', n = props.n,
+                    y = k[props.n].y, x = k[props.n].x,
+                    action = rand,
+                }
+            end
+        end
+    end
+    local function Window(args)
+        local voice = args.voice
+
+        local _st_view = Text.enc.number()
+        local _win_view = Text.enc.number()
+        local _len_view = Text.enc.number()
+        
+        local _rand_wind = Text.key.trigger()
+        local rand_wind = multipattern.wrap_set(
+            mpat, 'window_x', function(target) wparams:randomize(n, target) end
+        )
+
+        return function(props)
+            local sens = 0.01
+            
+            if sc.punch_in[sc.buffer[voice]].recorded then
+                _st_view{
+                    n = 1, x = e[1].x, y = e[1].y,
+                    label = 'st', 
+                    state = { wparams:get('start', voice, 'seconds') },
+                    input_enabled = false,
+                }
+                _win_view{
+                    n = 2, x = e[2].x, y = e[2].y,
+                    label = 'win', 
+                    state = { wparams:get('start', voice, 'seconds') },
+                    input_enabled = false,
+                }
+                _len_view{
+                    n = 3, x = e[3].x, y = e[3].y,
+                    label = 'len', 
+                    state = { wparams:get('length', voice, 'seconds') },
+                    input_enabled = false,
+                }
+
+                if nest.enc.has_input() then
+                    local n, d = nest.enc.input_args()
+
+                    local st = { 
+                        wparams:get('start', voice), 
+                        wparams:get_preset_setter('start', voice)
+                    }
+                    local en = { 
+                        wparams:get('end', voice), 
+                        wparams:get_preset_setter('end', voice)
+                    }
+                   
+                    if n == 1 then
+                        st[2](st[1] + d * sens)
+
+                        nest.screen.make_dirty()
+                    elseif n == 2 then
+                        st[2](st[1] + d * sens)
+                        en[2](en[1] + d * sens)
+
+                        nest.screen.make_dirty()
+                    elseif n == 3 then
+                        en[2](en[1] + d * sens)
+
+                        nest.screen.make_dirty()
+                    end
+                end
+
+                _rand_wind{
+                    label = { 'x', 'x' },
+                    edge = 'falling',
+                    n = { 2, 3 },
+                    y = k[2].y, x = { { k[2].x }, { k[3].x } },
+                    action = function(v, t, d, add, rem, l)
+                        if #l == 2 then rand_wind('both')
+                        else rand_wind(add==2 and 'len' or 'st') end
+                    end
+                }
+            end
+        end
+    end
 
     local function Voice(args)
         local n = args.n
@@ -56,104 +148,42 @@ local function App()
         local _old = Ctl()
         local _vol = Ctl()
         local _pan = Ctl()
+        local _rand_vol = Rand{ voice = n, id = 'vol' }
+        local _rand_pan = Rand{ voice = n, id = 'pan' }
 
-        local _st_view = Text.enc.number()
-        local _win_view = Text.enc.number()
-        local _len_view = Text.enc.number()
-        local _randomize = Text.key.trigger()
+        local _window = Window{ voice = n }
 
-        local _cut = Ctl()
         local _q = Ctl()
-        local _typ = Text.key.option()
+        local _cut = Ctl()
+        local _typ = Text.enc.number()
+        local _rand_cut = Rand{ voice = n, id = 'cut' }
+        local _rand_type = Rand{ voice = n, id = 'type' }
 
         return function(props)
             if props.tab == MIX then
                 _old{ id = 'old', voice = n, n = 1 }
                 _vol{ id = 'vol', voice = n, n = 2 }
                 _pan{ id = 'pan', voice = n, n = 3 }
+                _rand_vol{ n = 2 }
+                _rand_pan{ n = 3 }
             elseif props.tab == WINDOW then
-                local sens = 0.01
-                local voice = n
-                
-                if sc.punch_in[sc.buffer[voice]].recorded then
-                    _st_view{
-                        n = 1, x = e[1].x, y = e[1].y,
-                        label = 'st', 
-                        --state = { get_start(args.voice, 'seconds') },
-                        state = { wparams:get('start', voice, 'seconds') },
-                        input_enabled = false,
-                    }
-                    _win_view{
-                        n = 2, x = e[2].x, y = e[2].y,
-                        label = 'win', 
-                        --state = { get_start(args.voice, 'seconds') },
-                        state = { wparams:get('start', voice, 'seconds') },
-                        input_enabled = false,
-                    }
-                    _len_view{
-                        n = 3, x = e[3].x, y = e[3].y,
-                        label = 'len', 
-                        --state = { get_len(args.voice, 'seconds') },
-                        state = { wparams:get('length', voice, 'seconds') },
-                        input_enabled = false,
-                    }
-
-                    if nest.enc.has_input() then
-                        local n, d = nest.enc.input_args()
-
-                        local st = { 
-                            wparams:get('start', voice), 
-                            --get_set_start(args.voice) 
-                            wparams:get_preset_setter('start', voice)
-                        }
-                        local en = { 
-                            -- get_end(args.voice), get_set_end(args.voice) 
-                            wparams:get('end', voice), 
-                            wparams:get_preset_setter('end', voice)
-                        }
-                       
-                        if n == 1 then
-                            st[2](st[1] + d * sens)
-
-                            nest.screen.make_dirty()
-                        elseif n == 2 then
-                            st[2](st[1] + d * sens)
-                            en[2](en[1] + d * sens)
-
-                            nest.screen.make_dirty()
-                        elseif n == 3 then
-                            en[2](en[1] + d * sens)
-
-                            nest.screen.make_dirty()
-                        end
-                    end
-
-                    do
-                        _randomize{
-                            label = { 'x', 'x' },
-                            edge = 'falling',
-                            n = { 2, 3 },
-                            y = k[2].y, x = { { k[2].x }, { k[3].x } },
-                            action = function(v, t, d, add, rem, l)
-                                if #l == 2 then
-                                    --sc.slice:randomize(n, sc.slice:get(n), 'both')
-                                    wparams:randomize('both', n)
-                                else
-                                    -- sc.slice:randomize(n, sc.slice:get(n), add==2 and 'len' or 'st')
-                                    wparams:randomize(add==2 and 'len' or 'st', n)
-                                end
-                            end
-                        }
-                    end
-                end
+                _window()
             elseif props.tab == FILTER then
+                _q{ id = 'q', voice = n, n = 1 }
                 _cut{ id = 'cut', voice = n, n = 2 }
-                _q{ id = 'q', voice = n, n = 3 }
-                _typ{
-                    n = 3, y = k[3].y, x = k[3].x, scroll_window = { 1, 1 },
-                    state = of_mparam(n, 'type'),
-                    options = mparams:get_options('type'),
-                }
+                do
+                    local options = mparams:get_options('type')
+                    _typ{
+                        label = 'type', 
+                        lvl = { (mparams_scope(n, 'type') == 'base') and 8 or 4, 16 },
+                        n = 3, y = e[3].y, x = e[3].x, 
+                        min = 1, step = 1, inc = 1, max = #options,
+                        formatter = function(v) return options[v] end,
+                        state = of_mparam(n, 'type'),
+                    }
+                end
+                _rand_cut{ n = 2 }
+                _rand_type{ n = 3 }
             elseif props.tab == LFO then
             end
         end

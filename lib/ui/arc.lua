@@ -187,6 +187,7 @@ local function App(args)
         end
     else
         --TODO: this version of component is fixed in the base scope
+        --TODO: this component is also not mappable
         _pages.mix = Pages.mix()
     end
     _pages.window = {}
