@@ -1,21 +1,6 @@
 local metaparam = {}
 local metaparams = {}
 
-metaparams.resets = {
-    dont_reset = function() end,
-    default = function(self, param_id)
-        local p = params:lookup_param(param_id)
-        local silent = true
-        params:set(
-            param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
-        )
-    end,
-    random = function(self, param_id, t, b, p)
-        silent = true
-        self:randomize(t, b, p, silent)
-    end
-}
-
 function metaparam:new(args)
     local m = setmetatable({}, { __index = self })
 
@@ -34,6 +19,7 @@ function metaparam:new(args)
 
         args.random_min_default = args.random_min_default or args.cs_preset.minval
         args.random_max_default = args.random_max_default or args.cs_preset.maxval
+        --TODO: probabalility ? i.e. probablility of being not default
         args.randomize = function(self, param_id, silent)
             local min = math.min(
                 params:get_raw(m.random_min_id), params:get_raw(m.random_max_id)
@@ -92,6 +78,7 @@ function metaparam:new(args)
         end
         
         args.randomize = function(self, param_id, silent)
+            --TODO: probabalility
             local rand = math.random(0, 1)
 
             params:set(param_id, rand, silent)
@@ -99,7 +86,7 @@ function metaparam:new(args)
     end
     
     args.reset = {
-        base = metaparams.resets.dont_reset,
+        base = metaparams.resets.none,
         preset = metaparams.resets.default,
     }
     -- args.randomize = function(self, p_id, silent) end
@@ -179,18 +166,41 @@ function metaparam:randomize(t, b, p, silent)
     self.args.randomize(self, p_id, silent, t, b, p)
 end
 
+
+metaparams.resets = {
+    none = function() end,
+    default = function(self, param_id)
+        local p = params:lookup_param(param_id)
+        local silent = true
+        params:set(
+            param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
+        )
+    end,
+    random = function(self, param_id, t, b, p)
+        local silent = true
+        if p == 1 then
+            metaparams.resets.default(self, param_id)
+        else
+            self:randomize(t, b, p, silent)
+        end
+    end
+}
 function metaparam:set_reset(scope, func)
     scope = scope or 'preset'
 
     self.args.reset[scope] = func
 end
-function metaparam:reset(t, b)
-    local b_id = self.base_id[t][b]
-    self.args.reset.base(self, b_id, t, b)
+function metaparam:reset(t, b, scope)
+    scope = scope or 'preset'
 
-    for p = 1, presets do
-        local p_id = self.preset_id[t][b][p]
-        self.args.reset.preset(self, p_id, t, b, p)
+    if scope == 'preset' then
+        for p = 1, presets do
+            local p_id = self.preset_id[t][b][p]
+            self.args.reset.preset(self, p_id, t, b, p)
+        end
+    else
+        local b_id = self.base_id[t][b]
+        self.args.reset.base(self, b_id, t, b)
     end
 end
             
@@ -338,7 +348,7 @@ function metaparam:add_random_range_params()
     end
 
     params:add{
-        id = self.random_min_id, type = self.args.type, name = self.args.id..' min',
+        id = self.random_min_id, type = self.args.type, name = 'min',
         controlspec = self.args.type == 'control' and cs.def{
             min = self.args.cs_preset.minval, max = self.args.cs_preset.maxval, 
             default = self.args.random_min_default
@@ -347,7 +357,7 @@ function metaparam:add_random_range_params()
         allow_pmap = false,
     }
     params:add{
-        id = self.random_max_id, type = self.args.type, name = self.args.id..' max',
+        id = self.random_max_id, type = self.args.type, name = 'max',
         controlspec = self.args.type == 'control' and cs.def{
             min = self.args.cs_preset.minval, max = self.args.cs_preset.maxval, 
             default = self.args.random_max_default
@@ -355,6 +365,8 @@ function metaparam:add_random_range_params()
         min = min, max = max, default = self.args.type == 'number' and self.args.random_max_default,
         allow_pmap = false,
     }
+    --TODO: probabalility for binary type
+    --TODO: probabalility for other types ? i.e. probablility of being not default
 end
 
 function metaparams:new()
@@ -384,11 +396,11 @@ end
 function metaparams:set_reset(id, scope, func)
     return self.lookup[id]:set_reset(scope, func)
 end
-function metaparams:reset(track, buffer, id)
+function metaparams:reset(track, buffer, scope, id)
     if id then
-        self.lookup[id]:reset(track, buffer)
+        self.lookup[id]:reset(track, buffer, scope)
     else
-        for _,m in ipairs(self.list) do m:reset(track, buffer) end
+        for _,m in ipairs(self.list) do m:reset(track, buffer, scope) end
     end
 end
 
@@ -462,6 +474,7 @@ function metaparams:random_range_params_count()
 end
 function metaparams:add_random_range_params()
     for _,m in ipairs(self.list) do 
+        --TODO: add for binaty type
         if m.args.type == 'number' or m.args.type == 'control' then
             m:add_random_range_params() 
         end

@@ -76,8 +76,8 @@ preset = { --[voice][buffer] = slice
         local b = sc.buffer[n]
 
         for i = 1, voices do
-            mparams:reset(i, b)
-            wparams:reset(i, b)
+            mparams:reset(i, b, 'preset')
+            wparams:reset(i, b, 'preset')
         end
 
         s:set(n, b, 1)

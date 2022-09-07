@@ -92,6 +92,8 @@ function windowparams:new()
     m.preset_setter_start = set_start
     m.preset_setter_end = set_end
 
+    m.reset_func = windowparams.resets.random
+
     return m
 end
 
@@ -187,11 +189,30 @@ function windowparams:randomize(t, target, b, p, silent)
     end
 end
 
-function windowparams:reset(t, b)
-    local silent = true
-    self:expand(t, b, 1, silent)
-    for p = 2, presets do self:randomize(t, 'both', b, p, silent) end
-    self:bang(t)
+windowparams.resets = {
+    none = function() end,
+    default = function(self, t, b, p)
+        local silent = true
+        self:expand(t, b, p, silent)
+    end,
+    random = function(self, t, b, p)
+        local silent = true
+        if p == 1 then
+            windowparams.resets.default(self, t, b, p)
+        else
+            self:randomize(t, 'both', b, p, silent)
+        end
+    end
+}
+
+function windowparams:set_reset(scope, func)
+    self.reset_func = func
+end
+function windowparams:reset(t, b) --TODO: scope arg
+    for p = 1, presets do
+        self.reset_func(self, t, b, p)
+    end
+    --self:bang(t) --bang happens via preset:reset()
 end
 
 function windowparams:get_base_setter(id, t)

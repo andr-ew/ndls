@@ -119,7 +119,7 @@ do
     params:add_separator('metaparam options')
 
     do
-        params:add_group('view',  #mparams.list)
+        params:add_group('default view',  #mparams.list)
 
         view_options.options = { 'preset', 'base' }
         view_options.vals = { preset = 1, base = 2 }
@@ -136,19 +136,110 @@ do
         end
     end
 
-    --TODO: resets group
+    do
+        params:add_group('reset actions', 15 + voices*1)
+    
+        do
+            params:add_separator('window')
+            do
+                local names = { 'random', 'default' }
+                local funcs = { windowparams.resets.random, windowparams.resets.default }
+                params:add{
+                    id = 'window_reset_presets', name = 'presets', type = 'option',
+                    options = names, default = 1, allow_pmap = false,
+                    action = function(v)
+                        wparams:set_reset('preset', funcs[v])
+                    end
+                }
+            end
+            --TODO: window base reset
+        end
+
+        local function add_reset_param(id, scope, names, funcs)
+            scope = scope or 'preset'
+            local sname = (scope == 'preset') and 'presets' or 'base'
+            params:add{
+                id = id..'_reset_'..sname, name = sname, type = 'option',
+                options = names, default = 1, allow_pmap = false,
+                action = function(v)
+                    mparams:set_reset(id, scope, funcs[v])
+                end
+            }
+        end
+
+        do
+            local id = 'old'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+
+            local function default(self, param_id, t)
+                local silent = true
+                params:set(
+                    param_id, params:get(id..'_reset_default_'..t), silent
+                )
+            end
+
+            add_reset_param(
+                id, 'base',
+                { 'none', 'default' },
+                { windowparams.resets.none, default }
+            )
+            for n = 1,voices do
+                params:add{
+                    id = id..'_reset_default_'..n, name = 'default track '..n, type = 'control',
+                    controlspec = cs.def{ default = 0.8, max = 1 },
+                }
+            end
+        end
+        do
+            local id = 'vol'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+            
+            local function low_all(self, param_id)
+                local silent = true
+                params:set(param_id, 0, silent)
+            end
+            local function low_other(self, param_id, t, b)
+                local silent = true
+                local v = (t==b) and 1 or 0
+                params:set(param_id, v, silent)
+            end
+
+            add_reset_param(
+                id, 'base',
+                { 'none', 'default', 'low (all buffers)', 'low (other buffers)' },
+                { windowparams.resets.none, windowparams.resets.default, low_all, low_other }
+            )
+        end
+        params:add_separator('pan')
+        params:add_separator('q')
+        params:add_separator('cut')
+        params:add_separator('type')
+        params:add_separator('loop')
+        params:add_separator('rate')
+        params:add_separator('rev')
+    end
 
     do
         params:add_group('randomization', 3 + mparams:random_range_params_count())
 
         params:add_separator('window')
         params:add{
-            id = 'len min', type = 'control', 
+            id = 'len min', name = 'min', type = 'control', 
             controlspec = cs.def{ min = 0, max = 1, default = 0.15 },
             allow_pmap = false,
         }
         params:add{
-            id = 'len max', type = 'control', 
+            id = 'len max', name = 'max', type = 'control', 
             controlspec = cs.def{ min = 0.5, max = 10, default = 0.75 },
             allow_pmap = false,
         }
@@ -245,10 +336,17 @@ for i = 1, voices do
         type = 'binary', behavior = 'trigger', 
         action = function()
             local n = i
-            local z = sc.buffer[n]
+            local b = sc.buffer[n]
 
             params:set('rec '..i, 0) 
-            sc.punch_in:clear(z)
+            sc.punch_in:clear(b)
+
+            for ii = 1, voices do
+                mparams:reset(ii, b, 'base')
+                --wparams:reset(ii, b, 'base')
+            end
+            mparams:bang(n)
+            --wparams:bang(n)
 
             nest.grid.make_dirty()
             nest.screen.make_dirty()

@@ -203,7 +203,7 @@ local function App(args)
 
     return function()
         _view{
-            x = { 1, 4 }, y = { 1, voices }, lvl = mid2,
+            x = { 1, 4 }, y = { 1, voices }, lvl = { 1, mid2 },
             state = { 
                 { y = voices - view.track + 1, x = view.page },
                 function(v) 
