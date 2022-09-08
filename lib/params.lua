@@ -137,7 +137,7 @@ do
     end
 
     do
-        params:add_group('reset actions', 17)
+        params:add_group('reset actions', 2 + 9*3)
     
         do
             params:add_separator('window')
@@ -220,12 +220,90 @@ do
                 { metaparams.resets.none, metaparams.resets.default }
             )
         end
-        params:add_separator('q')
-        params:add_separator('cut')
-        params:add_separator('type')
-        params:add_separator('loop')
-        params:add_separator('rate')
-        params:add_separator('rev')
+        do
+            local id = 'q'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'default value', 'random value' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+            add_reset_param(
+                id, 'base',
+                { 'none', 'default value' },
+                { metaparams.resets.none, metaparams.resets.default }
+            )
+        end
+        do
+            local id = 'cut'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'random value', 'default value' },
+                { metaparams.resets.random, metaparams.resets.default }
+            )
+            add_reset_param(
+                id, 'base',
+                { 'default value', 'none' },
+                { metaparams.resets.default, metaparams.resets.none }
+            )
+        end
+        do
+            local id = 'type'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'default value', 'random value' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+            add_reset_param(
+                id, 'base',
+                { 'default value', 'none' },
+                { metaparams.resets.default, metaparams.resets.none }
+            )
+        end
+        do
+            local id = 'loop'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'default value', 'random value' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+            add_reset_param(
+                id, 'base',
+                { 'default value', 'none' },
+                { metaparams.resets.default, metaparams.resets.none }
+            )
+        end
+        do
+            local id = 'rate'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'random value', 'default value' },
+                { metaparams.resets.random, metaparams.resets.default }
+            )
+            add_reset_param(
+                id, 'base',
+                { 'default value', 'none' },
+                { metaparams.resets.default, metaparams.resets.none }
+            )
+        end
+        do
+            local id = 'rev'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'random value', 'default value' },
+                { metaparams.resets.random, metaparams.resets.default }
+            )
+            add_reset_param(
+                id, 'base',
+                { 'default value', 'none' },
+                { metaparams.resets.default, metaparams.resets.none }
+            )
+        end
     end
 
     do
