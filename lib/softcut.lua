@@ -1,6 +1,6 @@
 -- softcut utilities
 
--- this is an intermediate data structre. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change (exceptions where noted).
+-- this is an intermediate data structure. any part of the program may read these values, but they should be set only from the params system or by functions in this file. the associated update function should be called after any value change.
 
 local sc
 
@@ -61,10 +61,10 @@ sc = {
         end
     },
     oldmx = {
-        { old = 1, old2 = 1, rec = 0 },
+        { old = 1, rec = 0 },
         update = function(s, n)
             sc.send('rec_level', n, s[n].rec)
-            sc.send('pre_level', n, (s[n].rec == 0) and 1 or (s[n].old * s[n].old2))
+            sc.send('pre_level', n, (s[n].rec == 0) and 1 or (s[n].old))
             sc.sendmx[n].old = s[n].old
         end
     },
@@ -105,7 +105,7 @@ sc = {
         update = function(s, n)
             softcut.loop(n, s[n].loop)
             if s[n].loop > 0 then
-                sc.trigger(n)
+                --sc.trigger(n)
             end
         end
     }
@@ -245,8 +245,10 @@ sc.fade = function(n, length)
 end
 
 sc.trigger = function(n)
-    local st = get_start(n, 'seconds', 'absolute')
-    local en = get_end(n, 'seconds', 'absolute')
+    -- local st = get_start(n, 'seconds', 'absolute')
+    -- local en = get_end(n, 'seconds', 'absolute')
+    local st = wparams:get('start', n, 'seconds', 'absolute')
+    local en = wparams:get('end', n, 'seconds', 'absolute')
     softcut.position(n, sc.ratemx[n].rate > 0 and st or en)
 end
 
@@ -286,6 +288,14 @@ sc.punch_in = { -- [buf] = {}
                 s[buf].recording = false
             end
         end
+    end,
+    is_recorded = function(s, track)
+        local b = sc.buffer[track]
+        return s[b].recorded
+    end,
+    is_recording = function(s, track)
+        local b = sc.buffer[track]
+        return s[b].recording
     end,
     get = function(s, z)
         return s[z].recording and 1 or 0
@@ -341,111 +351,31 @@ for i = 2, buffers do
     end
 end
 
-local function update_assignment(n, dont_update_reg)
+local function update_assignment(n)
     local b = sc.buffer[n]
     local sl = reg.play[b][n]
     cartographer.assign(sl, n)
     
     sc.punch_in:update_play(b)
 
-    if not dont_update_reg then
-        for s = 1, slices do
-            update_reg(n, b, s)
-        end
-    end
+    -- if not dont_update_reg then
+    --     wparams:bang(n)
+    -- end
 end
 
 sc.buffer = { --[voice] = buffer
     --TODO: depricate
     set = function(s, n, v) params:set('buffer '..n, v) end,
     update = function(s, n)
+        mparams:bang(n)
         update_assignment(n)
+        wparams:bang(n)
     end
 }
-sc.slice = { --[voice][buffer] = slice
-    --TODO: depricate
-    set = function(s, n, b, v) 
-        local id = 'slice '..n..' buffer '..b
-        params:set(id, v, true) 
-        params:lookup_param(id):bang()
-    end,
-    update = function(s, n, b)
-        if b == sc.buffer[n] then
-            update_assignment(n)
-            sc.trigger(n)
-        end
-    end,
-    expand = function(s, vc, sl)
-        local b = sc.buffer[vc]
-        local pfx = vc..' buffer '..b..' slice '..sl
 
-        local silent = true
-        params:set('start '..pfx, 0, silent)
-        params:set('end '..pfx, 1, silent)
-        update_reg(vc, b, sl)
-    end,
-    randomize = function(s, vc, sl, target)
-        local b = sc.buffer[vc]
-        local b_sl = reg.rec[b]
-        --local p = reg.play[b]
+--TODO: depricate
+sc.slice = preset
 
-        local pfx = vc..' buffer '..b..' slice '..sl
-
-        local available = b_sl:get_length()
-        local last_s_f = params:get('start '..pfx)
-        local last_e_f = params:get('end '..pfx)
-        local last_len_f = last_e_f - last_s_f
-        local ll = b_sl:fraction_to_seconds(last_len_f)
-
-        local do_st = target == 'st' or target == 'both'
-        local do_len = target == 'len' or target == 'both'
-        local len, len_f, st, st_f
-        if do_len then
-            local min = math.min(params:get('len min'), params:get('len max'))
-            local max = math.max(params:get('len min'), params:get('len max'))
-            len = math.random()*(max-min) + min
-            len_f = b_sl:seconds_to_fraction(len)
-        end
-        if do_st then
-            local min = 0
-            local max = math.max(0, available - (do_len and len or ll))
-            st = math.random()*(max-min) + min
-            st_f = b_sl:seconds_to_fraction(st)
-        end
-
-        local silent = true
-
-        --if do_st then p:expand() end
-        if do_st then 
-            --p:set_start(st, 'seconds') 
-            params:set('start '..pfx, st_f, silent)
-
-            if not do_len then 
-                --p:set_length(ll) 
-                params:set('end '..pfx, st_f + last_len_f, silent)
-            end
-        end
-        if do_len then 
-            --p:set_length(len, 'seconds') 
-            local sst_f = do_st and st_f or last_s_f
-            params:set('end '..pfx, sst_f + len_f, silent)
-        end
-
-        update_reg(vc, b, sl)
-    end,
-    --call after loop punch_out
-    --TODO: reset when entering recorded buffer for the first time
-    reset = function(s, n)
-        s:set(n, sc.buffer[n], 1)
-
-        s:expand(n, 1)
-        for sl = 2, slices do s:randomize(n, sl, 'both') end
-    end,
-    get = function(s, n)
-        local b = sc.buffer[n]
-        return s[n][b]
-    end
-}
 for n = 1,voices do
     sc.buffer[n] = n
 
@@ -454,7 +384,7 @@ for n = 1,voices do
         sc.slice[n][b] = 1
     end
 
-    update_assignment(n, true)
+    update_assignment(n)
 end
 
 sc.samples = { -- [buffer] = { samples }
