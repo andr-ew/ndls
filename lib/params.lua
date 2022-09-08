@@ -175,18 +175,10 @@ do
                 { 'default value', 'random value' },
                 { metaparams.resets.default, metaparams.resets.random }
             )
-
-            local function default(self, param_id, t)
-                local silent = true
-                params:set(
-                    param_id, params:get(id..'_base_default_'..t), silent
-                )
-            end
-
             add_reset_param(
                 id, 'base',
                 { 'none', 'default value' },
-                { windowparams.resets.none, default }
+                { metaparams.resets.none, metaparams.resets.default }
             )
         end
         do
@@ -222,18 +214,10 @@ do
                 { 'default value', 'random value' },
                 { metaparams.resets.default, metaparams.resets.random }
             )
-
-            local function default(self, param_id, t)
-                local silent = true
-                params:set(
-                    param_id, params:get(id..'_base_default_'..t), silent
-                )
-            end
-
             add_reset_param(
                 id, 'base',
                 { 'none', 'default value' },
-                { windowparams.resets.none, default }
+                { metaparams.resets.none, metaparams.resets.default }
             )
         end
         params:add_separator('q')
@@ -242,31 +226,6 @@ do
         params:add_separator('loop')
         params:add_separator('rate')
         params:add_separator('rev')
-    end
-
-    do
-        params:add_group('default values', 2 * (voices + 1))
-            
-        do
-            local id = 'old'
-            params:add_separator(id)
-            for n = 1,voices do
-                params:add{
-                    id = id..'_base_default_'..n, name = 'base, track '..n, type = 'control',
-                    controlspec = cs.def{ default = 0.8, max = 1 }, allow_pmap = false,
-                }
-            end
-        end
-        do
-            local id = 'pan'
-            params:add_separator(id)
-            for n = 1,voices do
-                params:add{
-                    id = id..'_base_default_'..n, name = 'base, track '..n, type = 'control',
-                    controlspec = cs.def{ min = -1, max = 1, default = 0 }, allow_pmap = false,
-                }
-            end
-        end
     end
 
     do
