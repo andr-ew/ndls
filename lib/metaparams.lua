@@ -141,9 +141,7 @@ function metaparam:new(args)
                 m.preset_id[t][b][p] = id
                 m.preset_setter[t][b][p] = multipattern.wrap_set(
                     mpat, id, 
-                    function(v) 
-                        params:set(id, v) 
-                    end
+                    function(v) params:set(id, v) end
                 )
             end
         end
@@ -204,32 +202,39 @@ function metaparam:reset(t, b, scope)
     end
 end
             
---TODO: argument to disable pattern recording when setting
-function metaparam:get_setter(track, scope)
+function metaparam:get_setter(track, scope, ignore_pattern)
     scope = scope or 'preset'
     local b = sc.buffer[track]
-    local p = sc.slice:get(track)
+    local p = preset:get(track)
 
     if scope == 'preset' then
-        return self.preset_setter[track][b][p]
+        if ignore_pattern then
+            return function(v) params:set(self.preset_id[track][b][p], v) end
+        else 
+            return self.preset_setter[track][b][p] 
+        end
     elseif scope == 'base' then
-        return self.base_setter[track][b]
+        if ignore_pattern then
+            return function(v) params:set(self.base_id[track][b], v) end
+        else 
+            return self.base_setter[track][b] 
+        end
     end
 end
 
-function metaparam:set(track, scope, v)
+function metaparam:set(track, scope, v, ignore_pattern)
     local b = sc.buffer[track]
     --local p = sc.slice:get(track)
 
     if scope == 'sum' then
-        self:get_setter(track, 'preset')(self.args.unsum(
+        self:get_setter(track, 'preset', ignore_pattern)(self.args.unsum(
             self, 
             v,
             params:get(self.base_id[track][b]),
             self.modulation()
         ))
     else
-        self:get_setter(track, scope)(v)
+        self:get_setter(track, scope, ignore_pattern)(v)
     end
 end
 
@@ -411,8 +416,8 @@ function metaparams:randomize(track, id, buffer, preset, silent)
     return self.lookup[id]:randomize(track, buffer, preset, silent)
 end
 
-function metaparams:get_setter(track, id, scope)
-    return self.lookup[id]:get_setter(track, scope)
+function metaparams:get_setter(track, id, scope, ignore_pattern)
+    return self.lookup[id]:get_setter(track, scope, ignore_pattern)
 end
 function metaparams:set(track, id, scope, v)
     return self.lookup[id]:set(track, scope, v)

@@ -94,7 +94,7 @@ local function App(args)
                 n = x,
                 sens = 0.25, max = 2.5, cycle = 1.5,
                 state = of_mparam(n, 'vol'),
-                lvl = view.track == n and 15 or 4,
+                lvl = 15,
             }
         end
     end
@@ -119,11 +119,21 @@ local function App(args)
         else
             local _vols = {}
             for n = 1,4 do
-                _vols[n] = Vol(n, n)
+                _vols[n] = Arc.number()
             end
 
             return function() 
-                for _,_vol in ipairs(_vols) do _vol() end
+                for n,_vol in ipairs(_vols) do
+                    _vol{
+                        n = n,
+                        sens = 0.25, max = 2.5, cycle = 1.5,
+                        state = {
+                            mparams:get(n, 'vol', 'base'),
+                            mparams:get_setter(n, 'vol', 'base', true)
+                        },
+                        lvl = view.track == n and 15 or 4,
+                    }
+                end
             end
         end
     end
@@ -186,8 +196,6 @@ local function App(args)
             _pages.mix[n] = Pages.mix(n)
         end
     else
-        --TODO: this version of component is fixed in the base scope
-        --TODO: this component is also not mappable
         _pages.mix = Pages.mix()
     end
     _pages.window = {}
