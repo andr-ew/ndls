@@ -137,12 +137,12 @@ do
     end
 
     do
-        params:add_group('reset actions', 15 + voices*1)
+        params:add_group('reset actions', 17)
     
         do
             params:add_separator('window')
             do
-                local names = { 'random', 'default' }
+                local names = { 'random value', 'default value' }
                 local funcs = { windowparams.resets.random, windowparams.resets.default }
                 params:add{
                     id = 'window_reset_presets', name = 'presets', type = 'option',
@@ -172,35 +172,29 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default', 'random' },
+                { 'default value', 'random value' },
                 { metaparams.resets.default, metaparams.resets.random }
             )
 
             local function default(self, param_id, t)
                 local silent = true
                 params:set(
-                    param_id, params:get(id..'_reset_default_'..t), silent
+                    param_id, params:get(id..'_base_default_'..t), silent
                 )
             end
 
             add_reset_param(
                 id, 'base',
-                { 'none', 'default' },
+                { 'none', 'default value' },
                 { windowparams.resets.none, default }
             )
-            for n = 1,voices do
-                params:add{
-                    id = id..'_reset_default_'..n, name = 'default track '..n, type = 'control',
-                    controlspec = cs.def{ default = 0.8, max = 1 },
-                }
-            end
         end
         do
             local id = 'vol'
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default', 'random' },
+                { 'default value', 'random value' },
                 { metaparams.resets.default, metaparams.resets.random }
             )
             
@@ -216,17 +210,63 @@ do
 
             add_reset_param(
                 id, 'base',
-                { 'none', 'default', 'low (all buffers)', 'low (other buffers)' },
+                { 'none', 'default value', 'low (all buffers)', 'low (other buffers)' },
                 { windowparams.resets.none, windowparams.resets.default, low_all, low_other }
             )
         end
-        params:add_separator('pan')
+        do
+            local id = 'pan'
+            params:add_separator(id)
+            add_reset_param(
+                id, 'preset', 
+                { 'default value', 'random value' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+
+            local function default(self, param_id, t)
+                local silent = true
+                params:set(
+                    param_id, params:get(id..'_base_default_'..t), silent
+                )
+            end
+
+            add_reset_param(
+                id, 'base',
+                { 'none', 'default value' },
+                { windowparams.resets.none, default }
+            )
+        end
         params:add_separator('q')
         params:add_separator('cut')
         params:add_separator('type')
         params:add_separator('loop')
         params:add_separator('rate')
         params:add_separator('rev')
+    end
+
+    do
+        params:add_group('default values', 2 * (voices + 1))
+            
+        do
+            local id = 'old'
+            params:add_separator(id)
+            for n = 1,voices do
+                params:add{
+                    id = id..'_base_default_'..n, name = 'base, track '..n, type = 'control',
+                    controlspec = cs.def{ default = 0.8, max = 1 }, allow_pmap = false,
+                }
+            end
+        end
+        do
+            local id = 'pan'
+            params:add_separator(id)
+            for n = 1,voices do
+                params:add{
+                    id = id..'_base_default_'..n, name = 'base, track '..n, type = 'control',
+                    controlspec = cs.def{ min = -1, max = 1, default = 0 }, allow_pmap = false,
+                }
+            end
+        end
     end
 
     do
@@ -250,7 +290,7 @@ do
     --TODO: slew group
 
     do
-        params:add_group('data', (
+        params:add_group('raw data', (
             wparams:base_params_count()
             + wparams:preset_params_count()
             + mparams:base_params_count()
