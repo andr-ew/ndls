@@ -167,13 +167,14 @@ do
             }
         end
 
+        --TODO: preset resets, add 'none' in most cases
         do
             local id = 'old'
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default value', 'random value' },
-                { metaparams.resets.default, metaparams.resets.random }
+                { 'default value', 'random value', 'none' },
+                { metaparams.resets.default, metaparams.resets.random, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -186,8 +187,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default value', 'random value' },
-                { metaparams.resets.default, metaparams.resets.random }
+                { 'default value', 'random value', 'none' },
+                { metaparams.resets.default, metaparams.resets.random, metaparams.resets.none }
             )
             
             local function low_all(self, param_id)
@@ -211,8 +212,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default value', 'random value' },
-                { metaparams.resets.default, metaparams.resets.random }
+                { 'default value', 'random value', 'none' },
+                { metaparams.resets.default, metaparams.resets.random, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -225,8 +226,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default value', 'random value' },
-                { metaparams.resets.default, metaparams.resets.random }
+                { 'default value', 'random value', 'none' },
+                { metaparams.resets.default, metaparams.resets.random, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -239,8 +240,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'random value', 'default value' },
-                { metaparams.resets.random, metaparams.resets.default }
+                { 'random value', 'default value', 'none' },
+                { metaparams.resets.random, metaparams.resets.default, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -253,8 +254,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default value', 'random value' },
-                { metaparams.resets.default, metaparams.resets.random }
+                { 'default value', 'random value', 'none' },
+                { metaparams.resets.default, metaparams.resets.random, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -267,8 +268,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'default value', 'random value' },
-                { metaparams.resets.default, metaparams.resets.random }
+                { 'default value', 'random value', 'none' },
+                { metaparams.resets.default, metaparams.resets.random, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -281,8 +282,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'random value', 'default value' },
-                { metaparams.resets.random, metaparams.resets.default }
+                { 'random value', 'default value', 'none' },
+                { metaparams.resets.random, metaparams.resets.default, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -295,8 +296,8 @@ do
             params:add_separator(id)
             add_reset_param(
                 id, 'preset', 
-                { 'random value', 'default value' },
-                { metaparams.resets.random, metaparams.resets.default }
+                { 'random value', 'default value', 'none' },
+                { metaparams.resets.random, metaparams.resets.default, metaparams.resets.none }
             )
             add_reset_param(
                 id, 'base',
@@ -409,7 +410,7 @@ for i = 1, voices do
         end
     }
     params:add{
-        name = 'clear', id = 'clear '..i,
+        name = 'reset', id = 'clear '..i,
         type = 'binary', behavior = 'trigger', 
         action = function()
             local n = i
