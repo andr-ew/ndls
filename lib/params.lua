@@ -114,6 +114,119 @@ do
     --TODO: rec overdub flag
 end
 
+-- add mappable params
+params:add_separator('base values')
+for i = 1, voices do 
+    params:add_group('track '..i, 6 + buffers + mparams:mappable_params_count(i))
+
+    params:add{
+        name = 'rec', id = 'rec '..i,
+        type = 'binary', behavior = 'toggle', 
+        action = function(v)
+            local n = i
+
+            sc.oldmx[n].rec = v; sc.oldmx:update(n)
+
+            local z = sc.buffer[n]
+            if not sc.punch_in[z].recorded then
+                sc.punch_in:set(z, v)
+
+                --TODO: refactor reset call into sc.punch_in
+                if v==0 and sc.punch_in[z].recorded then 
+                    preset:reset(n)
+                end
+            end
+
+            nest.grid.make_dirty()
+            nest.screen.make_dirty()
+        end
+    }
+    params:add{
+        name = 'reset', id = 'clear '..i,
+        type = 'binary', behavior = 'trigger', 
+        action = function()
+            local n = i
+            local b = sc.buffer[n]
+
+            params:set('rec '..i, 0) 
+            sc.punch_in:clear(b)
+
+            for ii = 1, voices do
+                mparams:reset(ii, b, 'base')
+                --wparams:reset(ii, b, 'base')
+            end
+            mparams:bang(n)
+            --wparams:bang(n)
+
+            nest.grid.make_dirty()
+            nest.screen.make_dirty()
+        end
+    }
+
+    mparams:add_mappable_params(i)
+
+    -- TODO: wparam mappables
+
+    params:add{
+        name = 'bend', id = 'bnd '..i,
+        type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
+        action = function(v) 
+            sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
+            nest.screen.make_dirty(); nest.arc.make_dirty()
+        end
+    }
+    params:add{
+        name = 'buffer', id = 'buffer '..i,
+        type = 'number', min = 1, max = buffers, default = i,
+        action = function(v)
+            sc.buffer[i] = v; sc.buffer:update(i)
+
+            nest.arc.make_dirty()
+            nest.screen.make_dirty()
+            nest.grid.make_dirty()
+        end
+    }
+    for b = 1,buffers do
+        params:add{
+            name = 'buffer '..b..' preset', id = 'preset '..i..' buffer '..b,
+            type = 'number', min = 1, max = presets, default = 1,
+            action = function(v)
+                preset[i][b] = v; preset:update(i, b)
+
+                nest.arc.make_dirty()
+                nest.screen.make_dirty()
+                nest.grid.make_dirty()
+            end
+        }
+    end
+    params:add{
+        name = 'send', id = 'send '..i,
+        type = 'binary', behavior = 'toggle', default = 1,
+        action = function(v) 
+            sc.sendmx[i].send = v; sc.sendmx:update() 
+
+            if v > 0 and params:get('return '..i) > 0 then
+                sc.sendmx[i].ret = 0; sc.sendmx:update() 
+                params:set('return '..i, 0, true)
+            end
+            nest.grid.make_dirty()
+        end
+    }
+    params:add{
+        name = 'return', id = 'return '..i,
+        type = 'binary', behavior = 'toggle',
+        action = function(v) 
+            sc.sendmx[i].ret = v; sc.sendmx:update()
+
+            if v > 0 and params:get('send '..i) > 0 then
+                sc.sendmx[i].send = 0; sc.sendmx:update() 
+                params:set('send '..i, 0, true)
+            end
+            nest.grid.make_dirty()
+        end
+    }
+end
+
 -- add metaparam options
 do
     params:add_separator('metaparam options')
@@ -382,113 +495,3 @@ do
     --TODO: rate glide enable/disable
 end
 
--- add mappable params
-for i = 1, voices do 
-    params:add_separator('mappables, track '..i)
-
-    --TODO: group each track ?
-    params:add{
-        name = 'rec', id = 'rec '..i,
-        type = 'binary', behavior = 'toggle', 
-        action = function(v)
-            local n = i
-
-            sc.oldmx[n].rec = v; sc.oldmx:update(n)
-
-            local z = sc.buffer[n]
-            if not sc.punch_in[z].recorded then
-                sc.punch_in:set(z, v)
-
-                --TODO: refactor reset call into sc.punch_in
-                if v==0 and sc.punch_in[z].recorded then 
-                    preset:reset(n)
-                end
-            end
-
-            nest.grid.make_dirty()
-            nest.screen.make_dirty()
-        end
-    }
-    params:add{
-        name = 'reset', id = 'clear '..i,
-        type = 'binary', behavior = 'trigger', 
-        action = function()
-            local n = i
-            local b = sc.buffer[n]
-
-            params:set('rec '..i, 0) 
-            sc.punch_in:clear(b)
-
-            for ii = 1, voices do
-                mparams:reset(ii, b, 'base')
-                --wparams:reset(ii, b, 'base')
-            end
-            mparams:bang(n)
-            --wparams:bang(n)
-
-            nest.grid.make_dirty()
-            nest.screen.make_dirty()
-        end
-    }
-
-    -- TODO: wparam & mparam mappables
-
-    params:add{
-        name = 'bend', id = 'bnd '..i,
-        type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
-        action = function(v) 
-            sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
-            nest.screen.make_dirty(); nest.arc.make_dirty()
-        end
-    }
-    params:add{
-        name = 'buffer', id = 'buffer '..i,
-        type = 'number', min = 1, max = buffers, default = i,
-        action = function(v)
-            sc.buffer[i] = v; sc.buffer:update(i)
-
-            nest.arc.make_dirty()
-            nest.screen.make_dirty()
-            nest.grid.make_dirty()
-        end
-    }
-    for b = 1,buffers do
-        params:add{
-            name = 'buffer '..b..' preset', id = 'preset '..i..' buffer '..b,
-            type = 'number', min = 1, max = presets, default = 1,
-            action = function(v)
-                preset[i][b] = v; preset:update(i, b)
-
-                nest.arc.make_dirty()
-                nest.screen.make_dirty()
-                nest.grid.make_dirty()
-            end
-        }
-    end
-    params:add{
-        name = 'send', id = 'send '..i,
-        type = 'binary', behavior = 'toggle', default = 1,
-        action = function(v) 
-            sc.sendmx[i].send = v; sc.sendmx:update() 
-
-            if v > 0 and params:get('return '..i) > 0 then
-                sc.sendmx[i].ret = 0; sc.sendmx:update() 
-                params:set('return '..i, 0, true)
-            end
-            nest.grid.make_dirty()
-        end
-    }
-    params:add{
-        name = 'return', id = 'return '..i,
-        type = 'binary', behavior = 'toggle',
-        action = function(v) 
-            sc.sendmx[i].ret = v; sc.sendmx:update()
-
-            if v > 0 and params:get('send '..i) > 0 then
-                sc.sendmx[i].send = 0; sc.sendmx:update() 
-                params:set('send '..i, 0, true)
-            end
-            nest.grid.make_dirty()
-        end
-    }
-end

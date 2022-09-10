@@ -269,12 +269,12 @@ function windowparams:add_preset_params()
     for t = 1, tracks do
         for b = 1,buffers do
             for p = 1, presets do
-                params:add {
+                params:add{
                     id = self.preset_id[t][b][p].st,
                     type = 'control', controlspec = cs_preset_st,
                     action = function() self:bang(t) end
                 }
-                params:add {
+                params:add{
                     id = self.preset_id[t][b][p].en,
                     type = 'control', controlspec = cs_preset_en,
                     action = function() self:bang(t) end

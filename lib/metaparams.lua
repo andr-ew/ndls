@@ -331,7 +331,7 @@ function metaparam:add_mappable_param(t)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
 
-    args.id = 'set_'..self.args.id
+    args.id = self.args.id..'_'..t
     args.name = self.args.id
     args.controlspec = self.args.cs_base
     args.action = function(v)
