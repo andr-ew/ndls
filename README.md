@@ -98,9 +98,6 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 - **win:** loop window position
 - **len:** loop window length
 
-
-randomization ranges can be configured in the params menu under **config > randomization**
-
 #### page 3: FILTER
 
 ![norns screen page FILTER documentation image](lib/doc/ndls_FILTER.png)
