@@ -22,6 +22,8 @@ in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
 ## documentation
 
+### quick start
+
 ### grid
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
