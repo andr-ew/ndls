@@ -21,7 +21,7 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
-## documentation
+## overview
 
 ### quick start
 
@@ -112,7 +112,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 
 (coming soon)
 
-### metaparams
+## metaparams
 
 (diagram)
 
@@ -120,7 +120,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 
 (coming soon)
 
-### (consider another heading for advanced gestures)
+## (consider another heading for advanced gestures)
 - alt punch outs
 - glides (rate + presets)
 - advanced send & return modes
