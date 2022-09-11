@@ -84,7 +84,7 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - double tap: overdub pattern
 - hold: clear pattern
 
-### norns
+### norns + arc
 
 #### MIX
 
