@@ -38,7 +38,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   - 2 - tap **rec** again to begin looping + disable overdubs, for a traditional looping experience.
   - 3 - while the **buffer** is non-blank, **rec** sets the overdub state
   - 4 - **reset:** hold the **rec** key to reset the active buffer of the track. this will clear buffer audio and reset any/all data.
-- **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys. turns ndls into a sampler!
+- **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
   - **quick delay:** on a blank **buffer**, tap **rec**, then **loop** to begin looping _without_ disabling overdubs, effectively turning the track into a delay.
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
