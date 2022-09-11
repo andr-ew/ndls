@@ -35,10 +35,17 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 
 #### bottom half
 
-- **rec:** toggle record & playback states, loop pedal style (i.e., the first recording sets the loop length, subsequent keypresses enable overdubs).
-  - **reset:** hold the **rec** key to reset the active buffer of the track. this will clear buffer audio and reset certain data.
+- **rec:** toggle record & playback states, loop pedal style.
+  - 1 - tap **rec** while the assigned **buffer** is blank to begin the initial recording
+  - 2 - tap **rec** again to begin looping + disable overdubs, for a traditional looping experience.
+  - 3 - while the **buffer** is non-blank, **rec** sets the overdub state
+  - 4 - **reset:** hold the **rec** key to reset the active buffer of the track. this will clear buffer audio and reset any/all data.
+- **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys
+  - **quick delay:** on a blank **buffer**, tap **rec**, then **loop** to begin looping _without_ disabling overdubs, effectively turning the track into a delay.
+    - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
+    - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
-- **preset:** 1 default preset + 8 randomized presets for any/all data in the track. see [advanced settings](#advanced-settings) for advanced info. 
+- **preset:** 1 default preset + 8 randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [advanced settings](#advanced-settings) for advanced info.
 
 #### top half
 
