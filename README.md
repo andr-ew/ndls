@@ -1,15 +1,16 @@
-# ndls (beta)
+# ndls (0.2.0-beta)
 
-4-track asyncronous tape looper, delay, & loop splicer based on softcut. pattern memory, performace oriented + configurable. and it's ~ bendy ~
+4-track, grid-based, asynchronous tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
 
-spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim)
+a spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim), [anaphora](https://github.com/andr-ew/prosody#anaphora), and several unreleased precursors.
 
+currently in beta - any & all feedback is highly appreciated! feel free to create an issue here or send me an email andrewcshike@gmail.com :) (email is usually the best way to reach me). if you're running into trouble, be sure to check out the [issues](https://github.com/andr-ew/ndls/issues) section to see if your issue has already been logged ~
 ## hardware
 
 **required**
 
-- norns
-- grid (128, 64, 256, or midigrid)
+- [norns](https://github.com/p3r7/awesome-monome-norns) (220321 or later)
+- [grid](https://monome.org/docs/grid/) (128, 64, 256, or midigrid)
 
 **also supported**
 
@@ -22,41 +23,19 @@ in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
 ## documentation
 
-### grid + arc
+### quick start
+
+### grid
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
 
-the grid is split in two halves with two blocks of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
+the grid is split in two halves with two blocks of controls mapped to four tracks of softcut. rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
 #### bottom half
 
-- **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
-  - record a new loop in a blank buffer:
-    - 1 - toggle the **rec** key _on_
-    - 2 - play some audio into softcut from TAPE or norns' inputs
-    - 3 - toggle **rec** back _off_
-    - 4 - softcut will loop what you just played, loop pedal style.
-  - overdub into a playing loop:
-    - 1 - toggle the **rec** key _on_
-    - 2 - play some new material into softcut from TAPE or norns' inputs
-    - 3 - softcut will record the new material on top of the loop.
-      - the volume of the old material is set by the **old** control.
-  - silence a playing loop:
-    - toggle the **play** key _off_
-  - clear a buffer, and record a brand new loop:
-    - 1 - toggle the **play** key _off_
-    - 2 - toggle the **rec** key _on_. softcut will clear the old contents of the buffer.
-    - 3 - play some new material into softcut from TAPE or norns' inputs
-    - 4 - toggle **rec** back _off_
-    - 5 - softcut will loop the new material
-  - use a blank buffer as a delay
-    - 1 - toggle the **rec** key _on_
-    - 2 - toggle the **play** key _on_
-    - 3 - softcut will begin playing and overdubbing, like a delay.
-      - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
-      - delay feeback is set by the **old** control
+- **rec** toggle record & playback states, loop pedal style.
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
 - **slice:** each audio buffer has 7 independent playback windows that you switch between on the fly using the grid. each window has it's own editable **st** & **len** settings. slices 2-7 are auto-randomized upon recording a new loop into a buffer.
 - **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
@@ -64,9 +43,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 
 #### top half
 
-- **screen focus:** select which track controls to edit on the norns screen
-- **arc focus:** select which track controls to edit on arc.
-  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks
+- **norns/arc view:** set the track + page displayed on norns + arc. track selection on the y axis, page selection on the x axis.
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
 - **rate:** record & playback rate, quantized to octaves.
   - press one key with one finger to jump instantly to a new pitch.
@@ -86,23 +63,18 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - double tap: overdub pattern
 - hold: clear pattern
 
-### norns
+### norns + arc
 
-#### global
+#### MIX
 
-- **E1:** set page focus
-- **track focus:** displays the track focus (set using the top left keys on the grid)
-
-#### page v (volume)
-
-![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
+![norns screen page MIX documentation image](lib/doc/ndls_MIX.png)
 
 - **E2:** track output level
 - **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
 
-#### page s (start/length)
+#### WINDOW
 
-![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
+![norns screen page WINDOW documentation image](lib/doc/ndls_WINDOW.png)
 
 - **E2:** slice window start point
 - **E3:** slice window start length
@@ -112,16 +84,26 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 randomization ranges can be configured in the params menu under **config > randomization**
 
-#### page f (filter)
+#### FILTER
 
-![norns screen page f documentation image](lib/doc/ndls_screen_f.png)
+![norns screen page FILTER documentation image](lib/doc/ndls_FILTER.png)
 
 - **E2:** filter cutoff
 - **E3:** filter resonance
 
-#### page p (pan/pitch)
+#### LFO
 
-![norns screen page p documentation image](lib/doc/ndls_screen_p.png)
+![norns screen page LFO documentation image](lib/doc/ndls_LFO.png)
 
 - **E2:** pan
 - **E3:** pitch bend (-1 to +1 octave)
+
+### advanced settings
+
+#### metaparams
+
+(diagram)
+
+#### metaparam options
+
+(coming soon)
