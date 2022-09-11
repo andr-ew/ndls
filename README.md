@@ -29,7 +29,7 @@ in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
 
-the grid is split in two halves with two blocks of controls mapped to four tracks of softcut. rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
+the grid is split in two halves with two blocks of [metaparams](#metaparams) mapped to four tracks of softcut. rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
@@ -45,7 +45,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
-- **preset:** 1 default preset + 8 randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [advanced settings](#advanced-settings) for advanced info.
+- **preset:** 1 default preset + 8 randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [metaparams](#metaparams) for advanced info.
 
 #### top half
 
@@ -57,6 +57,9 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
     - 1 - hold one finger on the lit / current value key
     - 2 - press the key of the rate you'd like to glide to
     - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key. this is an expressive gesture !
+- **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
+  - idea: send a loop track into another track set up like a delay, for echoed loops.
+
 
 #### pattern recorders
 
@@ -71,42 +74,46 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ### norns + arc
 
-#### MIX
+the norns screen/encoders/keys + arc are paginated using the top left section of the grid. there are four pages for each of the four tracks. each page contains [metaparams](#metaparams).
+- **E1 - E3:** edit metaparam
+- **K2 - K3:** (**x**) randomize metaparam
+- **K3 (hold):** set **alt** state. see [metaparams](#metaparams) for more info.
+- **arc:** edit metaparams
+
+#### page 1: MIX
 
 ![norns screen page MIX documentation image](lib/doc/ndls_MIX.png)
 
-- **E2:** track output level
-- **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
+- **old:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
+- **vol:** output level
+- **pan:** output panning
 
-#### WINDOW
+#### page 2: WINDOW
 
 ![norns screen page WINDOW documentation image](lib/doc/ndls_WINDOW.png)
 
-- **E2:** slice window start point
-- **E3:** slice window start length
-- **K2:** randomize start point
-- **K3:** randomize length
-- **K2 + K3:** random window
+- **st:** loop window start point
+- **win:** loop window position
+- **len:** loop window length
+
 
 randomization ranges can be configured in the params menu under **config > randomization**
 
-#### FILTER
+#### page 3: FILTER
 
 ![norns screen page FILTER documentation image](lib/doc/ndls_FILTER.png)
 
-- **E2:** filter cutoff
-- **E3:** filter resonance
+- **q:** filter resonance
+- **cut:** filter cutoff freq
+- **type:** filter type (lowpass, bandpass, highpass, dry signal)
 
-#### LFO
+#### page 4: LFO
 
 ![norns screen page LFO documentation image](lib/doc/ndls_LFO.png)
 
-- **E2:** pan
-- **E3:** pitch bend (-1 to +1 octave)
+(coming soon)
 
-### advanced settings
-
-#### metaparams
+### metaparams
 
 (diagram)
 
