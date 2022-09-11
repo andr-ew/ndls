@@ -21,11 +21,9 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
-## overview
+## quick start
 
-### quick start
-
-### grid
+## grid
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
 
@@ -33,7 +31,7 @@ the grid is split in two halves with two blocks of [metaparams](#metaparams) map
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
-#### bottom half
+### bottom half
 
 - **rec:** toggle record & playback states, loop pedal style.
   - 1 - tap **rec** while the assigned **buffer** is blank to begin the initial recording
@@ -49,7 +47,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   - **quick one-shot:** on a blank **buffer**, tap **rec** to begin a new recording, then tap any **preset** key to end recording & play a one-shot sample based on that preset.
 
 
-#### top half
+### top half
 
 - **norns/arc view:** set the track + page displayed on norns + arc. track selection on the y axis, page selection on the x axis.
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
@@ -63,7 +61,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   - idea: send a loop track into another track set up like a delay, for echoed loops.
 
 
-#### pattern recorders
+### pattern recorders
 
 the rightmost column contans 8 pattern recorders, these can record & play back any combination of input on grid, norns, or arc. use them like this:
 
@@ -74,7 +72,7 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - double tap: overdub pattern
 - hold: clear pattern
 
-### norns + arc
+## norns + arc
 
 the norns screen/encoders/keys + arc are paginated using the top left section of the grid. there are four pages for each of the four tracks. each page contains [metaparams](#metaparams).
 - **E1 - E3:** edit metaparam
@@ -82,7 +80,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 - **K3 (hold):** set **alt** state. see [metaparams](#metaparams) for more info.
 - **arc:** edit metaparams
 
-#### page 1: MIX
+### page 1: MIX
 
 ![norns screen page MIX documentation image](lib/doc/ndls_MIX.png)
 
@@ -90,7 +88,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 - **vol:** output level
 - **pan:** output panning
 
-#### page 2: WINDOW
+### page 2: WINDOW
 
 ![norns screen page WINDOW documentation image](lib/doc/ndls_WINDOW.png)
 
@@ -98,7 +96,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 - **win:** loop window position
 - **len:** loop window length
 
-#### page 3: FILTER
+### page 3: FILTER
 
 ![norns screen page FILTER documentation image](lib/doc/ndls_FILTER.png)
 
@@ -106,7 +104,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 - **cut:** filter cutoff freq
 - **type:** filter type (lowpass, bandpass, highpass, dry signal)
 
-#### page 4: LFO
+### page 4: LFO
 
 ![norns screen page LFO documentation image](lib/doc/ndls_LFO.png)
 
@@ -116,7 +114,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 
 (diagram)
 
-#### metaparam options
+### metaparam options
 
 (coming soon)
 
