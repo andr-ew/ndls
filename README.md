@@ -22,7 +22,7 @@ in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
 ## documentation
 
-### grid + arc
+### grid
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
 
@@ -64,9 +64,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 
 #### top half
 
-- **screen focus:** select which track controls to edit on the norns screen
-- **arc focus:** select which track controls to edit on arc.
-  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks
+- **norns/arc view:** set the track + page displayed on norns + arc. track selection on the y axis, page selection on the x axis.
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
 - **rate:** record & playback rate, quantized to octaves.
   - press one key with one finger to jump instantly to a new pitch.
@@ -88,21 +86,16 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ### norns
 
-#### global
+#### MIX
 
-- **E1:** set page focus
-- **track focus:** displays the track focus (set using the top left keys on the grid)
-
-#### page v (volume)
-
-![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
+![norns screen page v documentation image](lib/doc/ndls_MIX.png)
 
 - **E2:** track output level
 - **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
 
-#### page s (start/length)
+#### WINDOW
 
-![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
+![norns screen page s documentation image](lib/doc/ndls_WINDOW.png)
 
 - **E2:** slice window start point
 - **E3:** slice window start length
@@ -112,16 +105,16 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 randomization ranges can be configured in the params menu under **config > randomization**
 
-#### page f (filter)
+#### FILTER
 
-![norns screen page f documentation image](lib/doc/ndls_screen_f.png)
+![norns screen page f documentation image](lib/doc/ndls_FILTER.png)
 
 - **E2:** filter cutoff
 - **E3:** filter resonance
 
-#### page p (pan/pitch)
+#### LFO
 
-![norns screen page p documentation image](lib/doc/ndls_screen_p.png)
+![norns screen page p documentation image](lib/doc/LFO.png)
 
 - **E2:** pan
 - **E3:** pitch bend (-1 to +1 octave)
