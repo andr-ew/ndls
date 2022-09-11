@@ -46,7 +46,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
     - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
 - **preset:** 1 default preset + 8 randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [metaparams](#metaparams) for advanced info.
-  - **quick one-shot:** on a blank **buffer**, tap **rec** to begin a new recording, then tap any **preset** key to end recording & play a one-shot sample from that preset.
+  - **quick one-shot:** on a blank **buffer**, tap **rec** to begin a new recording, then tap any **preset** key to end recording & play a one-shot sample based on that preset.
 
 
 #### top half
