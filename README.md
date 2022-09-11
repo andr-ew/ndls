@@ -8,8 +8,8 @@ spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachron
 
 **required**
 
-- norns
-- grid (128, 64, 256, or midigrid)
+- [norns](https://github.com/p3r7/awesome-monome-norns) (220321 or later)
+- [grid](https://monome.org/docs/grid/) (128, 64, 256, or midigrid)
 
 **also supported**
 
