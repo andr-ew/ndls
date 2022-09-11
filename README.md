@@ -29,37 +29,13 @@ in the maiden REPL, type `;install https://github.com/andr-ew/ndls`
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
 
-the grid is split in two halves with two blocks of controls mapped to four tracks of softcut (or 6 tracks if using a 256 grid). rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
+the grid is split in two halves with two blocks of controls mapped to four tracks of softcut. rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
 #### bottom half
 
-- **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
-  - record a new loop in a blank buffer:
-    - 1 - toggle the **rec** key _on_
-    - 2 - play some audio into softcut from TAPE or norns' inputs
-    - 3 - toggle **rec** back _off_
-    - 4 - softcut will loop what you just played, loop pedal style.
-  - overdub into a playing loop:
-    - 1 - toggle the **rec** key _on_
-    - 2 - play some new material into softcut from TAPE or norns' inputs
-    - 3 - softcut will record the new material on top of the loop.
-      - the volume of the old material is set by the **old** control.
-  - silence a playing loop:
-    - toggle the **play** key _off_
-  - clear a buffer, and record a brand new loop:
-    - 1 - toggle the **play** key _off_
-    - 2 - toggle the **rec** key _on_. softcut will clear the old contents of the buffer.
-    - 3 - play some new material into softcut from TAPE or norns' inputs
-    - 4 - toggle **rec** back _off_
-    - 5 - softcut will loop the new material
-  - use a blank buffer as a delay
-    - 1 - toggle the **rec** key _on_
-    - 2 - toggle the **play** key _on_
-    - 3 - softcut will begin playing and overdubbing, like a delay.
-      - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
-      - delay feeback is set by the **old** control
+- **rec** toggle record & playback states, loop pedal style.
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
 - **slice:** each audio buffer has 7 independent playback windows that you switch between on the fly using the grid. each window has it's own editable **st** & **len** settings. slices 2-7 are auto-randomized upon recording a new loop into a buffer.
 - **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
