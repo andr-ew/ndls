@@ -119,3 +119,8 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 #### metaparam options
 
 (coming soon)
+
+### (consider another heading for advanced gestures)
+- alt punch outs
+- glides (rate + presets)
+- advanced send & return modes
