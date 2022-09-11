@@ -121,3 +121,13 @@ randomization ranges can be configured in the params menu under **config > rando
 
 - **E2:** pan
 - **E3:** pitch bend (-1 to +1 octave)
+
+### advanced settings
+
+#### metaparams
+
+(diagram)
+
+#### metaparam options
+
+(coming soon)
