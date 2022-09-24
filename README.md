@@ -90,7 +90,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 ![norns screen page MIX documentation image](lib/doc/ndls_MIX.png)
 
 - **old:** volume of old material when overdubbing (i.e. obverdub level/feedback level). high levels are loop-like, low levels are delay-like.
-- **vol:** output level
+- **vol:** output level. on arc, all four tracks are available at once.
 - **pan:** output panning
 
 ### page 2: WINDOW
