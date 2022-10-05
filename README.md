@@ -127,3 +127,7 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 - alt punch outs
 - glides (rate + presets)
 - advanced send & return modes
+
+## roadmap
+
+[read here](https://github.com/users/andr-ew/projects/3/views/1)
