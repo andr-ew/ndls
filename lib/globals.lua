@@ -60,7 +60,7 @@ end
 
 preset = { --[voice][buffer] = slice
     --TODO: depricate
-    set = function(s, n, b, v) 
+    set = function(s, n, b, v)
         local id = 'preset '..n..' buffer '..b
         params:set(id, v, true) 
         params:lookup_param(id):bang()

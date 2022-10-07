@@ -327,6 +327,8 @@ function metaparam:add_preset_param(t, b, p)
     params:add(args)
 end
 
+--FIXME: banging mappables on load sets base values to the wrong value
+--       ideally these should not bang on load & values should not persist between sessions
 function metaparam:add_mappable_param(t)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end

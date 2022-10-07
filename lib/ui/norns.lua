@@ -75,7 +75,7 @@ local function App()
         
         local _rand_wind = Text.key.trigger()
         local rand_wind = multipattern.wrap_set(
-            mpat, 'window'..args.voice..'_x', function(target) wparams:randomize(n, target) end
+            mpat, 'window'..args.voice..'_x', function(target) wparams:randomize(voice, target) end
         )
 
         return function(props)

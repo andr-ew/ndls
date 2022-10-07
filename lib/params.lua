@@ -117,7 +117,8 @@ end
 -- add mappable params
 params:add_separator('base values')
 for i = 1, voices do 
-    params:add_group('track '..i, 6 + buffers + mparams:mappable_params_count(i))
+    --params:add_group('track '..i, 6 + buffers + mparams:mappable_params_count(i))
+    params:add_group('track '..i, 6 + buffers)
 
     params:add{
         name = 'rec', id = 'rec '..i,
@@ -163,7 +164,7 @@ for i = 1, voices do
         end
     }
 
-    mparams:add_mappable_params(i)
+    --mparams:add_mappable_params(i) --fix these
 
     -- TODO: wparam mappables
 
