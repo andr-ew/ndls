@@ -1,3 +1,5 @@
+local non_persistent = {}
+
 -- add metaparams
 do
     local mult = function(self, a, b, c)
@@ -117,8 +119,7 @@ end
 -- add mappable params
 params:add_separator('base values')
 for i = 1, voices do 
-    --params:add_group('track '..i, 6 + buffers + mparams:mappable_params_count(i))
-    params:add_group('track '..i, 6 + buffers)
+    params:add_group('track '..i, 6 + buffers + mparams:mappable_params_count(i))
 
     params:add{
         name = 'rec', id = 'rec '..i,
@@ -164,7 +165,11 @@ for i = 1, voices do
         end
     }
 
-    --mparams:add_mappable_params(i) --fix these
+    do
+        local ids = mparams:add_mappable_params(i)
+
+        for _,id in ipairs(ids) do table.insert(non_persistent, id) end
+    end
 
     -- TODO: wparam mappables
 
@@ -496,3 +501,19 @@ do
     --TODO: rate glide enable/disable
 end
 
+local function params_read()
+    params:read()
+end
+
+--note: this is modified upstream code from params.bang
+local function params_bang()
+    for _,v in pairs(params.params) do
+        if v.t ~= params.tTRIGGER and not (v.t == params.tBINARY and v.behavior == 'trigger') then
+            if not tab.contains(non_persistent, v.id) then
+                v:bang()
+            end
+        end
+    end
+end
+
+return params_read, params_bang

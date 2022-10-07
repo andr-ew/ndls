@@ -327,8 +327,6 @@ function metaparam:add_preset_param(t, b, p)
     params:add(args)
 end
 
---FIXME: banging mappables on load sets base values to the wrong value
---       ideally these should not bang on load & values should not persist between sessions
 function metaparam:add_mappable_param(t)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
@@ -343,6 +341,8 @@ function metaparam:add_mappable_param(t)
     end
 
     params:add(args)
+
+    return args.id
 end
 
 function metaparam:add_random_range_params()
@@ -466,7 +466,13 @@ end
 
 function metaparams:mappable_params_count(t) return #self.list end
 function metaparams:add_mappable_params(t)
-    for _,m in ipairs(self.list) do m:add_mappable_param(t) end
+    local ids = {}
+    for _,m in ipairs(self.list) do 
+        local id = m:add_mappable_param(t) 
+        table.insert(ids, id)
+    end
+
+    return ids
 end
 
 function metaparams:random_range_params_count()

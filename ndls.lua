@@ -52,16 +52,16 @@ cartographer, Slice = include 'lib/cartographer/cartographer'
 
 --script files
 
-metaparams = include 'ndls/lib/metaparams'         --abstraction around params
-windowparams = include 'ndls/lib/windowparams'     --abstraction around params
-include 'ndls/lib/globals'                         --global variables
-sc, reg = include 'ndls/lib/softcut'               --softcut utilities
-include 'ndls/lib/params'                          --create (meta)params
-Components = include 'ndls/lib/ui/components'      --UI components
+metaparams = include 'ndls/lib/metaparams'             --abstraction around params
+windowparams = include 'ndls/lib/windowparams'         --abstraction around params
+include 'ndls/lib/globals'                             --global variables
+sc, reg = include 'ndls/lib/softcut'                   --softcut utilities
+params_read, params_bang = include 'ndls/lib/params'   --create (meta)params
+Components = include 'ndls/lib/ui/components'          --UI components
 App = {}
-App.grid = include 'ndls/lib/ui/grid'              --grid UI
-App.arc = include 'ndls/lib/ui/arc'                --arc UI
-App.norns = include 'ndls/lib/ui/norns'            --norns UI
+App.grid = include 'ndls/lib/ui/grid'                  --grid UI
+App.arc = include 'ndls/lib/ui/arc'                    --arc UI
+App.norns = include 'ndls/lib/ui/norns'                --norns UI
 
 --set up nest v2 UI
 
@@ -90,11 +90,11 @@ nest.connect_screen(_app.norns, fps.screen)
 function init()
     sc.init()
 
-    params:read()
+    params_read()
 
     sc.read()
 
-    params:bang()
+    params_bang()
     pattern_read()
 end
 
