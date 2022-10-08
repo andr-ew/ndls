@@ -153,6 +153,7 @@ function metaparam:new(args)
     return m
 end
 
+--TODO: add a callback assignment, same as reset/set_reset
 -- function metaparam:set_randomize(func)
 --     self.args.randomize = func
 -- end
@@ -251,6 +252,7 @@ function metaparam:get(track, scope)
             self.modulation()
         )
     elseif scope == 'base' then
+        --TODO: sum with mappable value
         return params:get(self.base_id[track][b])
     elseif scope == 'preset' then
         return params:get(self.preset_id[track][b][p])
@@ -335,9 +337,9 @@ function metaparam:add_mappable_param(t)
     args.name = self.args.id
     args.controlspec = self.args.cs_base
     args.action = function(v)
-        for b = 1,buffers do
-            params:set(self.base_id[t][b], v)
-        end
+        -- for b = 1,buffers do
+        --     params:set(self.base_id[t][b], v)
+        -- end
     end
 
     params:add(args)
@@ -345,6 +347,7 @@ function metaparam:add_mappable_param(t)
     return args.id
 end
 
+--TODO: move this out of the class to account for custom randomize callbacks
 function metaparam:add_random_range_params()
     params:add_separator(self.args.id)
 

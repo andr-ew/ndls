@@ -56,7 +56,7 @@ metaparams = include 'ndls/lib/metaparams'             --abstraction around para
 windowparams = include 'ndls/lib/windowparams'         --abstraction around params
 include 'ndls/lib/globals'                             --global variables
 sc, reg = include 'ndls/lib/softcut'                   --softcut utilities
-params_read, params_bang = include 'ndls/lib/params'   --create (meta)params
+include 'ndls/lib/params'                              --create (meta)params
 Components = include 'ndls/lib/ui/components'          --UI components
 App = {}
 App.grid = include 'ndls/lib/ui/grid'                  --grid UI
@@ -87,20 +87,23 @@ nest.connect_screen(_app.norns, fps.screen)
 
 --init/cleanup
 
+local default_slot = 1
+local last_session_slot = 2
+
 function init()
     sc.init()
 
-    params_read()
-
-    sc.read()
-
-    params_bang()
-    pattern_read()
+    --params_bang()
+    if util.file_exists(
+        norns.state.data..norns.state.shortname..'-'..string.format("%02d", default_slot)..'.pset'
+    ) then
+        params:read(default_slot)
+    else
+        params:bang()
+        params:write(default_slot, 'default')
+    end
 end
 
 function cleanup()
-    params:write()
-
-    sc.write()
-    pattern_write()
+    params:write(last_session_slot, 'last session')
 end

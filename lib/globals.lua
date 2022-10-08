@@ -88,9 +88,9 @@ preset = { --[voice][buffer] = slice
     end
 }
 
---TODO: read & write based on pset #, call on params.action_read/action_write
 do
-    function pattern_write()
+    function pattern_write(slot)
+        local name = 'pset-'..string.format("%02d", slot)
         local data = {
             pattern = {},
             pattern_states = pattern_states,
@@ -107,10 +107,14 @@ do
             data.pattern[i] = d
         end
 
-        tab.save(data, norns.state.data..'patterns.data')
+        local fname = norns.state.data..name..'.data'
+        tab.save(data, fname)
     end
-    function pattern_read()
-        local data = tab.load(norns.state.data..'patterns.data')
+    function pattern_read(slot)
+        local name = 'pset-'..string.format("%02d", slot)
+        local fname = norns.state.data..name..'.data'
+        local data = tab.load(fname)
+
         if data then
             pattern_states = data.pattern_states
 
@@ -126,6 +130,27 @@ do
         end
     end
 end
+
+local function action_read(file, name, slot)
+    print('pset read', file, name, slot)
+    sc.read(slot)
+
+    params:bang()
+
+    pattern_read(slot)
+end
+local function action_write(file, name, slot)
+    sc.write(slot)
+
+    pattern_write(slot)
+end
+local function action_delete(file, name, slot)
+    --TODO: delete files
+end
+
+params.action_read = action_read
+params.action_write = action_write
+params.action_delete = action_delete
 
 fps = { grid = 30, arc = 90, screen = 30, patrol = 30 }
 

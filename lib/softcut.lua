@@ -190,12 +190,11 @@ sc.init = function()
 end
 
 do
-    --TODO: read & write based on pset #, call on params.action_read/action_write
-
     local pfx = 'ndls_buffer_'
 
-    sc.write = function()
-        local dir = norns.state.path..'audio/ndls/ndls/'
+    sc.write = function(slot)
+        local name = 'pset-'..string.format("%02d", slot)
+        local dir = _path.audio..'ndls/'..name..'/'
 
         if not util.file_exists(dir) then
             util.make_dir(dir)
@@ -209,8 +208,16 @@ do
             end
         end
     end
-    sc.read = function()
-        local dir = norns.state.path..'audio/ndls/ndls/'
+    sc.read = function(slot)
+        for i = 1, voices do
+            params:set('rec '..i, 0) 
+        end
+        for b = 1,buffers do
+            sc.punch_in:clear(b)
+        end
+
+        local name = 'pset-'..string.format("%02d", slot)
+        local dir = _path.audio..'ndls/'..name..'/'
 
         local loaded = {}
         for b = 1,buffers do
@@ -225,6 +232,10 @@ do
         for i = 1, voices do
             if not loaded[sc.buffer[i]] then
                 params:set('rec '..i, 0)
+            end
+
+            for b = 1, buffers do
+                preset:update(i, b)
             end
         end
     end
