@@ -1,7 +1,7 @@
 -- add metaparams
 do
     local mult = function(self, a, b, c)
-        return a * (b + c)
+        return a * b
     end
     --TODO: switch to decibels / exp
     mparams:add{
@@ -30,8 +30,9 @@ do
         id = 'old',
         type = 'control', 
         controlspec = cs.def{ default = 0.8, max = 1 },
-        cs_base = cs.def{ default = 0.8, max = 1 },
+        cs_mappable = cs.def{ default = 0.8, max = 1 },
         cs_preset = cs.def{ default = 1, max = 1 },
+        cs_base = cs.def{ default = 1, max = 1 },
         random_min_default = 0.5, random_max_default = 1,
         sum = mult,
         action = function(i, v)
@@ -42,6 +43,7 @@ do
     mparams:add{
         id = 'cut', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 1, quantum = 1/100/2, step = 0 },
+        cs_base = cs.def{ min = -1, max = 1, default = 0, quantum = 1/100/2/2, step = 0 },
         cs_preset = cs.def{ min = -1, max = 1, default = 0, quantum = 1/100/2/2, step = 0 },
         random_min_default = -0.5, random_max_default = 0,
         action = function(i, v)
@@ -52,6 +54,7 @@ do
     mparams:add{
         id = 'q', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 0.4 },
+        cs_base = cs.def{ min = -1, max = 1, default = 0 },
         cs_preset = cs.def{ min = -1, max = 1, default = 0 },
         random_min_default = -0.3, random_max_default = 0.3,
         action = function(i, v)
@@ -70,7 +73,8 @@ do
     }
     mparams:add{
         id = 'loop',
-        type = 'binary', behavior = 'toggle', default = 1, default_preset = 0,
+        type = 'binary', behavior = 'toggle', 
+        default = 1, default_preset = 0, default_base = 0,
         action = function(n, v)
             sc.loopmx[n].loop = v; sc.loopmx:update(n)
 
@@ -83,9 +87,10 @@ do
         type = 'number', 
         min = -7, max = 2, default = 0, 
         min_preset = -9, max_preset = 9, default_preset = 0,
+        min_base = -9, max_base = 9, default_base = 0,
         random_min_default = -1, random_max_default = 1,
-        unsum = function(self, sum, b, c)
-            return sum - b - c
+        unsum = function(self, sum, a)
+            return sum - a
         end,
         action = function(i, v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
@@ -95,6 +100,7 @@ do
     mparams:add{
         id = 'rev',
         type = 'binary', behavior = 'toggle',
+        default = 0, default_preset = 0, default_base = 0,
         action = function(i, v) 
             sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
             nest.grid.make_dirty()
@@ -280,7 +286,6 @@ do
             }
         end
 
-        --TODO: preset resets, add 'none' in most cases
         do
             local id = 'old'
             params:add_separator(id)
@@ -291,8 +296,8 @@ do
             )
             add_reset_param(
                 id, 'base',
-                { 'none', 'default value' },
-                { metaparams.resets.none, metaparams.resets.default }
+                { 'default value', 'none',  },
+                { metaparams.resets.default, metaparams.resets.none }
             )
         end
         do
@@ -316,8 +321,8 @@ do
 
             add_reset_param(
                 id, 'base',
-                { 'none', 'default value', 'low (all buffers)', 'low (other buffers)' },
-                { windowparams.resets.none, windowparams.resets.default, low_all, low_other }
+                { 'default value', 'low (all buffers)', 'low (other buffers)', 'none' },
+                {  windowparams.resets.default, low_all, low_other, windowparams.resets.none }
             )
         end
         do
@@ -330,8 +335,8 @@ do
             )
             add_reset_param(
                 id, 'base',
-                { 'none', 'default value' },
-                { metaparams.resets.none, metaparams.resets.default }
+                { 'default value', 'none',  },
+                { metaparams.resets.default, metaparams.resets.none }
             )
         end
         do
@@ -344,8 +349,8 @@ do
             )
             add_reset_param(
                 id, 'base',
-                { 'none', 'default value' },
-                { metaparams.resets.none, metaparams.resets.default }
+                { 'default value', 'none',  },
+                { metaparams.resets.default, metaparams.resets.none }
             )
         end
         do

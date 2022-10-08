@@ -123,13 +123,14 @@ local function App(args)
             end
 
             return function() 
+                local scope = (nest.is_drawing() or set_sum) and 'base_sum' or 'base'
                 for n,_vol in ipairs(_vols) do
                     _vol{
                         n = n,
                         sens = 0.25, max = 2.5, cycle = 1.5,
                         state = {
-                            mparams:get(n, 'vol', 'base'),
-                            mparams:get_setter(n, 'vol', 'base', true)
+                            mparams:get(n, 'vol', scope),
+                            mparams:get_setter(n, 'vol', scope, true)
                         },
                         lvl = view.track == n and 15 or 4,
                     }
