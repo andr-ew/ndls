@@ -41,9 +41,9 @@ local function App()
             local scope = mparams_scope(props.voice, props.id)
             _ctl{
                 n = props.n, x = e[props.n].x, y = e[props.n].y,
-                --label = (scope == 'base') and string.upper(props.id) or props.id, 
+                --label = (scope == 'base_sum') and string.upper(props.id) or props.id, 
                 label = props.id,
-                lvl = { (scope == 'base') and 8 or 4, 16 },
+                lvl = { (scope == 'base_sum') and 8 or 4, 16 },
                 state = of_mparam(props.voice, props.id),
                 controlspec = mparams:get_controlspec(props.id, scope),
             }
@@ -57,7 +57,10 @@ local function App()
         )
 
         return function(props)
-            if mparams_scope(args.voice, args.id) ~= 'base' then
+            if 
+                mparams_scope(args.voice, args.id) ~= 'base_sum' 
+                or mparams_scope(args.voice, args.id) ~= 'base' 
+            then
                 _rand{
                     label = 'x', n = props.n,
                     y = k[props.n].y, x = k[props.n].x,
@@ -176,7 +179,7 @@ local function App()
                     local options = mparams:get_options('type')
                     _typ{
                         label = 'type', 
-                        lvl = { (mparams_scope(n, 'type') == 'base') and 8 or 4, 16 },
+                        lvl = { (mparams_scope(n, 'type') == 'base_sum') and 8 or 4, 16 },
                         n = 3, y = e[3].y, x = e[3].x, 
                         min = 1, step = 1, inc = 1, max = #options,
                         formatter = function(v) return options[v] end,

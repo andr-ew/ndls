@@ -93,8 +93,9 @@ local last_session_slot = 2
 function init()
     sc.init()
 
-    --params_bang()
-    if util.file_exists(
+    if 
+        false and --for testing
+        util.file_exists(
         norns.state.data..norns.state.shortname..'-'..string.format("%02d", default_slot)..'.pset'
     ) then
         params:read(default_slot)

@@ -8,18 +8,18 @@ function metaparam:new(args)
     m.random_max_id = args.id..'_random_max'
 
     if args.type == 'control' then
+        args.cs_mappable = args.cs_mappable or args.controlspec
         args.cs_base = args.cs_base or args.controlspec
         args.cs_preset = args.cs_preset or args.controlspec
 
-        args.sum = args.sum or function(self, a, b, c)
+        args.sum = args.sum or function(self, a, b)
             return self.args.controlspec:map(
-                self.args.controlspec:unmap(a + b + c)
+                self.args.controlspec:unmap(a + b)
             )
         end
 
         args.random_min_default = args.random_min_default or args.cs_preset.minval
         args.random_max_default = args.random_max_default or args.cs_preset.maxval
-        --TODO: probabalility ? i.e. probablility of being not default
         args.randomize = function(self, param_id, silent)
             local min = math.min(
                 params:get_raw(m.random_min_id), params:get_raw(m.random_max_id)
@@ -32,15 +32,18 @@ function metaparam:new(args)
             params:set_raw(param_id, rand, silent)
         end
     elseif args.type == 'number' then
+        args.min_mappable = args.min_mappable or args.min
         args.min_base = args.min_base or args.min
         args.min_preset = args.min_preset or args.min
+        args.max_mappable = args.max_mappable or args.max
         args.max_base = args.max_base or args.max
         args.max_preset = args.max_preset or args.max
+        args.default_mappable = args.default_mappable or args.default
         args.default_base = args.default_base or args.default
         args.default_preset = args.default_preset or args.default
 
-        args.sum = args.sum or function(self, a, b, c)
-            return util.clamp(a + b + math.floor(c), self.args.min, self.args.max)
+        args.sum = args.sum or function(self, a, b)
+            return util.clamp(a + b, self.args.min, self.args.max)
         end
 
         args.random_min_default = args.random_min_default or args.min_preset
@@ -57,9 +60,9 @@ function metaparam:new(args)
             params:set(param_id, rand, silent)
         end
     elseif args.type == 'option' then
-        args.sum = args.sum or function(self, a, b, c)
-            local cc = util.clamp(math.floor(c), 0, #self.args.options)
-            return util.wrap(a + b + cc - 1, 1, #self.args.options)
+        args.sum = args.sum or function(self, a, b)
+            --local cc = util.clamp(math.floor(c), 0, #self.args.options) + 1
+            return util.wrap(a + b - 1, 1, #self.args.options)
         end
 
         args.randomize = function(self, param_id, silent)
@@ -70,11 +73,12 @@ function metaparam:new(args)
             params:set(param_id, rand, silent)
         end
     elseif args.type == 'binary' then
+        args.default_mappable = args.default_mappable or args.default
         args.default_base = args.default_base or args.default
         args.default_preset = args.default_preset or args.default
 
-        args.sum = args.sum or function(self, a, b, c)
-            return (a + b + math.floor(c)) % 2
+        args.sum = args.sum or function(self, a, b)
+            return (a + b) % 2
         end
         
         args.randomize = function(self, param_id, silent)
@@ -86,7 +90,7 @@ function metaparam:new(args)
     end
     
     args.reset = {
-        base = metaparams.resets.none,
+        base = metaparams.resets.default,
         preset = metaparams.resets.default,
     }
     -- args.randomize = function(self, p_id, silent) end
@@ -165,7 +169,6 @@ function metaparam:randomize(t, b, p, silent)
     self.args.randomize(self, p_id, silent, t, b, p)
 end
 
-
 metaparams.resets = {
     none = function() end,
     default = function(self, param_id)
@@ -228,12 +231,32 @@ function metaparam:set(track, scope, v, ignore_pattern)
     --local p = sc.slice:get(track)
 
     if scope == 'sum' then
-        self:get_setter(track, 'preset', ignore_pattern)(self.args.unsum(
-            self, 
-            v,
-            params:get(self.base_id[track][b]),
-            self.modulation()
-        ))
+        self:get_setter(track, 'preset', ignore_pattern)(
+            -- self.args.unsum(self,
+            --     self.modulation(),
+            --     self.args.unsum(self,
+            --         params:get(self.base_id[track][b]),    
+            --         self.args.unsum(self,
+            --             params:get(self.mappable_id[track]),
+            --             v
+            --         )
+            --     )
+            -- )
+            self.args.unsum(self,
+                params:get(self.base_id[track][b]),    
+                self.args.unsum(self,
+                    params:get(self.mappable_id[track]),
+                    v
+                )
+            )
+        )
+    elseif scope == 'base_sum' then
+        self:get_setter(track, 'preset', ignore_pattern)(
+            self.args.unsum(self,
+                params:get(self.mappable_id[track]),
+                v
+            )
+        )
     else
         self:get_setter(track, scope, ignore_pattern)(v)
     end
@@ -245,14 +268,29 @@ function metaparam:get(track, scope)
     local p = sc.slice:get(track)
 
     if scope == 'sum' then
-        return self.args.sum(
-            self, 
-            params:get(self.base_id[track][b]),
+        -- return self.args.sum(self,
+        --     self.modulation(),
+        --     self.args.sum(self,
+        --         params:get(self.preset_id[track][b][p]),
+        --         self.args.sum(self,
+        --             params:get(self.base_id[track][b]),    
+        --             params:get(self.mappable_id[track])
+        --         )
+        --     )
+        -- )
+        return self.args.sum(self,
             params:get(self.preset_id[track][b][p]),
-            self.modulation()
+            self.args.sum(self,
+                params:get(self.base_id[track][b]),    
+                params:get(self.mappable_id[track])
+            )
+        )
+    elseif scope == 'base_sum' then
+        return self.args.sum(self,
+            params:get(self.base_id[track][b]),    
+            params:get(self.mappable_id[track])
         )
     elseif scope == 'base' then
-        --TODO: sum with mappable value
         return params:get(self.base_id[track][b])
     elseif scope == 'preset' then
         return params:get(self.preset_id[track][b][p])
@@ -305,11 +343,26 @@ function metaparam:add_base_param(t, b)
     end
     args.action = function() self:bang(t) end
     
-    print(args.id, t, b)
-
     params:add(args)
 end
+function metaparam:add_mappable_param(t)
+    local args = {}
+    for k,v in pairs(self.args) do args[k] = v end
 
+    args.id = self.mappable_id[t]
+    if args.type == 'control' then
+        args.controlspec = self.args.cs_mappable
+    elseif args.type == 'number' then
+        args.min = self.args.min_mappable
+        args.max = self.args.max_mappable
+        args.default = self.args.default_mappable
+    elseif args.type == 'binary' then
+        args.default = self.args.default_mappable
+    end
+    args.action = function() self:bang(t) end
+    
+    params:add(args)
+end
 function metaparam:add_preset_param(t, b, p)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
@@ -327,24 +380,6 @@ function metaparam:add_preset_param(t, b, p)
     args.action = function() self:bang(t) end
 
     params:add(args)
-end
-
-function metaparam:add_mappable_param(t)
-    local args = {}
-    for k,v in pairs(self.args) do args[k] = v end
-
-    args.id = self.args.id..'_'..t
-    args.name = self.args.id
-    args.controlspec = self.args.cs_base
-    args.action = function(v)
-        -- for b = 1,buffers do
-        --     params:set(self.base_id[t][b], v)
-        -- end
-    end
-
-    params:add(args)
-
-    return args.id
 end
 
 --TODO: move this out of the class to account for custom randomize callbacks

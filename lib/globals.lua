@@ -46,7 +46,7 @@ function mparams_scope(track, id, set_sum)
     end
 
     if base then
-        return 'base'
+        return (nest.is_drawing() or set_sum) and 'base_sum' or 'base'
     else
         return (nest.is_drawing() or set_sum) and 'sum' or 'preset'
     end
