@@ -129,6 +129,10 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 - glides (rate + presets)
 - advanced send & return modes
 
+## saving sessions
+
+u can save & load full sessions via the PSET menu. saves all data, buffer audio, and patterns. yay! additionally, your last session is auto-saved to the "last session" pset every time you exit the app.
+
 ## roadmap
 
 [read here](https://github.com/users/andr-ew/projects/3/views/1)
