@@ -45,13 +45,8 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
   - 3 - while the **buffer** is non-blank, **rec** sets the overdub state
   - 4 - **reset:** hold the **rec** key to reset the active buffer of the track. this will clear buffer audio and reset any/all data.
 - **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
-  - **quick delay:** on a blank **buffer**, tap **rec**, then **loop** to begin looping _without_ disabling overdubs, effectively turning the track into a delay.
-    - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
-    - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
 - **preset:** 1 default preset + 8 randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [metaparams](#metaparams) for advanced info.
-  - **quick one-shot:** on a blank **buffer**, tap **rec** to begin a new recording, then tap any **preset** key to end recording & play a one-shot sample based on that preset.
-
 
 ### top half
 
@@ -83,7 +78,6 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 the norns screen/encoders/keys + arc are paginated using the top left section of the grid. there are four pages for each of the four tracks. each page contains [metaparams](#metaparams).
 - **E1 - E3:** edit metaparam
 - **K2 - K3:** (**x**) randomize metaparam
-- **K3 (hold):** set **alt** state. see [metaparams](#metaparams) for more info.
 - **arc:** edit metaparams
 
 ### page 1: MIX
@@ -114,8 +108,6 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 
 ![norns screen page LFO documentation image](lib/doc/ndls_LFO.png)
 
-(coming soon)
-
 ## metaparams
 
 (diagram)
@@ -124,15 +116,6 @@ the norns screen/encoders/keys + arc are paginated using the top left section of
 
 (coming soon)
 
-## (consider another heading for advanced gestures)
-- alt punch outs
-- glides (rate + presets)
-- advanced send & return modes
-
 ## saving sessions
 
 u can save & load full sessions via the PSET menu. saves all data, buffer audio, and patterns. yay! additionally, your last session is auto-saved to the "last session" pset every time you exit the app.
-
-## roadmap
-
-[read here](https://github.com/users/andr-ew/projects/3/views/1)
