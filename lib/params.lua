@@ -8,7 +8,7 @@ do
         id = 'vol',
         type = 'control', controlspec = cs.def{ default = 1, max = 2.5 },
         random_min_default = 0.5, random_max_default = 1.5,
-        sum = mult,
+        default_scope = 'track',
         action = function(i, v)
             sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -20,6 +20,7 @@ do
         controlspec = cs.def{ 
             min = -1, max = 1, default = 0,
         },
+        default_scope = 'track',
         random_min_default = -1, random_max_default = 1,
         action = function(i, v)
             sc.panmx[i].pan = v; sc.panmx:update(i)
@@ -30,11 +31,8 @@ do
         id = 'old',
         type = 'control', 
         controlspec = cs.def{ default = 0.8, max = 1 },
-        cs_mappable = cs.def{ default = 0.8, max = 1 },
-        cs_preset = cs.def{ default = 1, max = 1 },
-        cs_base = cs.def{ default = 1, max = 1 },
         random_min_default = 0.5, random_max_default = 1,
-        sum = mult,
+        default_scope = 'track',
         action = function(i, v)
             sc.oldmx[i].old = v; sc.oldmx:update(i)
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -43,9 +41,8 @@ do
     mparams:add{
         id = 'cut', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 1, quantum = 1/100/2, step = 0 },
-        cs_base = cs.def{ min = -1, max = 1, default = 0, quantum = 1/100/2/2, step = 0 },
-        cs_preset = cs.def{ min = -1, max = 1, default = 0, quantum = 1/100/2/2, step = 0 },
         random_min_default = -0.5, random_max_default = 0,
+        default_scope = 'track',
         action = function(i, v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -54,9 +51,8 @@ do
     mparams:add{
         id = 'q', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 0.4 },
-        cs_base = cs.def{ min = -1, max = 1, default = 0 },
-        cs_preset = cs.def{ min = -1, max = 1, default = 0 },
         random_min_default = -0.3, random_max_default = 0.3,
+        default_scope = 'track',
         action = function(i, v)
             softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
             nest.screen.make_dirty(); nest.arc.make_dirty()
@@ -65,6 +61,7 @@ do
     local types = { 'lp', 'bp', 'hp', 'dry' }
     mparams:add{
         id = 'type', type = 'option', options = types, 
+        default_scope = 'track',
         action = function(i, v)
             for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
             softcut['post_filter_'..types[v]](i, 1)
@@ -74,7 +71,8 @@ do
     mparams:add{
         id = 'loop',
         type = 'binary', behavior = 'toggle', 
-        default = 1, default_preset = 0, default_base = 0,
+        default = 1, 
+        default_scope = 'preset',
         action = function(n, v)
             sc.loopmx[n].loop = v; sc.loopmx:update(n)
 
@@ -86,12 +84,8 @@ do
         id = 'rate',
         type = 'number', 
         min = -7, max = 2, default = 0, 
-        min_preset = -9, max_preset = 9, default_preset = 0,
-        min_base = -9, max_base = 9, default_base = 0,
         random_min_default = -1, random_max_default = 1,
-        unsum = function(self, sum, a)
-            return sum - a
-        end,
+        default_scope = 'preset',
         action = function(i, v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
             nest.grid.make_dirty()
@@ -100,17 +94,19 @@ do
     mparams:add{
         id = 'rev',
         type = 'binary', behavior = 'toggle',
-        default = 0, default_preset = 0, default_base = 0,
+        default = 0,
+        default_scope = 'preset',
         action = function(i, v) 
             sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
             nest.grid.make_dirty()
         end
     }
 
-    --TODO: build into rate mparam slew data
+    --TODO: build into rate mparam slew data or just hide
     mparams:add{
         id = 'rate_slew', type = 'control', 
         controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
+        default_scope = 'preset',
         action = function(i, v)
             sc.slew(i, v)
         end
@@ -119,6 +115,8 @@ do
     --TODO: send/return as single metaparam (option type)
     --TODO: rec overdub flag
 end
+
+--------- TODO new menu layout -------------
 
 -- add mappable params
 params:add_separator('base values')
