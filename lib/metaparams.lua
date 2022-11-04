@@ -2,8 +2,7 @@ local metaparam = {}
 local metaparams = {}
 
 local scopes = { 'global', 'track', 'preset' }
-
-metaparams.scopes = scopes
+local sepocs = tab.invert(scopes)
 
 function metaparam:new(args)
     local m = setmetatable({}, { __index = self })
@@ -55,6 +54,8 @@ function metaparam:new(args)
             params:set(param_id, rand, silent)
         end
     end
+    
+    args.default_scope = args.default_scope or 'track'
 
     args.action = args.action or function() end
     
@@ -209,6 +210,7 @@ function metaparam:add_global_param()
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.global_id
+    args.name = args.id
     args.action = function() 
         for i = 1, tracks do
             self:bang(t) 
@@ -222,6 +224,7 @@ function metaparam:add_track_param(t)
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.track_id[t]
+    args.name = args.id
     args.action = function() self:bang(t) end
     
     params:add(args)
@@ -231,9 +234,23 @@ function metaparam:add_preset_param(t, b, p)
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.preset_id[t][b][p]
+    args.name = args.id
     args.action = function() self:bang(t) end
 
     params:add(args)
+end
+
+function metaparam:add_scope_param()
+    params:add{
+        name = id, id = self.scope_id, type = 'option',
+        options = scopes, default = sepocs[self.args.default_scope],
+        action = function()
+            for i = 1, tracks do
+                self:bang(t) 
+            end
+        end,
+        allow_pmap = false,
+    }
 end
 
 function metaparam:add_random_range_params()
@@ -334,19 +351,21 @@ function metaparams:add_global_params()
         local id = m:add_global_param() 
     end
 end
-function metaparams:track_params_count() return #self.list * tracks end
+function metaparams:track_params_count() return (#self.list + 1) * tracks end
 function metaparams:add_track_params()
     for t = 1, tracks do
+        params:add_separator('track '..t)
         for _,m in ipairs(self.list) do
             m:add_track_param(t)
         end
     end
 end
-function metaparams:preset_params_count() return #self.list * tracks * buffers * presets end
+function metaparams:preset_params_count() return (#self.list + 1) * tracks * buffers * presets end
 function metaparams:add_preset_params()
     for t = 1, tracks do
         for b = 1,buffers do
             for p = 1, presets do
+                params:add_separator('track '..t..', buffer '..b..', preset '..p)
                 for _,m in ipairs(self.list) do
                     m:add_preset_param(t, b, p)
                 end
@@ -355,6 +374,12 @@ function metaparams:add_preset_params()
     end
 end
 
+function metaparams:scope_params_count() return #self.list end
+function metaparams:add_scope_params()
+    for _,m in ipairs(self.list) do 
+        local id = m:add_scope_param() 
+    end
+end
 function metaparams:random_range_params_count()
     local n = 0
     for _,m in ipairs(self.list) do 
