@@ -3,44 +3,39 @@ local windowparams = {}
 function windowparams:new()
     local m = setmetatable({}, { __index = self })
 
-    m.modulation = {
-        st = function() return 0 end,
-        len = function() return 0 end
-    }
-
-    m.mappable_id = {}
-    for t = 1,tracks do
-        m.mappable_id[t] = {
-            win = (
-                'window'
-                ..'_track_'..t
-            ),
-            len = (
-                'length'
-                ..'_track_'..t
-            )
-        }
-    end
-    m.base_id = {}
-    for t = 1,tracks do
-        m.base_id[t] = {}
-        for b = 1,buffers do
-            m.base_id[t][b] = {
-                win = (
-                    'window'
-                    ..'_t'..t
-                    ..'_buf'..b
-                    ..'_base'
-                ),
-                len = (
-                    'length'
-                    ..'_t'..t
-                    ..'_buf'..b
-                    ..'_base'
-                )
-            }
-        end
-    end
+    -- m.mappable_id = {}
+    -- for t = 1,tracks do
+    --     m.mappable_id[t] = {
+    --         win = (
+    --             'window'
+    --             ..'_track_'..t
+    --         ),
+    --         len = (
+    --             'length'
+    --             ..'_track_'..t
+    --         )
+    --     }
+    -- end
+    -- m.base_id = {}
+    -- for t = 1,tracks do
+    --     m.base_id[t] = {}
+    --     for b = 1,buffers do
+    --         m.base_id[t][b] = {
+    --             win = (
+    --                 'window'
+    --                 ..'_t'..t
+    --                 ..'_buf'..b
+    --                 ..'_base'
+    --             ),
+    --             len = (
+    --                 'length'
+    --                 ..'_t'..t
+    --                 ..'_buf'..b
+    --                 ..'_base'
+    --             )
+    --         }
+    --     end
+    -- end
     m.preset_id = {}
     for t = 1,tracks do
         m.preset_id[t] = {}
@@ -101,7 +96,7 @@ function windowparams:bang(t)
     local b = sc.buffer[t]
     local p = sc.slice:get(t)
 
-    --TODO: sum with base vals, modulation
+    --TODO: track scope
     local st = params:get(self.preset_id[t][b][p].st)
     local en = params:get(self.preset_id[t][b][p].en)
 
@@ -205,18 +200,13 @@ windowparams.resets = {
     end
 }
 
-function windowparams:set_reset(scope, func)
-    self.reset_func = func
-end
-function windowparams:reset(t, b) --TODO: scope arg
+function windowparams:reset(t, b)
     for p = 1, presets do
         self.reset_func(self, t, b, p)
     end
     --self:bang(t) --bang happens via preset:reset()
 end
 
-function windowparams:get_base_setter(id, t)
-end
 function windowparams:get_preset_setter(id, track)
     local b = sc.buffer[track]
     local p = sc.slice:get(track)
@@ -225,8 +215,6 @@ function windowparams:get_preset_setter(id, track)
     elseif id == 'end' then
         return self.preset_setter_end[track][b][p]
     end
-end
-function windowparams:get_base(id, t)
 end
 function windowparams:get(id, track, units, abs)
     units = units or 'fraction'
@@ -247,62 +235,56 @@ local cs_base_len = cs.def{ min = -1, max = 1, default = 0 }
 local cs_preset_st = cs.def{ min = 0, max = 1, default = 0 }
 local cs_preset_en = cs.def{ min = 0, max = 1, default = 1 }
 
-function windowparams:base_params_count() return 2 * tracks * buffers end
-function windowparams:add_base_params()
-    for t = 1, tracks do
-        for b = 1,buffers do
-            params:add {
-                id = self.base_id[t][b].win,
-                type = 'control', controlspec = cs_base_win,
-                action = function() self:bang(t) end
-            }
-            params:add {
-                id = self.base_id[t][b].len,
-                type = 'control', controlspec = cs_base_len,
-                action = function() self:bang(t) end
-            }
-        end
-    end
-end
-function windowparams:preset_params_count() return 2 * tracks * buffers * presets end
-function windowparams:add_preset_params()
-    for t = 1, tracks do
-        for b = 1,buffers do
-            for p = 1, presets do
-                params:add{
-                    id = self.preset_id[t][b][p].st,
-                    type = 'control', controlspec = cs_preset_st,
-                    action = function() self:bang(t) end
-                }
-                params:add{
-                    id = self.preset_id[t][b][p].en,
-                    type = 'control', controlspec = cs_preset_en,
-                    action = function() self:bang(t) end
-                }
-            end
-        end
-    end
-end
-function windowparams:mappable_params_count() return 2 end
-function windowparams:add_mappable_params(t)
-    params:add {
-        id = self.mappable_id[t].win, name = 'window',
-        type = 'control', controlspec = cs_mappabe_win,
-        action = function(v)
-            for b = 1,buffers do
-                params:set(self.base_id[t][b].win, v)
-            end
-        end
+-- function windowparams:base_params_count() return 2 * tracks * buffers end
+-- function windowparams:add_base_params()
+--     for t = 1, tracks do
+--         for b = 1,buffers do
+--             params:add {
+--                 id = self.base_id[t][b].win,
+--                 type = 'control', controlspec = cs_base_win,
+--                 action = function() self:bang(t) end
+--             }
+--             params:add {
+--                 id = self.base_id[t][b].len,
+--                 type = 'control', controlspec = cs_base_len,
+--                 action = function() self:bang(t) end
+--             }
+--         end
+--     end
+-- end
+function windowparams:preset_params_count() return 2 end
+function windowparams:add_preset_params(t, b, p)
+    params:add{
+        id = self.preset_id[t][b][p].st, name = 'start',
+        type = 'control', controlspec = cs_preset_st,
+        action = function() self:bang(t) end
     }
-    params:add {
-        id = self.mappable_id[t].len, name = 'length',
-        type = 'control', controlspec = cs_mappabe_len,
-        action = function(v)
-            for b = 1,buffers do
-                params:set(self.base_id[t][b].en, v)
-            end
-        end
+    params:add{
+        id = self.preset_id[t][b][p].en, name = 'end',
+        type = 'control', controlspec = cs_preset_en,
+        action = function() self:bang(t) end
     }
 end
+-- function windowparams:mappable_params_count() return 2 end
+-- function windowparams:add_mappable_params(t)
+--     params:add {
+--         id = self.mappable_id[t].win, name = 'window',
+--         type = 'control', controlspec = cs_mappabe_win,
+--         action = function(v)
+--             for b = 1,buffers do
+--                 params:set(self.base_id[t][b].win, v)
+--             end
+--         end
+--     }
+--     params:add {
+--         id = self.mappable_id[t].len, name = 'length',
+--         type = 'control', controlspec = cs_mappabe_len,
+--         action = function(v)
+--             for b = 1,buffers do
+--                 params:set(self.base_id[t][b].en, v)
+--             end
+--         end
+--     }
+-- end
 
 return windowparams

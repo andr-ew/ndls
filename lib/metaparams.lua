@@ -11,8 +11,8 @@ function metaparam:new(args)
     m.random_max_id = args.id..'_random_max'
 
     if args.type == 'control' then
-        args.random_min_default = args.random_min_default or args.cs_preset.minval
-        args.random_max_default = args.random_max_default or args.cs_preset.maxval
+        args.random_min_default = args.random_min_default or args.controlspec.minval
+        args.random_max_default = args.random_max_default or args.controlspec.maxval
         args.randomize = function(self, param_id, silent)
             local min = math.min(
                 params:get_raw(m.random_min_id), params:get_raw(m.random_max_id)
@@ -75,7 +75,7 @@ function metaparam:new(args)
     for t = 1,tracks do
         local id = (
             args.id
-            ..'_track'..t
+            ..'_track_'..t
         )
         m.track_id[t] = id
         m.track_setter[t] = multipattern.wrap_set(
@@ -205,14 +205,16 @@ function metaparam:bang(track)
     self.args.action(track, self:get(track))
 end
 
+--TODO: hide & show params based on active scope
+
 function metaparam:add_global_param()
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.global_id
-    args.name = args.id
+    args.name = self.args.id
     args.action = function() 
-        for i = 1, tracks do
+        for t = 1, tracks do
             self:bang(t) 
         end
     end
@@ -224,7 +226,7 @@ function metaparam:add_track_param(t)
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.track_id[t]
-    args.name = args.id
+    args.name = self.args.id
     args.action = function() self:bang(t) end
     
     params:add(args)
@@ -234,7 +236,7 @@ function metaparam:add_preset_param(t, b, p)
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.preset_id[t][b][p]
-    args.name = args.id
+    args.name = self.args.id
     args.action = function() self:bang(t) end
 
     params:add(args)
@@ -242,10 +244,10 @@ end
 
 function metaparam:add_scope_param()
     params:add{
-        name = id, id = self.scope_id, type = 'option',
+        name = self.args.id, id = self.scope_id, type = 'option',
         options = scopes, default = sepocs[self.args.default_scope],
         action = function()
-            for i = 1, tracks do
+            for t = 1, tracks do
                 self:bang(t) 
             end
         end,
@@ -265,7 +267,7 @@ function metaparam:add_random_range_params()
     params:add{
         id = self.random_min_id, type = self.args.type, name = 'min',
         controlspec = self.args.type == 'control' and cs.def{
-            min = self.args.cs_preset.minval, max = self.args.cs_preset.maxval, 
+            min = self.args.controlspec.minval, max = self.args.controlspec.maxval, 
             default = self.args.random_min_default
         },
         min = min, max = max, default = self.args.type == 'number' and self.args.random_min_default,
@@ -274,7 +276,7 @@ function metaparam:add_random_range_params()
     params:add{
         id = self.random_max_id, type = self.args.type, name = 'max',
         controlspec = self.args.type == 'control' and cs.def{
-            min = self.args.cs_preset.minval, max = self.args.cs_preset.maxval, 
+            min = self.args.controlspec.minval, max = self.args.controlspec.maxval, 
             default = self.args.random_max_default
         },
         min = min, max = max, default = self.args.type == 'number' and self.args.random_max_default,
@@ -348,29 +350,19 @@ end
 function metaparams:global_params_count() return #self.list end
 function metaparams:add_global_params()
     for _,m in ipairs(self.list) do 
-        local id = m:add_global_param() 
+        m:add_global_param() 
     end
 end
-function metaparams:track_params_count() return (#self.list + 1) * tracks end
-function metaparams:add_track_params()
-    for t = 1, tracks do
-        params:add_separator('track '..t)
-        for _,m in ipairs(self.list) do
-            m:add_track_param(t)
-        end
+function metaparams:track_params_count() return #self.list end
+function metaparams:add_track_params(t)
+    for _,m in ipairs(self.list) do
+        m:add_track_param(t)
     end
 end
-function metaparams:preset_params_count() return (#self.list + 1) * tracks * buffers * presets end
-function metaparams:add_preset_params()
-    for t = 1, tracks do
-        for b = 1,buffers do
-            for p = 1, presets do
-                params:add_separator('track '..t..', buffer '..b..', preset '..p)
-                for _,m in ipairs(self.list) do
-                    m:add_preset_param(t, b, p)
-                end
-            end
-        end
+function metaparams:preset_params_count() return #self.list end
+function metaparams:add_preset_params(t, b, p)
+    for _,m in ipairs(self.list) do
+        m:add_preset_param(t, b, p)
     end
 end
 

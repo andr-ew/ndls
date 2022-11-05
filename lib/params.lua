@@ -1,9 +1,10 @@
 -- add normal params
 do
-    params:add_separator('params')
+    params:add_separator('params_sep','params')
+    params:add_group('params', (6 + buffers + 1) * tracks)
 
     for i = 1, voices do 
-        params:add_group('track '..i, 6 + buffers)
+        params:add_separator('params_track_'..i, 'track '..i)
 
         params:add{
             name = 'rec', id = 'rec '..i,
@@ -229,11 +230,25 @@ do
     params:add_group('global', mparams:global_params_count())
     mparams:add_global_params()
 
-    params:add_group('track', mparams:track_params_count())
-    mparams:add_track_params()
-
-    params:add_group('preset', mparams:preset_params_count())
-    mparams:add_preset_params()
+    params:add_group('track', (mparams:track_params_count() + 1) * tracks)
+    for t = 1,tracks do
+        params:add_separator('metaparams_track_track_'..t, 'track '..t)
+        mparams:add_track_params(t)
+    end
+    params:add_group(
+        'preset',
+        (mparams:preset_params_count() + wparams:preset_params_count() + 1) 
+        * tracks * buffers * presets
+    )
+    for t = 1,tracks do
+        for b = 1,buffers do
+            for p = 1, presets do
+                params:add_separator('track '..t..', buffer '..b..', preset '..p)
+                wparams:add_preset_params(t, b, p)
+                mparams:add_preset_params(t, b, p)
+            end
+        end
+    end
 end
 
 -- add metaparam options
