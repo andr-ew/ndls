@@ -128,10 +128,10 @@ local function App(args)
                     x = 2, y = bottom, lvl = shaded,
                     state = {
                         sc.punch_in:is_recorded(n) and (
-                            mparams:get(n, 'loop', mparams_scope(n, 'loop'))
+                            mparams:get(n, 'loop')
                         ) or 0,
                         function(v)
-                            mparams:set(n, 'loop', mparams_scope(n, 'loop'), v)
+                            mparams:set(n, 'loop', v)
 
                             if sc.punch_in:is_recorded(n) then 
                             elseif sc.punch_in:is_recorded(n) then
@@ -164,11 +164,11 @@ local function App(args)
                     x = wide and 5 or 1, y = wide and top or bottom, 
                     edge = 'falling', lvl = shaded,
                     state = { 
-                        mparams:get(n, 'rev', mparams_scope(n, 'rev')),
+                        mparams:get(n, 'rev'),
                     },
                     action = function(v, t)
-                        mparams:set(n, 'rate_slew', 'preset', (t < 0.2) and 0.025 or t)
-                        mparams:set(n, 'rev', mparams_scope(n, 'rev'), v)
+                        mparams:set(n, 'rate_slew', (t < 0.2) and 0.025 or t)
+                        mparams:set(n, 'rev', v)
                     end,
                 }
                 do
@@ -177,11 +177,11 @@ local function App(args)
                         x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, 
                         filtersame = true,
                         state = {
-                            mparams:get(n, 'rate', mparams_scope(n, 'rate', true)) + off 
+                            mparams:get(n, 'rate') + off 
                         },
                         action = function(v, t)
-                            mparams:set(n, 'rate_slew', 'preset', t)
-                            mparams:set(n, 'rate', mparams_scope(n, 'rate', true), v - off)
+                            mparams:set(n, 'rate_slew', t)
+                            mparams:set(n, 'rate', v - off)
                         end,
                     }
                 end

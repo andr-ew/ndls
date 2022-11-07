@@ -35,26 +35,10 @@ mparams = metaparams:new()
 
 view_options = {}
 
-function mparams_scope(track, id, set_sum)
-    local base
-    if not sc.punch_in:is_recorded(track) then
-        base = true
-    elseif params:get(id..'_view') == view_options.vals.preset then
-        base = alt
-    elseif params:get(id..'_view') == view_options.vals.base then
-        base = not alt
-    end
-
-    if base then
-        return (nest.is_drawing() or set_sum) and 'base_sum' or 'base'
-    else
-        return (nest.is_drawing() or set_sum) and 'sum' or 'preset'
-    end
-end
 function of_mparam(track, id)
     return { 
-        mparams:get(track, id, mparams_scope(track, id)),
-        mparams:get_setter(track, id, mparams_scope(track, id))
+        mparams:get(track, id),
+        mparams:get_setter(track, id)
     }
 end
 
@@ -76,8 +60,8 @@ preset = { --[voice][buffer] = slice
         local b = sc.buffer[n]
 
         for i = 1, voices do
-            mparams:reset(i, b, 'preset')
-            wparams:reset(i, b, 'preset')
+            mparams:reset_presets(i, b)
+            wparams:reset_presets(i, b)
         end
 
         s:set(n, b, 1)

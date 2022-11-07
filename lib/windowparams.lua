@@ -185,7 +185,7 @@ function windowparams:randomize(t, target, b, p, silent)
 end
 
 windowparams.resets = {
-    none = function() end,
+    -- none = function() end,
     default = function(self, t, b, p)
         local silent = true
         self:expand(t, b, p, silent)
@@ -199,8 +199,10 @@ windowparams.resets = {
         end
     end
 }
-
-function windowparams:reset(t, b)
+function windowparams:set_reset_presets(func)
+    self.reset_func = func
+end
+function windowparams:reset_presets(t, b)
     for p = 1, presets do
         self.reset_func(self, t, b, p)
     end

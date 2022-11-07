@@ -1,6 +1,8 @@
 -- add normal params
 do
     params:add_separator('params_sep','params')
+
+    --TODO: deivide into a few sensible groups (rec & play, buffers & presets, send & return)
     params:add_group('params', (6 + buffers + 1) * tracks)
 
     for i = 1, voices do 
@@ -38,11 +40,11 @@ do
                 params:set('rec '..i, 0) 
                 sc.punch_in:clear(b)
 
-                for ii = 1, voices do
-                    mparams:reset(ii, b, 'base')
-                    --wparams:reset(ii, b, 'base')
-                end
-                mparams:bang(n)
+                --for ii = 1, voices do
+                --    mparams:reset(ii, b, 'base')
+                --    --wparams:reset(ii, b, 'base')
+                --end
+                -- mparams:bang(n)
                 --wparams:bang(n)
 
                 nest.grid.make_dirty()
@@ -233,6 +235,7 @@ do
     params:add_group('track', (mparams:track_params_count() + 1) * tracks)
     for t = 1,tracks do
         params:add_separator('metaparams_track_track_'..t, 'track '..t)
+        --TODO: wparams add track params
         mparams:add_track_params(t)
     end
     params:add_group(
@@ -261,21 +264,119 @@ do
     end
 
     do
-        params:add_group('randomization', 3 + mparams:random_range_params_count())
+        params:add_group('randomization', 2 + mparams:random_range_params_count())
 
-        params:add_separator('window')
         params:add{
-            id = 'len min', name = 'min', type = 'control', 
+            id = 'len min', name = 'len min', type = 'control', 
             controlspec = cs.def{ min = 0, max = 1, default = 0.15 },
             allow_pmap = false,
         }
         params:add{
-            id = 'len max', name = 'max', type = 'control', 
+            id = 'len max', name = 'len max', type = 'control', 
             controlspec = cs.def{ min = 0.5, max = 10, default = 0.75 },
             allow_pmap = false,
         }
 
         mparams:add_random_range_params()
+    end
+
+    do
+        params:add_group('initial preset values', 10)
+    
+        do
+            local names = { 'random', 'default' }
+            local funcs = { windowparams.resets.random, windowparams.resets.default }
+            params:add{
+                id = 'window_reset', name = 'st + len', type = 'option',
+                options = names, default = 1, allow_pmap = false,
+                action = function(v)
+                    wparams:set_reset_presets(funcs[v])
+                end
+            }
+        end
+
+        local function add_reset_param(id, names, funcs)
+            params:add{
+                id = id..'_reset', name = id, type = 'option',
+                options = names, default = 1, allow_pmap = false,
+                action = function(v)
+                    mparams:set_reset_presets(id, funcs[v])
+                end
+            }
+        end
+
+        do
+            local id = 'old'
+            add_reset_param(
+                id,
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+        end
+        do
+            local id = 'vol'
+            add_reset_param(
+                id,
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+        end
+        do
+            local id = 'pan'
+            add_reset_param(
+                id,
+                { 'random', 'default' },
+                { metaparams.resets.random, metaparams.resets.default }
+            )
+        end
+        do
+            local id = 'q'
+            add_reset_param(
+                id,
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+        end
+        do
+            local id = 'cut'
+            add_reset_param(
+                id,
+                { 'random', 'default' },
+                { metaparams.resets.random, metaparams.resets.default }
+            )
+        end
+        do
+            local id = 'type'
+            add_reset_param(
+                id,
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+        end
+        do
+            local id = 'loop'
+            add_reset_param(
+                id,
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
+            )
+        end
+        do
+            local id = 'rate'
+            add_reset_param(
+                id,
+                { 'random', 'default' },
+                { metaparams.resets.random, metaparams.resets.default }
+            )
+        end
+        do
+            local id = 'rev'
+            add_reset_param(
+                id,
+                { 'random', 'default' },
+                { metaparams.resets.random, metaparams.resets.default }
+            )
+        end
     end
 
     --TODO: slew group

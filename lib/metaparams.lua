@@ -54,7 +54,7 @@ function metaparam:new(args)
             params:set(param_id, rand, silent)
         end
     end
-    
+
     args.default_scope = args.default_scope or 'track'
 
     args.action = args.action or function() end
@@ -63,7 +63,10 @@ function metaparam:new(args)
     m.args = args
 
     m.id = args.id
-
+    
+    m.reset = args.reset or metaparams.resets.default
+    m.randomize = args.randomize
+    
     m.scope_id = args.id..'_scope'
 
     m.global_id = args.id..'_global'
@@ -124,23 +127,29 @@ function metaparam:randomize(t, b, p, silent)
     local scope = self:get_scope()
 
     local p_id = scope == 'preset' and self.preset_id[t][b][p] or self.track_id[t]
-    self.args.randomize(self, p_id, silent)
+    self.randomize(self, p_id, silent)
 end
 
-local function reset_default(self, param_id)
-    local p = params:lookup_param(param_id)
-    local silent = true
-    params:set(
-        param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
-    )
-end
-
-local function reset_random(self, param_id, t, b, p) local silent = true
-    if p == 1 then
-        reset_default(self, param_id)
-    else
-        self:randomize(t, b, p, silent)
+metaparams.resets = {
+    -- none = function() end,
+    default = function(self, param_id)
+        local p = params:lookup_param(param_id)
+        local silent = true
+        params:set(
+            param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
+        )
+    end,
+    random = function(self, param_id, t, b, p)
+        local silent = true
+        if p == 1 then
+            metaparams.resets.default(self, param_id)
+        else
+            self:randomize(t, b, p, silent)
+        end
     end
+}
+function metaparam:set_reset_presets(func)
+    self.reset = func
 end
 
 function metaparam:reset_presets(t, b)
@@ -149,7 +158,7 @@ function metaparam:reset_presets(t, b)
     if scope == 'preset' then
         for p = 1, presets do
             local p_id = self.preset_id[t][b][p]
-            reset_random(self, p_id, t, b, p)
+            self.reset(self, p_id, t, b, p)
         end
     end
 end
@@ -256,8 +265,6 @@ function metaparam:add_scope_param()
 end
 
 function metaparam:add_random_range_params()
-    params:add_separator(self.args.id)
-
     local min, max
     if self.args.type == 'number' then
         min = self.args.min_preset
@@ -265,7 +272,7 @@ function metaparam:add_random_range_params()
     end
 
     params:add{
-        id = self.random_min_id, type = self.args.type, name = 'min',
+        id = self.random_min_id, type = self.args.type, name = self.args.id..' min',
         controlspec = self.args.type == 'control' and cs.def{
             min = self.args.controlspec.minval, max = self.args.controlspec.maxval, 
             default = self.args.random_min_default
@@ -274,7 +281,7 @@ function metaparam:add_random_range_params()
         allow_pmap = false,
     }
     params:add{
-        id = self.random_max_id, type = self.args.type, name = 'max',
+        id = self.random_max_id, type = self.args.type, name = self.args.id..' max',
         controlspec = self.args.type == 'control' and cs.def{
             min = self.args.controlspec.minval, max = self.args.controlspec.maxval, 
             default = self.args.random_max_default
@@ -309,6 +316,9 @@ function metaparams:bang(track, id)
     end
 end
 
+function metaparams:set_reset_presets(id, func)
+    return self.lookup[id]:set_reset_presets(func)
+end
 function metaparams:reset_presets(track, buffer, id)
     if id then
         self.lookup[id]:reset(track, buffer)
@@ -376,7 +386,7 @@ function metaparams:random_range_params_count()
     local n = 0
     for _,m in ipairs(self.list) do 
         if m.args.type == 'number' or m.args.type == 'control' then
-            n = n + 3
+            n = n + 2
         end
     end
 

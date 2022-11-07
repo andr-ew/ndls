@@ -15,13 +15,13 @@ local function App(args)
                 x = { 42, 24+64 }, sens = 0.25, 
                 redraw_enabled = false,
                 state = of_mparam(n, 'cut'),
-                controlspec = mparams:get_controlspec('cut', mparams_scope(n, 'cut')),
+                controlspec = mparams:get_controlspec('cut'),
             }
             _filt{
                 n = tonumber(vertical and n or x),
                 x = { 42, 24+64 },
-                type = mparams:get(n, 'type', mparams_scope(n, 'type')),
-                cut = mparams:get(n, 'cut', mparams_scope(n, 'cut')),
+                type = mparams:get(n, 'type'),
+                cut = mparams:get(n, 'cut'),
             }
         end
     end
@@ -111,9 +111,7 @@ local function App(args)
                 _pan{
                     n = 2,
                     state = of_mparam(n, 'pan'),
-                    controlspec = mparams:get_controlspec(
-                        'pan', mparams_scope(n, 'pan')
-                    ),
+                    controlspec = mparams:get_controlspec('pan'),
                 }
             end
         else
@@ -123,14 +121,13 @@ local function App(args)
             end
 
             return function() 
-                local scope = (nest.is_drawing() or set_sum) and 'base_sum' or 'base'
                 for n,_vol in ipairs(_vols) do
                     _vol{
                         n = n,
                         sens = 0.25, max = 2.5, cycle = 1.5,
                         state = {
-                            mparams:get(n, 'vol', scope),
-                            mparams:get_setter(n, 'vol', scope, true)
+                            mparams:get(n, 'vol'),
+                            mparams:get_setter(n, 'vol')
                         },
                         lvl = view.track == n and 15 or 4,
                     }
@@ -158,9 +155,7 @@ local function App(args)
                 _pan{
                     n = 2,
                     state = of_mparam(n, 'pan'),
-                    controlspec = mparams:get_controlspec(
-                        'pan', mparams_scope(n, 'pan')
-                    ),
+                    controlspec = mparams:get_controlspec('pan'),
                 }
                 _win(); _end()
             end
@@ -178,9 +173,7 @@ local function App(args)
             _q{
                 n = 2,
                 state = of_mparam(n, 'q'),
-                controlspec = mparams:get_controlspec(
-                    'q', mparams_scope(n, 'q')
-                ),
+                controlspec = mparams:get_controlspec('q'),
                 lvl = { 4, 4, 15 },
                 x = { 42,  56 },
             }
