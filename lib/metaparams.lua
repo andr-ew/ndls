@@ -64,8 +64,8 @@ function metaparam:new(args)
 
     m.id = args.id
     
-    m.reset = args.reset or metaparams.resets.default
-    m.randomize = args.randomize
+    m.reset_func = args.reset or metaparams.resets.default
+    m.random_func = args.randomize
     
     m.scope_id = args.id..'_scope'
 
@@ -127,7 +127,8 @@ function metaparam:randomize(t, b, p, silent)
     local scope = self:get_scope()
 
     local p_id = scope == 'preset' and self.preset_id[t][b][p] or self.track_id[t]
-    self.randomize(self, p_id, silent)
+    
+    self.random_func(self, p_id, silent)
 end
 
 metaparams.resets = {
@@ -142,24 +143,23 @@ metaparams.resets = {
     random = function(self, param_id, t, b, p)
         local silent = true
         if p == 1 then
-            metaparams.resets.default(self, param_id)
+            --metaparams.resets.default(self, param_id) ----?
         else
-            self:randomize(t, b, p, silent)
+            --self:randomize(t, b, p, silent)
+            self.random_func(self, param_id, silent)
         end
     end
 }
 function metaparam:set_reset_presets(func)
-    self.reset = func
+    self.reset_func = func
 end
 
 function metaparam:reset_presets(t, b)
     local scope = self:get_scope()
 
-    if scope == 'preset' then
-        for p = 1, presets do
-            local p_id = self.preset_id[t][b][p]
-            self.reset(self, p_id, t, b, p)
-        end
+    for p = 1, presets do
+        local p_id = self.preset_id[t][b][p]
+        self.reset_func(self, p_id, t, b, p)
     end
 end
             
@@ -321,9 +321,9 @@ function metaparams:set_reset_presets(id, func)
 end
 function metaparams:reset_presets(track, buffer, id)
     if id then
-        self.lookup[id]:reset(track, buffer)
+        self.lookup[id]:reset_presets(track, buffer)
     else
-        for _,m in ipairs(self.list) do m:reset(track, buffer) end
+        for _,m in ipairs(self.list) do m:reset_presets(track, buffer) end
     end
 end
 

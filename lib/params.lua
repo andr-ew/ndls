@@ -153,7 +153,7 @@ do
     mparams:add{
         id = 'cut', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 1, quantum = 1/100/2, step = 0 },
-        random_min_default = -0.5, random_max_default = 0,
+        random_min_default = 0.5, random_max_default = 1,
         default_scope = 'track',
         action = function(i, v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
@@ -365,16 +365,16 @@ do
             local id = 'rate'
             add_reset_param(
                 id,
-                { 'random', 'default' },
-                { metaparams.resets.random, metaparams.resets.default }
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
             )
         end
         do
             local id = 'rev'
             add_reset_param(
                 id,
-                { 'random', 'default' },
-                { metaparams.resets.random, metaparams.resets.default }
+                { 'default', 'random' },
+                { metaparams.resets.default, metaparams.resets.random }
             )
         end
     end
