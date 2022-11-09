@@ -40,37 +40,18 @@ local function App(args)
             local recd = sc.punch_in:is_recorded(n)
             local sl = preset[n][b]
 
-            if wide then
-                _fill{ x = tall and 9 or 7, y = bottom, lvl = 8 }
-                _fill2{ x = (tall and 9 or 7) + 4, y = bottom, lvl = 4 }
-                _fill2{ x = (tall and 9 or 7) + 4 + 4, y = bottom, lvl = 4 }
-                
-                if recd then 
-                    _presets[b]{
-                        x = tall and { 9, 16 } or { 7, 15 }, 
-                        y = bottom,
-                        lvl = { lo, sc.phase[n].delta==0 and lo or hi },
-                        filtersame = false,
-                        state = { sl, set_preset[b] }
-                    }
-                end
-            elseif view.track == n then
-                if varibright then 
-                    _fill{ x = { 5, 7 }, y = { 1, 3 }, lvl = 4 } 
-                    _fill2{ x = 5, y = 1, lvl = 8 }
-                end
-                
-                if recd then 
-                    _presets[b]{
-                        x = { 5, 7 }, y = { 1, 3 },
-                        lvl = { lo, sc.phase[n].delta==0 and lo or hi },
-                        filtersame = false,
-                        state = {
-                            { x = (sl-1) % 3 + 1, y = 3 - ((sl - 1) // 3 + 1) + 1 },
-                            set_preset[b]
-                        }
-                    }
-                end
+            _fill{ x = wide and (tall and 9 or 7) or -1, y = bottom, lvl = 8 }
+            _fill2{ x = wide and ((tall and 9 or 7) + 3) or -1, y = bottom, lvl = 4 }
+            _fill2{ x = wide and ((tall and 9 or 7) + 3 + 3) or -1, y = bottom, lvl = 4 }
+            
+            if recd then 
+                _presets[b]{
+                    x = wide and (tall and { 9, 15 } or { 7, 13 }) or { -2, -1 }, 
+                    y = bottom,
+                    lvl = { lo, sc.phase[n].delta==0 and lo or hi },
+                    filtersame = false,
+                    state = { sl, set_preset[b] }
+                }
             end
         end
     end
@@ -132,80 +113,80 @@ local function App(args)
         local _presets = Presets{ voice = n }
 
         return function()
+            local rate_x = wide and { 8, 14 } or { 3, 7 }
+
             if sc.lvlmx[n].play == 1 and sc.punch_in:is_recorded(n) then
                 _phase{ 
-                    x = wide and { 6, 13 } or { 2, 8 }, 
+                    x = rate_x, 
                     y = wide and top or bottom, 
                     lvl = 4,
                     phase = reg.play:phase_relative(n, sc.phase[n].abs, 'fraction'),
                 }
             end
-            
-            if wide then
-                _rec()
-                _play()
+        
+            _rec()
+            _play()
 
-                --_loop{
-                --    x = 2, y = bottom, lvl = shaded,
-                --    state = {
-                --        sc.punch_in:is_recorded(n) and (
-                --            mparams:get(n, 'loop')
-                --        ) or 0,
-                --        function(v)
-                --            mparams:set(n, 'loop', v)
-
-                --            if sc.punch_in:is_recorded(n) then 
-                --            elseif sc.punch_in:is_recorded(n) then
-                --                local z = sc.buffer[n]
-
-                --                --TODO: refactor reset call into sc.punch_in
-                --                sc.punch_in:set(z, 0)
-                --                preset:reset(n)
-                --            end
-                --        end
-                --    },
-                --}
-                _buffer{
-                    x = tall and { 3, 8 } or { 3, 6 }, y = bottom,
-                    state = { params:get('buffer '..n), set_buffer }
+            _buffer{
+                x = tall and { 3, 8 } or { 3, 6 }, y = bottom,
+                state = { params:get('buffer '..n), set_buffer }
+            }
+            _rev{
+                x = wide and 7 or 3, y = top, 
+                edge = 'falling', lvl = shaded,
+                state = { 
+                    mparams:get(n, 'rev'),
+                },
+                action = function(v, t)
+                    mparams:set(n, 'rate_slew', (t < 0.2) and 0.025 or t)
+                    mparams:set(n, 'rev', v)
+                end,
+            }
+            do
+                local off = wide and 5 or 4
+                _rate{
+                    x = rate_x, y = top, 
+                    filtersame = true,
+                    state = {
+                        mparams:get(n, 'rate') + off 
+                    },
+                    action = function(v, t)
+                        mparams:set(n, 'rate_slew', t)
+                        mparams:set(n, 'rate', v - off)
+                    end,
                 }
+            end
+            if wide then
                 _send{
-                    x = wide and (tall and 15 or 14) or 7, y = wide and top or bottom, 
-                    lvl = { 4, 15 },
+                    x = tall and 16 or 14, y = tall and top or bottom, 
+                    lvl = { 2, 15 },
                     state = { params:get('send '..n), set_send }
                 }
                 _ret{
-                    x = wide and (tall and 16 or 15) or 8, y = wide and top or bottom, 
-                    lvl = { 0, 15 },
+                    x = tall and 16 or 15, y = bottom, 
+                    lvl = { 2, 15 },
                     state = { params:get('return '..n), set_ret }
                 }
-            end
-            if wide or (view.page ~= MIX) then
-                _rev{
-                    x = wide and 5 or 1, y = wide and top or bottom, 
-                    edge = 'falling', lvl = shaded,
-                    state = { 
-                        mparams:get(n, 'rev'),
+                _loop{
+                    x = 15, y = top, lvl = shaded,
+                    state = {
+                        sc.punch_in:is_recorded(n) and (
+                            mparams:get(n, 'loop')
+                        ) or 0,
+                        function(v)
+                            mparams:set(n, 'loop', v)
+
+                            --if sc.punch_in:is_recorded(n) then 
+                            --elseif sc.punch_in:is_recorded(n) then
+                            --    local z = sc.buffer[n]
+
+                            --    --TODO: refactor reset call into sc.punch_in
+                            --    sc.punch_in:set(z, 0)
+                            --    preset:reset(n)
+                            --end
+                        end
                     },
-                    action = function(v, t)
-                        mparams:set(n, 'rate_slew', (t < 0.2) and 0.025 or t)
-                        mparams:set(n, 'rev', v)
-                    end,
                 }
-                do
-                    local off = wide and 6 or 5
-                    _rate{
-                        x = wide and { 6, 13 } or { 2, 8 }, y = wide and top or bottom, 
-                        filtersame = true,
-                        state = {
-                            mparams:get(n, 'rate') + off 
-                        },
-                        action = function(v, t)
-                            mparams:set(n, 'rate_slew', t)
-                            mparams:set(n, 'rate', v - off)
-                        end,
-                    }
-                end
             end
 
             _presets()
