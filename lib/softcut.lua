@@ -46,7 +46,7 @@ sc = {
         end
     },
     lvlmx = {
-        { vol = 1, play = 1, recorded = 0, send = 1, cf_assign = 1, mix_vol = 1 },
+        { vol = 1, play = 0, recorded = 0, send = 1, cf_assign = 1, mix_vol = 1 },
         cf = 0,
         update = function(s, n)
             local v = s[n].vol * s[n].play * s[n].recorded

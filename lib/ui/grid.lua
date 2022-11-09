@@ -88,6 +88,27 @@ local function App(args)
                 end
             }
         end)
+        local _play = to.pattern(mpat, 'play '..n, Grid.toggle, function()
+            return {
+                x = 2, y = bottom, lvl = shaded,
+                state = {
+                    sc.punch_in[sc.buffer[n]].recorded and params:get('play '..n) or 0,
+                    function(v)
+                        local recorded = sc.punch_in[sc.buffer[n]].recorded
+                        local recording = sc.punch_in[sc.buffer[n]].recording
+
+                        if recorded or recording then 
+                            params:set('play '..n, v)
+                        end
+                    end
+                }
+            }
+        end) 
+
+        local set_send = multipattern.wrap_set(mpat, 'send '..n, function(v)
+            params:set('send '..n, v)
+        end)
+        local _send = Grid.toggle()
 
         local set_buffer = multipattern.wrap_set(mpat, 'buffer '..n, function(v)
             params:set('buffer '..n, v)
@@ -105,45 +126,45 @@ local function App(args)
         local _ret = Grid.toggle()
 
         local _phase = Components.grid.phase()
-        local _loop = Grid.toggle()
         local _rev = Grid.toggle()
         local _rate = Grid.number()
+        local _loop = Grid.toggle()
         local _presets = Presets{ voice = n }
 
         return function()
             if sc.lvlmx[n].play == 1 and sc.punch_in:is_recorded(n) then
-                if (wide) or (view.page ~= 1) then
-                    _phase{ 
-                        x = wide and { 6, 13 } or { 2, 8 }, 
-                        y = wide and top or bottom, 
-                        lvl = 4,
-                        phase = reg.play:phase_relative(n, sc.phase[n].abs, 'fraction'),
-                    }
-                end
+                _phase{ 
+                    x = wide and { 6, 13 } or { 2, 8 }, 
+                    y = wide and top or bottom, 
+                    lvl = 4,
+                    phase = reg.play:phase_relative(n, sc.phase[n].abs, 'fraction'),
+                }
             end
             
-            if wide or (view.page == MIX) then
+            if wide then
                 _rec()
-                _loop{
-                    x = 2, y = bottom, lvl = shaded,
-                    state = {
-                        sc.punch_in:is_recorded(n) and (
-                            mparams:get(n, 'loop')
-                        ) or 0,
-                        function(v)
-                            mparams:set(n, 'loop', v)
+                _play()
 
-                            if sc.punch_in:is_recorded(n) then 
-                            elseif sc.punch_in:is_recorded(n) then
-                                local z = sc.buffer[n]
+                --_loop{
+                --    x = 2, y = bottom, lvl = shaded,
+                --    state = {
+                --        sc.punch_in:is_recorded(n) and (
+                --            mparams:get(n, 'loop')
+                --        ) or 0,
+                --        function(v)
+                --            mparams:set(n, 'loop', v)
 
-                                --TODO: refactor reset call into sc.punch_in
-                                sc.punch_in:set(z, 0)
-                                preset:reset(n)
-                            end
-                        end
-                    },
-                }
+                --            if sc.punch_in:is_recorded(n) then 
+                --            elseif sc.punch_in:is_recorded(n) then
+                --                local z = sc.buffer[n]
+
+                --                --TODO: refactor reset call into sc.punch_in
+                --                sc.punch_in:set(z, 0)
+                --                preset:reset(n)
+                --            end
+                --        end
+                --    },
+                --}
                 _buffer{
                     x = tall and { 3, 8 } or { 3, 6 }, y = bottom,
                     state = { params:get('buffer '..n), set_buffer }

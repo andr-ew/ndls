@@ -2,7 +2,7 @@
 do
     params:add_separator('params_sep','params')
 
-    --TODO: deivide into a few sensible groups (rec & play, buffers & presets, send & return)
+    --TODO: divide into a few sensible groups (rec & play, buffers & presets, send & return)
     params:add_group('params', (6 + buffers + 1) * tracks)
 
     for i = 1, voices do 
@@ -17,21 +17,50 @@ do
                 sc.oldmx[n].rec = v; sc.oldmx:update(n)
 
                 local z = sc.buffer[n]
+                --if not sc.punch_in[z].recorded then
+                --    sc.punch_in:set(z, v)
+
+                --    --TODO: refactor reset call into sc.punch_in
+                --    if v==0 and sc.punch_in[z].recorded then 
+                --        preset:reset(n)
+                --    end
+                --end
                 if not sc.punch_in[z].recorded then
                     sc.punch_in:set(z, v)
 
-                    --TODO: refactor reset call into sc.punch_in
                     if v==0 and sc.punch_in[z].recorded then 
                         preset:reset(n)
+                        params:set('play '..i, 1) 
                     end
+                elseif sc.lvlmx[n].play == 0 and v == 1 then
+                    sc.punch_in:clear(z)
+                    sc.punch_in:set(z, 1)
                 end
+
+
+                nest.grid.make_dirty()
+                nest.screen.make_dirty()
+            end
+        }
+        params:add {
+            id = 'play '..i,
+            type = 'binary', behavior = 'toggle', 
+            action = function(v)
+                local n = i
+
+                local z = sc.buffer[n]
+                if v==1 and sc.punch_in[z].recording then
+                    sc.punch_in:set(z, 0)
+                end
+
+                sc.lvlmx[n].play = v; sc.lvlmx:update(n)
 
                 nest.grid.make_dirty()
                 nest.screen.make_dirty()
             end
         }
         params:add{
-            name = 'reset', id = 'clear '..i,
+            name = 'clear', id = 'clear '..i,
             type = 'binary', behavior = 'trigger', 
             action = function()
                 local n = i
@@ -39,13 +68,6 @@ do
 
                 params:set('rec '..i, 0) 
                 sc.punch_in:clear(b)
-
-                --for ii = 1, voices do
-                --    mparams:reset(ii, b, 'base')
-                --    --wparams:reset(ii, b, 'base')
-                --end
-                -- mparams:bang(n)
-                --wparams:bang(n)
 
                 nest.grid.make_dirty()
                 nest.screen.make_dirty()
