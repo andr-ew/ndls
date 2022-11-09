@@ -1,6 +1,6 @@
 alt = false
 view = { track = 1, page = 1 }
-page_names = { 'MIX', 'WINDOW', 'FILTER', 'LFO' }
+page_names = { 'v', 's', 'f', 'p' }
 MIX, WINDOW, FILTER, LFO = 1, 2, 3, 4
 
 voices = tall and 6 or 4
