@@ -39,23 +39,42 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 
 ### bottom half
 
-- **rec:** toggle record & playback states, loop pedal style.
-  - 1 - tap **rec** while the assigned **buffer** is blank to begin the initial recording
-  - 2 - tap **rec** again to begin looping + disable overdubs, for a traditional looping experience.
-  - 3 - while the **buffer** is non-blank, **rec** sets the overdub state
-  - 4 - **reset:** hold the **rec** key to reset the active buffer of the track. this will clear buffer audio and reset any/all data.
-- **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
-  - **quick delay:** on a blank **buffer**, tap **rec**, then **loop** to begin looping _without_ disabling overdubs, effectively turning the track into a delay.
-    - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
-    - delay feeback is set by the **old** control
+- **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
+  - record a new loop in a blank buffer:
+    - 1 - toggle the **rec** key _on_
+    - 2 - play some audio into softcut from TAPE or norns' inputs
+    - 3 - toggle **rec** back _off_
+    - 4 - softcut will loop what you just played, loop pedal style.
+  - overdub into a playing loop:
+    - 1 - toggle the **rec** key _on_
+    - 2 - play some new material into softcut from TAPE or norns' inputs
+    - 3 - softcut will record the new material on top of the loop.
+      - the volume of the old material is set by the **old** control.
+  - silence a playing loop:
+    - toggle the **play** key _off_
+  - clear a buffer, and record a brand new loop:
+    - 1 - toggle the **play** key _off_
+    - 2 - toggle the **rec** key _on_. softcut will clear the old contents of the buffer.
+    - 3 - play some new material into softcut from TAPE or norns' inputs
+    - 4 - toggle **rec** back _off_
+    - 5 - softcut will loop the new material
+  - use a blank buffer as a delay
+    - 1 - toggle the **rec** key _on_
+    - 2 - toggle the **play** key _on_
+    - 3 - softcut will begin playing and overdubbing, like a delay.
+      - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
+      - delay feeback is set by the **old** control
 - **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
-- **preset:** 1 default preset + 8 randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [metaparams](#metaparams) for advanced info.
-  - **quick one-shot:** on a blank **buffer**, tap **rec** to begin a new recording, then tap any **preset** key to end recording & play a one-shot sample based on that preset.
-
+- **preset:** 1 default preset + 6 unique, optionally randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [metaparams](#metaparams) for advanced info.
+- **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
+  - idea: send a loop track into another track set up like a delay, for echoed loops.
 
 ### top half
 
-- **norns/arc view:** set the track + page displayed on norns + arc. track selection on the y axis, page selection on the x axis.
+- **track focus:** select which track to edit on the norns screen
+- **page focus:** select which page to edit on the norns screen
+- **arc focus:** select which track controls to edit on arc.
+  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks. see [arc](#arc) for more info
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
 - **rate:** record & playback rate, quantized to octaves.
   - press one key with one finger to jump instantly to a new pitch.
@@ -63,8 +82,7 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
     - 1 - hold one finger on the lit / current value key
     - 2 - press the key of the rate you'd like to glide to
     - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key. this is an expressive gesture !
-- **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
-  - idea: send a loop track into another track set up like a delay, for echoed loops.
+- **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
 
 
 ### pattern recorders
@@ -124,6 +142,12 @@ randomization ranges can be configured in the params menu under **config > rando
 - **E2:** pan
 - **E3:** pitch bend (-1 to +1 octave)
 - **K2:** randomize pan
+
+## arc
+
+![arc documentation image](lib/doc/ndls_arc_horizontal.png)
+![arc documentation image](lib/doc/ndls_arc_vertical.png)
+
 
 ## metaparams
 
