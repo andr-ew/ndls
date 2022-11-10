@@ -96,7 +96,7 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ## norns
 
-the norns screen/encoders/keys are paginated using the top left section of the grid (track focus + page focus).
+the norns screen/encoders/keys are paginated using the top left section of the grid (**track focus** + **page focus**).
 - **track focus:** displays the track focus (set using the top left keys on the grid)
 - **E1:** set page focus
 - **E2 - E3:** edit metaparam
