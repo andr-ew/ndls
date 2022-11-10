@@ -92,6 +92,9 @@ the norns screen/encoders/keys are paginated using the top left section of the g
 
 - **E2:** track output level
 - **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
+- **K2:** randomize vol
+- **K3:** randomize old
+
 
 ### page s (start/length)
 
@@ -111,6 +114,7 @@ randomization ranges can be configured in the params menu under **config > rando
 
 - **E2:** filter cutoff
 - **E3:** filter resonance
+- **K2:** randomize cutoff
 - **K3:** filter type (lowpass, bandpass, highpass, dry)
 
 ### page p (pan/pitch)
@@ -119,6 +123,7 @@ randomization ranges can be configured in the params menu under **config > rando
 
 - **E2:** pan
 - **E3:** pitch bend (-1 to +1 octave)
+- **K2:** randomize pan
 
 ## metaparams
 
