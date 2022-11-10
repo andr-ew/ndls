@@ -157,11 +157,13 @@ to rotate to the **vertical** orientation, hold & release any two keys in the sa
 
 ## metaparams
 
-(diagram)
+(description)
 
 ### metaparam options
 
-(coming soon)
+#### scope
+#### randomization
+#### initial preset values
 
 ## saving sessions
 
