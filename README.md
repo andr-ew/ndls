@@ -78,43 +78,47 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - double tap: overdub pattern
 - hold: clear pattern
 
-## norns + arc
+## norns
 
-the norns screen/encoders/keys + arc are paginated using the top left section of the grid. there are four pages for each of the four tracks. each page contains [metaparams](#metaparams).
-- **E1 - E3:** edit metaparam
-- **K2 - K3:** (**x**) randomize metaparam
-- **K3 (hold):** set **alt** state. see [metaparams](#metaparams) for more info.
-- **arc:** edit metaparams
+the norns screen/encoders/keys are paginated using the top left section of the grid (track focus + page focus).
+- **track focus:** displays the track focus (set using the top left keys on the grid)
+- **E1:** set page focus
+- **E2 - E3:** edit metaparam
+- **K2 - K3:** randomize metaparam or other.
 
-### page 1: MIX
+### page v (volume)
 
-![norns screen page MIX documentation image](lib/doc/ndls_MIX.png)
+![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
 
-- **old:** volume of old material when overdubbing (i.e. obverdub level/feedback level). high levels are loop-like, low levels are delay-like.
-- **vol:** output level. on arc, all four tracks are available at once.
-- **pan:** output panning
+- **E2:** track output level
+- **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
 
-### page 2: WINDOW
+### page s (start/length)
 
-![norns screen page WINDOW documentation image](lib/doc/ndls_WINDOW.png)
+![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
 
-- **st:** loop window start point
-- **win:** loop window position
-- **len:** loop window length
+- **E2:** slice window start point
+- **E3:** slice window length
+- **K2:** randomize start point
+- **K3:** randomize length
+- **K2 + K3:** random window
 
-### page 3: FILTER
+randomization ranges can be configured in the params menu under **config > randomization**
 
-![norns screen page FILTER documentation image](lib/doc/ndls_FILTER.png)
+### page f (filter)
 
-- **q:** filter resonance
-- **cut:** filter cutoff freq
-- **type:** filter type (lowpass, bandpass, highpass, dry signal)
+![norns screen page f documentation image](lib/doc/ndls_screen_f.png)
 
-### page 4: LFO
+- **E2:** filter cutoff
+- **E3:** filter resonance
+- **K3:** filter type (lowpass, bandpass, highpass, dry)
 
-![norns screen page LFO documentation image](lib/doc/ndls_LFO.png)
+### page p (pan/pitch)
 
-(coming soon)
+![norns screen page p documentation image](lib/doc/ndls_screen_p.png)
+
+- **E2:** pan
+- **E3:** pitch bend (-1 to +1 octave)
 
 ## metaparams
 
