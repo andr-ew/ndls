@@ -82,7 +82,6 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
     - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key. this is an expressive gesture !
 - **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
 
-
 ### pattern recorders
 
 the rightmost column contans 8 pattern recorders, these can record & play back any combination of input on grid, norns, or arc. use them like this:
@@ -96,9 +95,10 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ## norns
 
-the norns screen/encoders/keys are paginated using the top left section of the grid (**track focus** + **page focus**).
+ the norns encoders are mapped to 8 [metaparams](#metaparams) for each track, with norns keys mapped to randomizations of certain values. use the **track focus** + **page focus** components on the top left of the grid to switch between views. changes to any control can be pattern recorded using the grid.
+
 - **track focus:** displays the track focus (set using the top left keys on the grid)
-- **E1:** set page focus
+- **E1:** set page focus (also mapped to the grid)
 - **E2 - E3:** edit metaparam
 - **K2 - K3:** randomize metaparam or other.
 
@@ -111,7 +111,6 @@ the norns screen/encoders/keys are paginated using the top left section of the g
 - **K2:** randomize vol
 - **K3:** randomize old
 
-
 ### page s (start/length)
 
 ![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
@@ -121,8 +120,6 @@ the norns screen/encoders/keys are paginated using the top left section of the g
 - **K2:** randomize start point
 - **K3:** randomize length
 - **K2 + K3:** random window
-
-randomization ranges can be configured in the params menu under **config > randomization**
 
 ### page f (filter)
 
@@ -143,7 +140,7 @@ randomization ranges can be configured in the params menu under **config > rando
 
 ## arc
 
-when arc is connected, the **arc focus** component will be visible instead of **page focus**.
+when arc is connected, the **arc focus** component will be visible instead of **page focus**. the [norns](#norns) section above contains more info about the available [metaparams](#metaparams) (**vol**, **cut**, **st**, **len**). any changes to these controls can be pattern recorded using the grid.
 
 ### horizontal orientation
 
