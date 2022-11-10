@@ -3,9 +3,9 @@ do
     params:add_separator('params_sep','params')
 
     --TODO: divide into a few sensible groups (rec & play, buffers & presets, send & return)
-    params:add_group('params', (6 + buffers + 1) * tracks)
+    params:add_group('params', (7 + buffers + 1) * tracks)
 
-    for i = 1, voices do 
+    for i = 1, voices do
         params:add_separator('params_track_'..i, 'track '..i)
 
         params:add{
@@ -29,6 +29,7 @@ do
                     sc.punch_in:set(z, v)
 
                     if v==0 and sc.punch_in[z].recorded then 
+                        --FIXME: not resetting all tracks
                         preset:reset(n)
                         params:set('play '..i, 1) 
                     end
@@ -50,6 +51,7 @@ do
 
                 local z = sc.buffer[n]
                 if v==1 and sc.punch_in[z].recording then
+                    --TODO: preset reset
                     sc.punch_in:set(z, 0)
                 end
 

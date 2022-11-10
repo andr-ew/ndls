@@ -1,24 +1,37 @@
 local function App(args)
+    local map = args.map
     local rotated = args.rotated
     local wide = args.grid_wide
-    local arc2 = args.arc2
 
-    rotated = false --TODO: rotate mix & filter controls for arc2
+    local Destinations = {}
 
-    local function Cut(n, x)
+    function Destinations.vol(n, x)
+        local _vol = Arc.number()
+
+        return function() 
+            _vol{
+                n = tonumber(arc_vertical and n or x),
+                sens = 0.25, max = 2.5, cycle = 1.5,
+                state = of_mparam(n, 'vol'),
+                lvl = 15,
+            }
+        end
+    end
+
+    function Destinations.cut(n, x)
         local _cut = Arc.control()
         local _filt = Components.arc.filter()
 
-        return function()
+        return function() 
             _cut{
-                n = tonumber(vertical and n or x),
+                n = tonumber(arc_vertical and n or x),
                 x = { 42, 24+64 }, sens = 0.25, 
                 redraw_enabled = false,
                 state = of_mparam(n, 'cut'),
                 controlspec = mparams:get_controlspec('cut'),
             }
             _filt{
-                n = tonumber(vertical and n or x),
+                n = tonumber(arc_vertical and n or x),
                 x = { 42, 24+64 },
                 type = mparams:get(n, 'type'),
                 cut = mparams:get(n, 'cut'),
@@ -26,14 +39,14 @@ local function App(args)
         end
     end
 
-    local function Win(n, x)
+    function Destinations.st(n, x)
         _st = Components.arc.st(mpat)
 
         return function() 
             local b = sc.buffer[n]
 
             _st{
-                n = tonumber(vertical and n or x),
+                n = tonumber(arc_vertical and n or x),
                 x = { 33, 64+32 }, lvl = { 4, 15 },
                 phase = sc.phase[n].rel,
                 show_phase = sc.lvlmx[n].play == 1,
@@ -54,14 +67,14 @@ local function App(args)
         end
     end
 
-    local function End(n, x)
+    function Destinations.len(n, x)
         _len = Components.arc.len(mpat)
 
         return function() 
             local b = sc.buffer[n]
 
             _len{
-                n = tonumber(vertical and n or x),
+                n = tonumber(arc_vertical and n or x),
                 x = { 33, 64+32 }, 
                 phase = sc.phase[n].rel,
                 show_phase = sc.lvlmx[n].play == 1,
@@ -86,136 +99,28 @@ local function App(args)
         end
     end
 
-    local function Vol(n, x)
-        local _vol = Arc.number()
+    local _params = {}
+    for y = 1,voices do --track
+        _params[y] = {}
 
-        return function() 
-            _vol{
-                n = x,
-                sens = 0.25, max = 2.5, cycle = 1.5,
-                state = of_mparam(n, 'vol'),
-                lvl = 15,
-            }
+        for x = 1,4 do --map item
+
+            _params[y][x] = Destinations[map[x]](y, x)
         end
-    end
-
-    local Pages = {}
-
-    function Pages.mix(n)
-        if arc2 then
-            local _vol = Vol(n, 1)
-            local _pan = Arc.control()
-
-            return function()
-                _vol()
-                _pan{
-                    n = 2,
-                    state = of_mparam(n, 'pan'),
-                    controlspec = mparams:get_controlspec('pan'),
-                }
-            end
-        else
-            local _vols = {}
-            for n = 1,4 do
-                _vols[n] = Arc.number()
-            end
-
-            return function() 
-                for n,_vol in ipairs(_vols) do
-                    _vol{
-                        n = n,
-                        sens = 0.25, max = 2.5, cycle = 1.5,
-                        state = {
-                            mparams:get(n, 'vol'),
-                            mparams:get_setter(n, 'vol')
-                        },
-                        lvl = view.track == n and 15 or 4,
-                    }
-                end
-            end
-        end
-    end
-
-    function Pages.window(n)
-        if arc2 then
-            local _win = Win(n, 1)
-            local _end = End(n, 2)
-
-            return function()
-                _win(); _end()
-            end
-        else
-            local _vol = Vol(n, 1)
-            local _pan = Arc.control()
-            local _win = Win(n, 3)
-            local _end = End(n, 4)
-
-            return function()
-                _vol()
-                _pan{
-                    n = 2,
-                    state = of_mparam(n, 'pan'),
-                    controlspec = mparams:get_controlspec('pan'),
-                }
-                _win(); _end()
-            end
-        end
-    end
-
-    function Pages.filter(n)
-        local _cut = Cut(n, 1)
-        local _q = Arc.control()
-        local _win = not arc2 and Win(n, 3)
-        local _end = not arc2 and End(n, 4)
-
-        return function()
-            _cut()
-            _q{
-                n = 2,
-                state = of_mparam(n, 'q'),
-                controlspec = mparams:get_controlspec('q'),
-                lvl = { 4, 4, 15 },
-                x = { 42,  56 },
-            }
-            if not arc2 then
-                _win(); _end()
-            end
-        end
-    end
-
-    local _pages = {}
-    if arc2 then
-        _pages.mix = {}
-        for n = 1, voices do
-            _pages.mix[n] = Pages.mix(n)
-        end
-    else
-        _pages.mix = Pages.mix()
-    end
-    _pages.window = {}
-    _pages.filter = {}
-
-    for n = 1, voices do
-        _pages.window[n] = Pages.window(n)
-        _pages.filter[n] = Pages.filter(n)
     end
 
     return function()
-        if view.page == MIX then
-            if arc2 then
-                _pages.mix[view.track]()
-            else
-                _pages.mix()
+        if wide then
+            for y = 1,voices do for x = 1,4 do
+                if arc_view[y][x] > 0 then
+                    _params[y][x]()
+                end
+            end end
+        else
+            local y = view.track
+            for x = 1,4 do
+                _params[y][x]()
             end
-        elseif view.page == WINDOW then
-            _pages.window[view.track]()
-        elseif view.page == FILTER then
-            _pages.filter[view.track]()
-        elseif view.page == LFO then
-        end
-
-        if nest.arc.is_drawing() then
-            freeze_patrol:ping('arc')
         end
     end
 end

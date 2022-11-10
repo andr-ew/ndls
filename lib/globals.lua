@@ -10,6 +10,22 @@ slices = 9
 tracks = voices
 presets = slices
 
+arc_vertical = false
+arc_view = tall and {
+    { 1, 1, 1, 1 },
+    { 0, 0, 0, 0 },
+    { 0, 0, 0, 0 },
+    { 0, 0, 0, 0 },
+    { 0, 0, 0, 0 },
+    { 0, 0, 0, 0 },
+} or {
+    { 1, 1, 1, 1 },
+    { 0, 0, 0, 0 },
+    { 0, 0, 0, 0 },
+    { 0, 0, 0, 0 },
+}
+
+
 function pattern_time:resume()
     if self.count > 0 then
         self.prev_time = util.time()
@@ -162,9 +178,9 @@ freeze_patrol = {
         end
     end
 }
-clock.run(function() 
-    while true do
-        freeze_patrol:patrol() 
-        clock.sleep(1/fps.patrol)
-    end
-end)
+-- clock.run(function() 
+--     while true do
+--         freeze_patrol:patrol() 
+--         clock.sleep(1/fps.patrol)
+--     end
+-- end)

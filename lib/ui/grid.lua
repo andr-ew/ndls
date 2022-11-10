@@ -4,7 +4,8 @@ local function App(args)
     local tall = args.tall
     local shaded = { 4, 15 }
     local mid = varibright and 4 or 15
-    local mid2 = varibright and 8 or 15
+    local low_shade = varibright and { 2, 8 } or 15
+    local mid_shade = varibright and { 4, 8 } or 15
 
     local function Presets(args)
         local n = args.voice
@@ -193,8 +194,6 @@ local function App(args)
         end
     end
 
-    local _view = Grid.number()
-    
     local _voices = {}
     for i = 1, voices do
         _voices[i] = Voice(i)
@@ -203,17 +202,46 @@ local function App(args)
     local _patrec = PatternRecorder()
     local _patrec2 = not wide and PatternRecorder()
 
+    local _track_focus = Grid.number()
+    local _arc_focus = (wide and (not tall) and arc_connected) and Components.grid.arc_focus()
+    local _page_focus = (wide and not _arc_focus) and Grid.number()
+
+
     return function()
-        _view{
-            x = { 1, 4 }, y = { 1, voices }, lvl = { 1, mid2 },
+        _track_focus{
+            x = 1, y = { 1, voices }, lvl = low_shade,
             state = { 
-                { y = voices - view.track + 1, x = view.page },
+                voices - view.track + 1, 
                 function(v) 
-                    view.track = voices - v.y + 1
-                    view.page = v.x
+                    view.track = voices - v + 1 
+                    nest.screen.make_dirty()
                 end 
             }
         }
+        if _arc_focus then
+            _arc_focus{
+                x = 3, y = 1, lvl = low_shade,
+                view = arc_view, tall = tall,
+                vertical = { arc_vertical, function(v) arc_vertical = v end },
+                action = function(vertical, x, y)
+                    if not vertical then view.track = y end
+
+                    nest.arc.make_dirty()
+                    nest.screen.make_dirty()
+                end
+            }
+        elseif wide then
+            _page_focus{
+                y = 1, x = { 2, 2 + #page_names - 1 }, lvl = mid_shade,
+                state = { 
+                    view.page//1, 
+                    function(v) 
+                        view.page = v 
+                        nest.screen.make_dirty()
+                    end 
+                }
+            }
+        end
 
         for i, _voice in ipairs(_voices) do _voice() end
 
