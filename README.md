@@ -73,8 +73,6 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 
 - **track focus:** select which track to edit on the norns screen
 - **page focus:** select which page to edit on the norns screen
-- **arc focus:** select which track controls to edit on arc.
-  - by default, arc will display four different controls in one track. press any two keys in the same column of the arc focus matrix to flip orientation, editing four of the same control in different tracks. see [arc](#arc) for more info
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
 - **rate:** record & playback rate, quantized to octaves.
   - press one key with one finger to jump instantly to a new pitch.
@@ -145,8 +143,19 @@ randomization ranges can be configured in the params menu under **config > rando
 
 ## arc
 
+when arc is connected, the **arc focus** component will be visible instead of page focus.
+
+### horizontal orientation
+
 ![arc documentation image](lib/doc/ndls_arc_horizontal.png)
+
+by default the arc will display four different metaparams from a single track – **vol**, **cut**, **st**, & **len**. press any **row** in the grid with one finger to focus on another track.
+
+### vertical orientation
+
 ![arc documentation image](lib/doc/ndls_arc_vertical.png)
+
+to rotate to the **vertical** orientation, hold & release any two keys in the same **column** with two fingers. now, arc will display the same metaparam across all four tracks.
 
 
 ## metaparams
