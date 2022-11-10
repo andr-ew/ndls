@@ -149,7 +149,7 @@ when arc is connected, the **arc focus** component will be visible instead of **
 
 ![arc documentation image](lib/doc/ndls_arc_horizontal.png)
 
-by default, the arc will display four different metaparams from a single track – **vol**, **cut**, **st**, and **len**. press any **row** in the grid with one finger to focus on another track.
+by default, the arc will display four different metaparams from a single track – **vol**, **cut**, **st**, and **len**. press any **row** in the 4x4 grid with one finger to focus on another track.
 
 ### vertical orientation
 
