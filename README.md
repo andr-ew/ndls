@@ -143,7 +143,7 @@ randomization ranges can be configured in the params menu under **config > rando
 
 ## arc
 
-when arc is connected, the **arc focus** component will be visible instead of page focus.
+when arc is connected, the **arc focus** component will be visible instead of **page focus**.
 
 ### horizontal orientation
 
