@@ -163,11 +163,6 @@ to rotate to the **vertical** orientation, hold & release any two keys in the sa
 
 (coming soon)
 
-## (consider another heading for advanced gestures)
-- alt punch outs
-- glides (rate + presets)
-- advanced send & return modes
-
 ## saving sessions
 
 u can save & load full sessions via the PSET menu. saves all data, buffer audio, and patterns. yay! additionally, your last session is auto-saved to the "last session" pset every time you exit the app.
