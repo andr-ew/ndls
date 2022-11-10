@@ -71,8 +71,8 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 
 ### top half
 
-- **track focus:** select which track to edit on the norns screen
-- **page focus:** select which page to edit on the norns screen
+- **track focus:** select which **track** to edit on the norns screen
+- **page focus:** select which **page** to edit on the norns screen
 - **rev:** set record/playback direction. hold & release to glide to the new direction.
 - **rate:** record & playback rate, quantized to octaves.
   - press one key with one finger to jump instantly to a new pitch.
