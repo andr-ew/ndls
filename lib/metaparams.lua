@@ -56,6 +56,7 @@ function metaparam:new(args)
     end
 
     args.default_scope = args.default_scope or 'track'
+    args.default_reset_preset_action = args.default_reset_preset_action or 'default'
 
     args.action = args.action or function() end
     
@@ -116,10 +117,6 @@ function metaparam:get_scope()
     return scopes[params:get(self.scope_id)]
 end
 
---TODO: add a callback assignment, same as reset/set_reset
--- function metaparam:set_randomize(func)
---     self.args.randomize = func
--- end
 function metaparam:randomize(t, b, p, silent)
     b = b or sc.buffer[t]
     p = p or preset:get(t)
@@ -292,6 +289,21 @@ function metaparam:add_random_range_params()
     --TODO: probabalility for binary type
 end
 
+function metaparam:add_reset_preset_action_param()
+    local id = self.id
+    local names = { 'default', 'random' }
+    local seman = tab.invert(names)
+    local funcs = { metaparams.resets.default, metaparams.resets.random }
+    params:add{
+        id = id..'_reset', name = id, type = 'option',
+        options = names, default = seman[self.args.default_reset_preset_action], 
+        allow_pmap = false,
+        action = function(v)
+            self:set_reset_presets(funcs[v])
+        end
+    }
+end
+
 function metaparams:new()
     local ms = setmetatable({}, { __index = self })
 
@@ -398,6 +410,12 @@ function metaparams:add_random_range_params()
         if m.args.type == 'number' or m.args.type == 'control' then
             m:add_random_range_params() 
         end
+    end
+end
+function metaparams:reset_preset_action_params_count() return #self.list end
+function metaparams:add_reset_preset_action_params()
+    for _,m in ipairs(self.list) do 
+        m:add_reset_preset_action_param() 
     end
 end
 
