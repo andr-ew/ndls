@@ -33,8 +33,8 @@ varibright = true
 --system libs
 
 cs = require 'controlspec'
-pattern_time = require 'pattern_time'
-UI = require 'ui'
+-- pattern_time = require 'pattern_time'
+UI = require 'ui' -- do I need this ?
 
 --git submodule libs
 
@@ -44,6 +44,7 @@ Text = include 'lib/nest/text'
 Grid = include 'lib/nest/grid'
 Arc = include 'lib/nest/arc'
 
+pattern_time = include 'lib/pattern_time/pattern_time'
 multipattern = include 'lib/nest/util/pattern-tools/multipattern'
 of = include 'lib/nest/util/of'
 to = include 'lib/nest/util/to'
