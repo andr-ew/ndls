@@ -33,22 +33,20 @@ varibright = true
 --system libs
 
 cs = require 'controlspec'
--- pattern_time = require 'pattern_time'
-UI = require 'ui' -- do I need this ?
+UI = require 'ui' --TODO: remove
 
 --git submodule libs
 
-nest = include 'lib/nest/core'
-Key, Enc = include 'lib/nest/norns'
-Text = include 'lib/nest/text'
-Grid = include 'lib/nest/grid'
-Arc = include 'lib/nest/arc'
+include 'lib/crops/core'                               --crops, a UI component framework
+_grid = include 'lib/crops/routines/grid'
+_arc = include 'lib/crops/routines/arc'
+_enc = include 'lib/crops/routines/enc'
+_key = include 'lib/crops/routines/key'
+_screen = include 'lib/crops/routines/screen'
+PatternRecorder = include 'lib/crops/components/grid/pattern_recorder'
 
 pattern_time = include 'lib/pattern_time/pattern_time'
-multipattern = include 'lib/nest/util/pattern-tools/multipattern'
-of = include 'lib/nest/util/of'
-to = include 'lib/nest/util/to'
-PatternRecorder = include 'lib/nest/examples/grid/pattern_recorder'
+multipattern = include 'lib/nest/util/pattern-tools/multipattern' --TODO: update to new version
 
 cartographer, Slice = include 'lib/cartographer/cartographer'
 
@@ -65,7 +63,7 @@ App.grid = include 'ndls/lib/ui/grid'                  --grid UI
 App.arc = include 'ndls/lib/ui/arc'                    --arc UI
 App.norns = include 'ndls/lib/ui/norns'                --norns UI
 
---set up nest v2 UI
+--create, connect UI components
 
 local _app = {
     --grid = App.grid(not g64(), 0),
@@ -81,11 +79,11 @@ local _app = {
     norns = App.norns(),
 }
 
-nest.connect_grid(_app.grid, g, fps.grid)
-nest.connect_arc(_app.arc, a, fps.arc)
-nest.connect_enc(_app.norns)
-nest.connect_key(_app.norns)
-nest.connect_screen(_app.norns, fps.screen)
+crops.connect_grid(_app.grid, g, fps.grid)
+crops.connect_arc(_app.arc, a, fps.arc)
+crops.connect_enc(_app.norns)
+crops.connect_key(_app.norns)
+crops.connect_screen(_app.norns, fps.screen)
 
 --init/cleanup
 
