@@ -106,7 +106,7 @@ function Components.norns.waveform(args)
     end
 end
 
-function Components.grid.view()
+function Components.grid.arc_focus()
     local held = {}
 
     return function(props)
@@ -161,7 +161,7 @@ function Components.grid.view()
             end
         elseif nest.grid.is_drawing() then
             for i = 0,tall and 5 or 3 do for j = 0,3 do 
-                g:led(props.x + j, props.y + i, props.view[i + 1][j + 1] * props.lvl)
+                g:led(props.x + j, props.y + i, props.lvl[props.view[i + 1][j + 1] + 1])
             end end
         end
     end

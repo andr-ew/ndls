@@ -17,6 +17,7 @@ a = arc.connect()
 wide = g and g.device and g.device.cols >= 16 or false
 tall = g and g.device and g.device.rows >= 16 or false
 arc2 = a and a.device and string.match(a.device.name, 'arc 2')
+arc_connected = not (a.name == 'none')
 
 -- test grid64
 -- wide = false
@@ -72,7 +73,7 @@ local _app = {
         varibright = varibright 
     },
     arc = App.arc{ 
-        arc2 = arc2,
+        map = not arc2 and { 'vol', 'cut', 'st', 'len' } or { 'st', 'len', 'vol', 'cut' }, 
         rotated = arc2,
         grid_wide = wide,
     },

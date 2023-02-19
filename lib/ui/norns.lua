@@ -38,14 +38,13 @@ local function App()
         local _ctl = Text.enc.control()
 
         return function(props)
-            local scope = mparams_scope(props.voice, props.id)
             _ctl{
                 n = props.n, x = e[props.n].x, y = e[props.n].y,
                 --label = (scope == 'base_sum') and string.upper(props.id) or props.id, 
                 label = props.id,
-                lvl = { (scope == 'base_sum') and 8 or 4, 16 },
+                lvl = { 4, 16 },
                 state = of_mparam(props.voice, props.id),
-                controlspec = mparams:get_controlspec(props.id, scope),
+                controlspec = mparams:get_controlspec(props.id),
             }
         end
     end
@@ -57,22 +56,16 @@ local function App()
         )
 
         return function(props)
-            if 
-                mparams_scope(args.voice, args.id) ~= 'base_sum' 
-                or mparams_scope(args.voice, args.id) ~= 'base' 
-            then
-                _rand{
-                    label = 'x', n = props.n,
-                    y = k[props.n].y, x = k[props.n].x,
-                    action = rand,
-                }
-            end
+            _rand{
+                label = 'x', n = props.n,
+                y = k[props.n].y, x = k[props.n].x,
+                action = rand,
+            }
         end
     end
     local function Window(args)
         local voice = args.voice
 
-        local _st_view = Text.enc.number()
         local _win_view = Text.enc.number()
         local _len_view = Text.enc.number()
         
@@ -85,12 +78,6 @@ local function App()
             local sens = 0.01
             
             if sc.punch_in[sc.buffer[voice]].recorded then
-                _st_view{
-                    n = 1, x = e[1].x, y = e[1].y,
-                    label = 'st', 
-                    state = { wparams:get('start', voice, 'seconds') },
-                    input_enabled = false,
-                }
                 _win_view{
                     n = 2, x = e[2].x, y = e[2].y,
                     label = 'win', 
@@ -116,11 +103,11 @@ local function App()
                         wparams:get_preset_setter('end', voice)
                     }
                    
-                    if n == 1 then
-                        st[2](st[1] + d * sens)
+                    -- if n == 1 then
+                    --     st[2](st[1] + d * sens)
 
-                        nest.screen.make_dirty()
-                    elseif n == 2 then
+                    --     nest.screen.make_dirty()
+                    if n == 2 then
                         st[2](st[1] + d * sens)
                         en[2](en[1] + d * sens)
 
@@ -149,46 +136,51 @@ local function App()
     local function Voice(args)
         local n = args.n
 
-        local _old = Ctl()
         local _vol = Ctl()
-        local _pan = Ctl()
+        local _old = Ctl()
         local _rand_vol = Rand{ voice = n, id = 'vol' }
-        local _rand_pan = Rand{ voice = n, id = 'pan' }
+        local _rand_old = Rand{ voice = n, id = 'old' }
 
         local _window = Window{ voice = n }
 
-        local _q = Ctl()
         local _cut = Ctl()
-        local _typ = Text.enc.number()
+        local _q = Ctl()
         local _rand_cut = Rand{ voice = n, id = 'cut' }
-        local _rand_type = Rand{ voice = n, id = 'type' }
+        local _typ = Text.key.option()
+
+        local _pan = Ctl()
+        local _rand_pan = Rand{ voice = n, id = 'pan' }
+        local set_bnd = multipattern.wrap_set(mpat, 'bnd '..n, function(v)
+            params:set('bnd '..n, v)
+        end)
+        local _bnd = Text.enc.control()
 
         return function(props)
-            if props.tab == MIX then
-                _old{ id = 'old', voice = n, n = 1 }
+            if props.tab == 1 then
                 _vol{ id = 'vol', voice = n, n = 2 }
-                _pan{ id = 'pan', voice = n, n = 3 }
+                _old{ id = 'old', voice = n, n = 3 }
                 _rand_vol{ n = 2 }
-                _rand_pan{ n = 3 }
-            elseif props.tab == WINDOW then
+                _rand_old{ n = 3 }
+            elseif props.tab == 2 then
                 _window()
-            elseif props.tab == FILTER then
-                _q{ id = 'q', voice = n, n = 1 }
+            elseif props.tab == 3 then
                 _cut{ id = 'cut', voice = n, n = 2 }
-                do
-                    local options = mparams:get_options('type')
-                    _typ{
-                        label = 'type', 
-                        lvl = { (mparams_scope(n, 'type') == 'base_sum') and 8 or 4, 16 },
-                        n = 3, y = e[3].y, x = e[3].x, 
-                        min = 1, step = 1, inc = 1, max = #options,
-                        formatter = function(v) return options[v] end,
-                        state = of_mparam(n, 'type'),
-                    }
-                end
+                _q{ id = 'q', voice = n, n = 3 }
                 _rand_cut{ n = 2 }
-                _rand_type{ n = 3 }
-            elseif props.tab == LFO then
+                _typ{
+                    n = 3, y = k[3].y, x = k[3].x, 
+                    scroll_window = { 1, 1 }, options = mparams:get_options('type'),
+                    state = of_mparam(n, 'type'),
+                }
+            elseif props.tab == 4 then
+                _pan{ id = 'pan', voice = n, n = 2 }
+                _bnd{
+                    n = 3, x = e[3].x, y = e[3].y,
+                    label = 'bnd', 
+                    state = { params:get('bnd '..n), set_bnd },
+                    controlspec = of.controlspec('bnd '..n),
+                }
+                _rand_pan{ n = 2 }
             end
         end
     end
@@ -207,34 +199,31 @@ local function App()
     local norns_view_pages = {}
     for i = 1,voices do norns_view_pages[i] = i end
 
-    local _page_label = Text.label()
-    local _track_label = Text.label()
-
     return function()
-        _alt{
-            n = 1, 
-            state = {
-                alt and 1 or 0,
-                function(v)
-                    alt = v==1
-                    nest.arc.make_dirty()
-                    nest.grid.make_dirty()
-                end
-            }
-        }
+        -- _alt{
+        --     n = 1, 
+        --     state = {
+        --         alt and 1 or 0,
+        --         function(v)
+        --             alt = v==1
+        --             nest.arc.make_dirty()
+        --             nest.grid.make_dirty()
+        --         end
+        --     }
+        -- }
 
         if nest.screen.is_drawing() then
             --draw view display
-            for p = 1, 4 do
-                for t = 1, voices do
-                    local x = (p-1)*2 + x[3] - (3*2)
-                    local y = (t-1)*2 + y[1] - 2
-                    local hl = (p == view.page) and (t == view.track)
-                    screen.level(hl and 15 or 4)
-                    screen.pixel(x, y)
-                    screen.fill()
-                end
-            end
+            -- for p = 1, 4 do
+            --     for t = 1, voices do
+            --         local x = (p-1)*2 + x[3] - (3*2)
+            --         local y = (t-1)*2 + y[1] - 2
+            --         local hl = (p == view.page) and (t == view.track)
+            --         screen.level(hl and 15 or 4)
+            --         screen.pixel(x, y)
+            --         screen.fill()
+            --     end
+            -- end
             --draw preset display
             do
                 local n = view.track
@@ -273,13 +262,6 @@ local function App()
             freeze_patrol:ping('screen')
         end
 
-        _page_label{
-            x = e[4].x, y = e[4].y, label = page_names[view.page], lvl = 4,
-        }
-        _track_label{
-            x = k[4].x, y = k[4].y, label = view.track, lvl = 8,
-        }
-        
         do
             local n = view.track
             local b = sc.buffer[n]
@@ -297,6 +279,21 @@ local function App()
                 end
             }
         end
+
+        _tab{
+            x = e[1].x, y = e[1].y, n = 1, sens = 0.5,
+            options = page_names, state = { view.page, function(v) view.page = v end }
+        }
+        _norns_view_tab{
+            x = e[4].x, y = e[4].y, n = 4, sens = 0.5, options = norns_view_pages, 
+            state = { 
+                view.track, 
+                function(v) 
+                    view.track = v 
+                    nest.grid.make_dirty()
+                end 
+            }
+        }
 
         _voices[view.track]{ tab = view.page//1 }
     end
