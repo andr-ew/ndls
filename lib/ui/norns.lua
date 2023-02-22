@@ -32,7 +32,7 @@ local function Ctl()
     return function(props)
         _enc.control{
             n = props.n, 
-            lvl = { 4, 16 },
+            level = { 4, 16 },
             state = of_mparam(props.voice, props.id),
             controlspec = mparams:get_controlspec(props.id),
         }
@@ -233,7 +233,7 @@ local function Voice(args)
 
             _enc.control{
                 n = 3, 
-                lvl = { 4, 16 },
+                level = { 4, 16 },
                 state = { params:get('bnd '..n), set_bnd },
                 controlspec = params:lookup_param('bnd '..n).controlspec,
             }
