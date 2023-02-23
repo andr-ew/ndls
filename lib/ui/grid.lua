@@ -1,6 +1,6 @@
 local shaded = { 4, 15 }
 
-local function Presets(args)
+local function Preset(args)
     local varibright = args.varibright
     local wide = args.wide
     local tall = args.tall
@@ -69,9 +69,33 @@ end
 
 local function Integerglide()
     local downtime = nil
+    local held = false
 
     return function(props)
-        --TODO
+        if crops.mode == 'input' and crops.device == 'grid' then 
+            local x, y, z = table.unpack(crops.args) 
+            local n = xy_to_index(props, x, y)
+
+            if n then 
+                local old = crops.get_state(props.state)
+                local new = n
+
+                if z==1 then
+                    if not held then downtime = util.time() end
+
+                    if new ~= old then
+                        local heldtime = util.time() - downtime
+
+                        props.hold_action and props.hold_action(heldtime)
+                        crops.set_state(props.state, new) 
+                        
+                        held = false
+                    end
+                end
+            end
+        elseif crops.mode == 'redraw' then
+            _grid.integer(props)
+        end
     end
 end
 
@@ -107,7 +131,7 @@ local function Voice(args)
     local _rev = Togglehold()
     local _rate = Integerglide()
 
-    local _presets = Presets{ 
+    local _preset = Preset{ 
         voice = n, varibright = varibright, wide = wide, tall = tall,
     }
 
@@ -118,16 +142,6 @@ local function Voice(args)
         local recorded = sc.punch_in[b].recorded
         local recording = sc.punch_in[b].recording
 
-        if sc.lvlmx[n].play == 1 and recorded then
-            _phase{ 
-                x = rate_x, 
-                y = wide and top or bottom, 
-                size = rate_size,
-                level = 4,
-                phase = reg.play:phase_relative(n, sc.phase[n].abs, 'fraction'),
-            }
-        end
-    
         _rec{
             x = 1, y = bottom,
             state = { params:get('rec '..n), set_rec },
@@ -150,7 +164,16 @@ local function Voice(args)
         else
             --TODO: binary buffer selection
         end
-
+        
+        if sc.lvlmx[n].play == 1 and recorded then
+            _phase{ 
+                x = rate_x, 
+                y = wide and top or bottom, 
+                size = rate_size,
+                level = 4,
+                phase = reg.play:phase_relative(n, sc.phase[n].abs, 'fraction'),
+            }
+        end
         _rev{
             x = wide and 7 or 3, y = top, 
             levels = shaded,
@@ -164,15 +187,11 @@ local function Voice(args)
             local off = wide and 5 or 4
             _rate{
                 x = rate_x, y = top, 
-                --TODO
-                -- filtersame = true,
-                -- state = {
-                --     mparams:get(n, 'rate') + off 
-                -- },
-                -- action = function(v, t)
-                --     mparams:set(n, 'rate_slew', t)
-                --     mparams:set(n, 'rate', v - off)
-                -- end,
+                state = { 
+                    mparams:get(n, 'rate') + off, 
+                    function(v) mparams:set(n, 'rate', v - off) end 
+                },
+                hold_action = function(t) mparams:set(n, 'rate_slew', t) end,
             }
         end
         if wide then
@@ -194,7 +213,7 @@ local function Voice(args)
             end
         end
 
-        _presets()
+        _preset()
     end
 end
 
@@ -217,22 +236,23 @@ local function App(args)
     local _patrec = PatternRecorder()
     local _patrec2 = not wide and PatternRecorder()
 
-    local _track_focus = Grid.number()
     local _arc_focus = (wide and (not tall) and arc_connected) and Components.grid.arc_focus()
-    local _page_focus = (wide and not _arc_focus) and Grid.number()
 
     return function()
-        _track_focus{
-            x = 1, y = { 1, voices }, leveks = low_shade,
+        _grid.integer{
+            x = 1, y = 1, size = voices, flow = 'down',
+            levels = low_shade,
             state = { 
-                voices - view.track + 1, 
+                view.track, 
                 function(v) 
-                    view.track = voices - v + 1 
-                    nest.screen.make_dirty()
+                    view.track = v
+                    crops.dirty.screen = true 
+                    crops.dirty.grid = true
                 end 
             }
         }
         if _arc_focus then
+            --TODO: refactor to use states more correctly
             _arc_focus{
                 x = 3, y = 1, levels = low_shade,
                 view = arc_view, tall = tall,
@@ -240,18 +260,21 @@ local function App(args)
                 action = function(vertical, x, y)
                     if not vertical then view.track = y end
 
-                    nest.arc.make_dirty()
-                    nest.screen.make_dirty()
+                    crops.dirty.screen = true 
+                    crops.dirty.grid = true
                 end
             }
         elseif wide then
-            _page_focus{
-                y = 1, x = { 2, 2 + #page_names - 1 }, levels = mid_shade,
+            _grid.integer{
+                y = 1, x = 2, size = #page_names,
+                levels = mid_shade,
                 state = { 
-                    view.page//1, 
+                    view.page, 
                     function(v) 
                         view.page = v 
-                        nest.screen.make_dirty()
+
+                        crops.dirty.screen = true 
+                        crops.dirty.grid = true
                     end 
                 }
             }
@@ -259,31 +282,16 @@ local function App(args)
 
         for i, _voice in ipairs(_voices) do _voice() end
 
-        if wide then
+        for i,(tall and 16 or (wide and 8 or 4)) do
             _patrec{
-                x = tall and { 1, 16 } or 16, 
-                y = tall and 16 or { 1, 8 }, 
-                state = { pattern_states.main },
-                pattern = pattern, varibright = varibright
-            }
-        else
-            local p = pattern
-            local st = pattern_states.main
-            _patrec{
-                x = 8, y = { 1, 4 },
-                pattern = { p[1], p[2], p[3], p[4] }, 
-                state = {{ st[1], st[2], st[3], st[4] }},
-                varibright = varibright
-            }
-            _patrec2{
-                x = { 5, 7 }, y = 4,
-                pattern = { p[5], p[6], p[7] }, 
-                state = {{ st[5], st[6], st[7] }}, 
+                x = tall and i or (wide and 16 or 8), 
+                y = tall and 16 or i, 
+                pattern = pattern[i], 
                 varibright = varibright
             }
         end
 
-        if nest.grid.is_drawing() then
+        if crops.mode == 'redraw' and crops.device == 'grid' then 
             freeze_patrol:ping('grid')
         end
     end
