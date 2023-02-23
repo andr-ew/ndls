@@ -44,6 +44,8 @@ local function Preset(args)
     end
 end
 
+--TODO: probably makes sense to move these to ui/components
+
 local function Togglehold()
     local downtime = nil
 
@@ -217,7 +219,6 @@ local function Voice(args)
     end
 end
 
---TODO: refactor
 local function App(args)
     local varibright = args.varibright
     local wide = args.wide
