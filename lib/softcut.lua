@@ -12,9 +12,9 @@ sc = {
             s[n].rel = reg.rec:phase_relative(n, v, 'fraction')
             s[n].delta = v - s[n].last
 
-            nest.grid.make_dirty()
-            nest.arc.make_dirty()
-            nest.screen.make_dirty()
+            crops.dirty.grid = true
+            crops.dirty.arc = true
+            crops.dirty.screen = true
             
             s[n].last = v
         end
@@ -417,7 +417,7 @@ sc.samples = { -- [buffer] = { samples }
 
         softcut.event_render(function(...)
             for i,e in ipairs(events) do e(...) end
-            nest.screen.make_dirty()
+            crops.dirty.screen = true
         end)
         
         for i = 1,buffers do 
