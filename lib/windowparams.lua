@@ -104,7 +104,7 @@ function windowparams:bang(t)
     reg.play[b][t]:set_start(st, 'fraction')
     reg.play[b][t]:set_end(en, 'fraction')
 
-    nest.screen.make_dirty(); nest.arc.make_dirty()
+    crops.dirty.screen = true; crops.dirty.arc = true
 end
 
 function windowparams:expand(t, b, p, silent)
