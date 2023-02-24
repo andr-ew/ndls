@@ -1,30 +1,28 @@
 local Destinations = {}
 
 function Destinations.vol(n, x)
-    local _vol = Arc.number()
-
     return function() 
-        _vol{
+        _arc.decimal{
             n = tonumber(arc_vertical and n or x),
-            sens = 0.25, max = 2.5, cycle = 1.5,
+            sensitivity = 0.25, max = 2.5, cycle = 1.5,
             state = of_mparam(n, 'vol'),
-            lvl = 15,
+            levels = { 0, 15 },
         }
     end
 end
 
 function Destinations.cut(n, x)
-    local _cut = Arc.control()
     local _filt = Components.arc.filter()
 
     return function() 
-        _cut{
-            n = tonumber(arc_vertical and n or x),
-            x = { 42, 24+64 }, sens = 0.25, 
-            redraw_enabled = false,
-            state = of_mparam(n, 'cut'),
-            controlspec = mparams:get_controlspec('cut'),
-        }
+        if crops.mode == 'redraw' then
+            _arc.control{
+                n = tonumber(arc_vertical and n or x),
+                x = { 42, 24+64 }, sensitivity = 0.25, 
+                state = of_mparam(n, 'cut'),
+                controlspec = mparams:get_controlspec('cut'),
+            }
+        end
         _filt{
             n = tonumber(arc_vertical and n or x),
             x = { 42, 24+64 },
@@ -42,10 +40,11 @@ function Destinations.st(n, x)
 
         _st{
             n = tonumber(arc_vertical and n or x),
-            x = { 33, 64+32 }, lvl = { 4, 15 },
+            x = { 33, 64+32 }, 
+            levels = { 4, 15 },
             phase = sc.phase[n].rel,
             show_phase = sc.lvlmx[n].play == 1,
-            sens = 1/1000,
+            sensitivity = 1/1000,
             st = {
                 wparams:get('start', n), 
                 wparams:get_preset_setter('start', n)
@@ -74,10 +73,10 @@ function Destinations.len(n, x)
             phase = sc.phase[n].rel,
             show_phase = sc.lvlmx[n].play == 1,
             nudge = alt,
-            sens = 1/1000,
-            lvl_st = alt and 15 or 4,
-            lvl_en = alt and 4 or 15,
-            lvl_ph = 4,
+            sensitivity = 1/1000,
+            level_st = alt and 15 or 4,
+            level_en = alt and 4 or 15,
+            level_ph = 4,
             st = {
                 wparams:get('start', n), 
                 wparams:get_preset_setter('start', n)
