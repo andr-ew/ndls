@@ -34,7 +34,7 @@ function Components.norns.waveform(args)
                     screen.line(left + width * reg:get_end('fraction'), equator)
                     screen.stroke()
 
-                    crops.dirty.screen = true 
+                    -- crops.dirty.screen = true 
                 end
             else
                 --waveform
@@ -73,7 +73,7 @@ function Components.norns.waveform(args)
                 end
                 
                 render()
-                crops.dirty.screen = true 
+                -- crops.dirty.screen = true 
             end
         end
     end
