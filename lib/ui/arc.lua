@@ -33,7 +33,7 @@ function Destinations.cut(n, x)
 end
 
 function Destinations.st(n, x)
-    _st = Components.arc.st(mpat)
+    _st = Components.arc.st()
 
     return function() 
         local b = sc.buffer[n]
@@ -62,7 +62,7 @@ function Destinations.st(n, x)
 end
 
 function Destinations.len(n, x)
-    _len = Components.arc.len(mpat)
+    _len = Components.arc.len()
 
     return function() 
         local b = sc.buffer[n]

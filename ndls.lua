@@ -33,7 +33,6 @@ varibright = true
 --system libs
 
 cs = require 'controlspec'
-UI = require 'ui' --TODO: remove
 
 --git submodule libs
 
