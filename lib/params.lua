@@ -9,7 +9,7 @@ do
         default_reset_preset_action = 'default',
         action = function(i, v)
             sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
-            nest.screen.make_dirty(); nest.arc.make_dirty()
+            crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
@@ -23,7 +23,7 @@ do
         random_min_default = -1, random_max_default = 1,
         action = function(i, v)
             sc.panmx[i].pan = v; sc.panmx:update(i)
-            nest.screen.make_dirty(); nest.arc.make_dirty()
+            crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
@@ -35,7 +35,7 @@ do
         default_reset_preset_action = 'default',
         action = function(i, v)
             sc.oldmx[i].old = v; sc.oldmx:update(i)
-            nest.screen.make_dirty(); nest.arc.make_dirty()
+            crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
@@ -46,7 +46,7 @@ do
         default_reset_preset_action = 'random',
         action = function(i, v)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
-            nest.screen.make_dirty(); nest.arc.make_dirty()
+            crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
@@ -57,7 +57,7 @@ do
         default_reset_preset_action = 'default',
         action = function(i, v)
             softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
-            nest.screen.make_dirty(); nest.arc.make_dirty()
+            crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     local types = { 'lp', 'bp', 'hp', 'dry' }
@@ -68,7 +68,7 @@ do
         action = function(i, v)
             for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
             softcut['post_filter_'..types[v]](i, 1)
-            nest.screen.make_dirty(); nest.arc.make_dirty()
+            crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
@@ -80,8 +80,8 @@ do
         action = function(n, v)
             sc.loopmx[n].loop = v; sc.loopmx:update(n)
 
-            nest.grid.make_dirty()
-            nest.screen.make_dirty()
+            crops.dirty.grid = true
+            crops.dirty.screen = true
         end
     }
     mparams:add{
@@ -93,7 +93,7 @@ do
         default_reset_preset_action = 'default',
         action = function(i, v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
-            nest.grid.make_dirty()
+            crops.dirty.grid = true
         end
     }
     mparams:add{
@@ -104,7 +104,7 @@ do
         default_reset_preset_action = 'default',
         action = function(i, v) 
             sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
-            nest.grid.make_dirty()
+            crops.dirty.grid = true
         end
     }
 
@@ -278,8 +278,8 @@ do
                 end
 
 
-                nest.grid.make_dirty()
-                nest.screen.make_dirty()
+                crops.dirty.grid = true
+                crops.dirty.screen = true
             end
         }
         params:add {
@@ -296,8 +296,8 @@ do
 
                 sc.lvlmx[n].play = v; sc.lvlmx:update(n)
 
-                nest.grid.make_dirty()
-                nest.screen.make_dirty()
+                crops.dirty.grid = true
+                crops.dirty.screen = true
             end
         }
         params:add{
@@ -310,8 +310,8 @@ do
                 params:set('rec '..i, 0) 
                 sc.punch_in:clear(b)
 
-                nest.grid.make_dirty()
-                nest.screen.make_dirty()
+                crops.dirty.grid = true
+                crops.dirty.screen = true
             end
         }
 
@@ -320,7 +320,7 @@ do
             type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
             action = function(v) 
                 sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
-                nest.screen.make_dirty(); nest.arc.make_dirty()
+                crops.dirty.screen = true; crops.dirty.arc = true
             end
         }
     end
@@ -335,9 +335,9 @@ do
             action = function(v)
                 sc.buffer[i] = v; sc.buffer:update(i)
 
-                nest.arc.make_dirty()
-                nest.screen.make_dirty()
-                nest.grid.make_dirty()
+                crops.dirty.arc = true
+                crops.dirty.screen = true
+                crops.dirty.grid = true
             end
         }
         for b = 1,buffers do
@@ -347,9 +347,9 @@ do
                 action = function(v)
                     preset[i][b] = v; preset:update(i, b)
 
-                    nest.arc.make_dirty()
-                    nest.screen.make_dirty()
-                    nest.grid.make_dirty()
+                    crops.dirty.arc = true
+                    crops.dirty.screen = true
+                    crops.dirty.grid = true
                 end
             }
         end
@@ -369,7 +369,7 @@ do
                     sc.sendmx[i].ret = 0; sc.sendmx:update() 
                     params:set('return '..i, 0, true)
                 end
-                nest.grid.make_dirty()
+                crops.dirty.grid = true
             end
         }
         params:add{
@@ -382,7 +382,7 @@ do
                     sc.sendmx[i].send = 0; sc.sendmx:update() 
                     params:set('send '..i, 0, true)
                 end
-                nest.grid.make_dirty()
+                crops.dirty.grid = true
             end
         }
     end
