@@ -146,8 +146,7 @@ function Components.grid.phase()
         if crops.mode == 'redraw' then
             local g = crops.handler
             g:led(
-                props.x[1] 
-                    + math.floor(props.phase * (props.x[2] - props.x[1] + 1)), 
+                props.x + math.floor(props.phase * props.size), 
                 props.y, 
                 props.level
             )
@@ -259,8 +258,8 @@ function Components.arc.st()
                     --local st, en = props.state[1].st, props.state[1].en
                     local st = props.st[1]
                     local en = props.en[1]
-                    props.st[2](props.st[1] + d * props.sens * 2)
-                    props.en[2](props.en[1] + d * props.sens * 2)
+                    props.st[2](props.st[1] + d * props.sensitivity * 2)
+                    props.en[2](props.en[1] + d * props.sensitivity * 2)
 
                     -- nest.arc.make_dirty()
                 end
@@ -311,7 +310,7 @@ function Components.arc.len()
                 
                 if n == props.n then
                     local en = props.en[1]
-                    props.en[2](props.en[1] + d * props.sens * 2)
+                    props.en[2](props.en[1] + d * props.sensitivity * 2)
 
                     -- nest.arc.make_dirty()
                 end

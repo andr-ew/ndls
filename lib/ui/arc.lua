@@ -4,7 +4,7 @@ function Destinations.vol(n, x)
     return function() 
         _arc.decimal{
             n = tonumber(arc_vertical and n or x),
-            sensitivity = 0.25, max = 2.5, cycle = 1.5,
+            sensitivity = 0.25/64, max = 2.5,
             state = of_mparam(n, 'vol'),
             levels = { 0, 15 },
         }
@@ -15,7 +15,7 @@ function Destinations.cut(n, x)
     local _filt = Components.arc.filter()
 
     return function() 
-        if crops.mode == 'redraw' then
+        if crops.mode == 'input' then
             _arc.control{
                 n = tonumber(arc_vertical and n or x),
                 x = { 42, 24+64 }, sensitivity = 0.25, 

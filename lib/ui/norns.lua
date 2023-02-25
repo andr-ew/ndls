@@ -154,13 +154,13 @@ local function Window(args)
             _screen.list{
                 x = e[2].x, y = e[2].y,
                 text = { 
-                    win = wparams:get('start', voice, 'seconds') 
+                    win = util.round(wparams:get('start', voice, 'seconds'), 0.01)
                 },
             }
             _screen.list{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    len = wparams:get('length', voice, 'seconds') 
+                    len = util.round(wparams:get('length', voice, 'seconds'), 0.01)
                 },
             }
 
@@ -240,7 +240,7 @@ local function Voice(args)
             _screen.list{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    bnd = util.round(params:get('bnd'), 0.01) 
+                    bnd = util.round(params:get('bnd '), 0.01) 
                 },
             }
 

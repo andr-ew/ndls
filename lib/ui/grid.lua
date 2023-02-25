@@ -114,7 +114,6 @@ local function Voice(args)
     local hold_rec = function() 
         params:delta('clear '..n, 1) 
     end
-    local _rec = Togglehold()
 
     local set_play = multipattern.wrap_set(mpat, 'play '..n, function(v)
         params:set('play '..n, v)
@@ -144,17 +143,17 @@ local function Voice(args)
         local recorded = sc.punch_in[b].recorded
         local recording = sc.punch_in[b].recording
 
-        _rec{
+        _grid.toggle{
             x = 1, y = bottom,
             state = { params:get('rec '..n), set_rec },
-            hold_time = 0.5,
-            hold_action = hold_rec,
         }
         if recorded or recording then
             _grid.toggle{
                 x = 2, y = bottom, levels = shaded,
                 state = { recorded and params:get('play '..n) or 0, set_play }
             }
+        else
+            _grid.fill{ x = 2, y = bottom, level = shaded[1] }
         end
 
         if wide then
@@ -188,7 +187,7 @@ local function Voice(args)
         do
             local off = wide and 5 or 4
             _rate{
-                x = rate_x, y = top, 
+                x = rate_x, y = top, size = 7,
                 state = { 
                     mparams:get(n, 'rate') + off, 
                     function(v) mparams:set(n, 'rate', v - off) end 
