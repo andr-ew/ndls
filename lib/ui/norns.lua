@@ -240,7 +240,7 @@ local function Voice(args)
             _screen.list{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    bnd = util.round(params:get('bnd '), 0.01) 
+                    bnd = util.round(params:get('bnd '..n), 0.01) 
                 },
             }
 
