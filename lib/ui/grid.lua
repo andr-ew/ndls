@@ -58,7 +58,7 @@ local function Togglehold()
                 local heldtime = util.time() - downtime
 
                 if heldtime > (props.hold_time or 0.5) then
-                    props.hold_action and props.hold_action(heldtime)
+                    if props.hold_action then props.hold_action(heldtime) end
                 end
 
                 downtime = nil --probably extraneous
@@ -76,7 +76,7 @@ local function Integerglide()
     return function(props)
         if crops.mode == 'input' and crops.device == 'grid' then 
             local x, y, z = table.unpack(crops.args) 
-            local n = xy_to_index(props, x, y)
+            local n = _grid.util.xy_to_index(props, x, y)
 
             if n then 
                 local old = crops.get_state(props.state)
@@ -88,7 +88,7 @@ local function Integerglide()
                     if new ~= old then
                         local heldtime = util.time() - downtime
 
-                        props.hold_action and props.hold_action(heldtime)
+                        if props.hold_action then props.hold_action(heldtime) end
                         crops.set_state(props.state, new) 
                         
                         held = false
@@ -283,7 +283,7 @@ local function App(args)
 
         for i, _voice in ipairs(_voices) do _voice() end
 
-        for i,(tall and 16 or (wide and 8 or 4)) do
+        for i = 1,(tall and 16 or (wide and 8 or 4)) do
             _patrec{
                 x = tall and i or (wide and 16 or 8), 
                 y = tall and 16 or i, 

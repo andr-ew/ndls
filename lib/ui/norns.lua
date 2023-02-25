@@ -9,11 +9,11 @@ x[1.5] = w * 5/16 + mar.left + 4
 x[2] = w/2 + mar.left
 x[2.5] = w * 13/16 + mar.left + 4
 x[3] = 128 - mar.right
-y[1] = mar.top
+y[1] = mar.top + 4
 y[2] = nil
-y[3] = mar.top + h*(5.5/8)
-y[4] = mar.top + h*(7/8)
-y[5] = 64 - mar.bottom - 2
+y[3] = mar.top + h*(5.5/8) + 4
+y[4] = mar.top + h*(7/8) + 4
+y[5] = 64 - mar.bottom - 2 + 4
 
 local e = {
     { x = x[1], y = y[1] },
@@ -39,7 +39,7 @@ local function Ctl()
         _screen.list{
             x = e[props.n].x, y = e[props.n].y,
             text = { 
-                [props.id] = util.round(params:get(props.id), props.round or 0.01) 
+                [props.id] = util.round(mparams:get(props.voice, props.id), props.round or 0.01) 
             },
         }
     end
@@ -220,7 +220,7 @@ local function Voice(args)
 
             _key.integer{
                 n_next = 3, min = 1,
-                max = #mparams:get_options('type')
+                max = #mparams:get_options('type'),
                 state = of_mparam(n, 'type'),
             }
             _screen.text{
@@ -349,7 +349,7 @@ local function App()
                     crops.dirty.screen = true 
                     crops.dirty.grid = true 
                 end 
-            }
+            },
             state_remainder = { 
                 remainder_view_page, 
                 function(v) remainder_view_page = v end
@@ -370,7 +370,7 @@ local function App()
                     crops.dirty.screen = true 
                     crops.dirty.grid = true 
                 end 
-            }
+            },
             state_remainder = { 
                 remainder_view_page, 
                 function(v) remainder_view_page = v end
