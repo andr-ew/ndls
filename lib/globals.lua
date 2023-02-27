@@ -26,15 +26,15 @@ arc_view = tall and {
 }
 
 
-function pattern_time:resume()
-    if self.count > 0 then
-        self.prev_time = util.time()
-        self.process(self.event[self.step])
-        self.play = 1
-        self.metro.time = self.time[self.step] * self.time_factor
-        self.metro:start()
-    end
-end
+-- function pattern_time:resume()
+--     if self.count > 0 then
+--         self.prev_time = util.time()
+--         self.process(self.event[self.step])
+--         self.play = 1
+--         self.metro.time = self.time[self.step] * self.time_factor
+--         self.metro:start()
+--     end
+-- end
 
 pattern, mpat = {}, {}
 for i = 1,16 do

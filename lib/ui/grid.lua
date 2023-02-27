@@ -84,6 +84,7 @@ local function Integerglide()
 
                 if z==1 then
                     if not held then downtime = util.time() end
+                    held = true
 
                     if new ~= old then
                         local heldtime = util.time() - downtime
@@ -181,7 +182,10 @@ local function Voice(args)
             state = of_mparam(n, 'rev'),
             hold_time = 0,
             hold_action = function(t)
-                mparams:set(n, 'rate_slew', (t < 0.2) and 0.025 or t)
+                mparams:set(
+                    n, 'rate_slew', 
+                    (t < 0.2) and 0.025 or t * (1.3 + (math.random() * 0.5))
+                )
             end,
         }
         do
@@ -192,7 +196,9 @@ local function Voice(args)
                     mparams:get(n, 'rate') + off, 
                     function(v) mparams:set(n, 'rate', v - off) end 
                 },
-                hold_action = function(t) mparams:set(n, 'rate_slew', t) end,
+                hold_action = function(t) 
+                    mparams:set(n, 'rate_slew', t * (1.3 + (math.random() * 0.5))) 
+                end,
             }
         end
         if wide then
