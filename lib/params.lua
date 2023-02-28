@@ -240,8 +240,7 @@ end
 
 -- add other params
 do
-    --params:add_separator('params_sep','other params')
-    params:add_separator('')
+    params:add_separator('params_sep', 'track params')
 
     params:add_group('record & play', 5 * tracks)
     for i = 1, voices do
@@ -252,23 +251,14 @@ do
             type = 'binary', behavior = 'toggle', 
             action = function(v)
                 local n = i
+                local z = sc.buffer[n]
 
                 sc.oldmx[n].rec = v; sc.oldmx:update(n)
 
-                local z = sc.buffer[n]
-                --if not sc.punch_in[z].recorded then
-                --    sc.punch_in:set(z, v)
-
-                --    --TODO: refactor reset call into sc.punch_in
-                --    if v==0 and sc.punch_in[z].recorded then 
-                --        preset:reset(n)
-                --    end
-                --end
                 if not sc.punch_in[z].recorded then
                     sc.punch_in:set(z, v)
 
                     if v==0 and sc.punch_in[z].recorded then 
-                        --FIXME: not resetting all tracks
                         preset:reset(n)
                         params:set('play '..i, 1) 
                     end
@@ -290,8 +280,8 @@ do
 
                 local z = sc.buffer[n]
                 if v==1 and sc.punch_in[z].recording then
-                    --TODO: preset reset
                     sc.punch_in:set(z, 0)
+                    preset:reset(n)
                 end
 
                 sc.lvlmx[n].play = v; sc.lvlmx:update(n)
