@@ -31,7 +31,7 @@ do
         type = 'control', 
         controlspec = cs.def{ default = 0.8, max = 1 },
         random_min_default = 0.5, random_max_default = 1,
-        default_scope = 'track',
+        default_scope = 'global',
         default_reset_preset_action = 'default',
         action = function(i, v)
             sc.oldmx[i].old = v; sc.oldmx:update(i)
@@ -53,7 +53,7 @@ do
         id = 'q', type = 'control', 
         controlspec = cs.def{ min = 0, max = 1, default = 0.4 },
         random_min_default = -0.3, random_max_default = 0.3,
-        default_scope = 'track',
+        default_scope = 'global',
         default_reset_preset_action = 'default',
         action = function(i, v)
             softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
@@ -75,7 +75,7 @@ do
         id = 'loop',
         type = 'binary', behavior = 'toggle', 
         default = 1, 
-        default_scope = 'preset',
+        default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(n, v)
             sc.loopmx[n].loop = v; sc.loopmx:update(n)
@@ -89,7 +89,7 @@ do
         type = 'number', 
         min = -7, max = 2, default = 0, 
         random_min_default = -1, random_max_default = 1,
-        default_scope = 'preset',
+        default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
@@ -100,7 +100,7 @@ do
         id = 'rev',
         type = 'binary', behavior = 'toggle',
         default = 0,
-        default_scope = 'preset',
+        default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, v) 
             sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
