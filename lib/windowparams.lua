@@ -132,7 +132,6 @@ function windowparams:randomize(t, target, b, p, silent)
     p = p or preset:get(t)
     local sl = p
 
-    local b = sc.buffer[vc]
     local b_sl = reg.rec[b]
     --local p = reg.play[b]
 
