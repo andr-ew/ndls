@@ -1,203 +1,273 @@
-local function App()
-    local x,y = {}, {}
+local x,y = {}, {}
 
-    local mar = { left = 2, top = 4, right = 2, bottom = 0 }
-    local w = 128 - mar.left - mar.right
-    local h = 64 - mar.top - mar.bottom
+local mar = { left = 2, top = 4, right = 2, bottom = 0 }
+local w = 128 - mar.left - mar.right
+local h = 64 - mar.top - mar.bottom
 
-    x[1] = mar.left
-    x[1.5] = w * 5/16 + mar.left + 4
-    x[2] = w/2 + mar.left
-    x[2.5] = w * 13/16 + mar.left + 4
-    x[3] = 128 - mar.right
-    y[1] = mar.top
-    y[2] = nil
-    y[3] = mar.top + h*(5.5/8)
-    y[4] = mar.top + h*(7/8)
-    y[5] = 64 - mar.bottom - 2
+x[1] = mar.left
+x[1.5] = w * 5/16 + mar.left + 4
+x[2] = w/2 + mar.left
+x[2.5] = w * 13/16 + mar.left + 4
+x[3] = 128 - mar.right
+y[1] = mar.top + 4
+y[2] = nil
+y[3] = mar.top + h*(5.5/8) + 4
+y[4] = mar.top + h*(7/8) + 4
+y[5] = 64 - mar.bottom - 2 + 4
 
-    local e = {
-        { x = x[1], y = y[1] },
-        { x = x[1], y = y[4] },
-        { x = x[2], y = y[4] },
-        { x = x[2], y = y[1] },
-    }
-    local k = {
-        {  },
-        { x = x[1.5], y = y[4] },
-        { x = x[2.5], y = y[4] },
-        { x = x[2.5], y = y[1] }
-    }
+local e = {
+    { x = x[1], y = y[1] },
+    { x = x[1], y = y[4] },
+    { x = x[2], y = y[4] },
+    { x = x[2], y = y[1] },
+}
+local k = {
+    {  },
+    { x = x[1.5], y = y[4] },
+    { x = x[2.5], y = y[4] },
+    { x = x[2.5], y = y[1] }
+}
 
-    local _alt = Key.momentary()
-
-    local _tab = Text.enc.option()
-    local _norns_view_tab = Text.enc.option()
-
-    local function Ctl()
-        local _ctl = Text.enc.control()
-
-        return function(props)
-            _ctl{
-                n = props.n, x = e[props.n].x, y = e[props.n].y,
-                --label = (scope == 'base_sum') and string.upper(props.id) or props.id, 
-                label = props.id,
-                lvl = { 4, 16 },
-                state = of_mparam(props.voice, props.id),
-                controlspec = mparams:get_controlspec(props.id),
-            }
-        end
+local function Ctl()
+    return function(props)
+        _enc.control{
+            n = props.n, 
+            level = { 4, 16 },
+            state = of_mparam(props.voice, props.id),
+            controlspec = mparams:get_controlspec(props.id),
+        }
+        _screen.list{
+            x = e[props.n].x, y = e[props.n].y,
+            text = { 
+                [props.id] = util.round(mparams:get(props.voice, props.id), props.round or 0.01) 
+            },
+        }
     end
-    local function Rand(args)
-        local _rand = Text.key.trigger()
-        local rand = multipattern.wrap_set(
-            mpat, args.id..'_'..args.voice..'_x', 
-            function() mparams:randomize(args.voice, args.id) end
+end
+
+local function Rand(args)
+    local blink_level = 1
+
+    local rand = multipattern.wrap_set(
+        mpat, args.id..'_'..args.voice..'_x', 
+        function() 
+            mparams:randomize(args.voice, args.id) 
+
+            clock.run(function() 
+                blink_level = 2
+                crops.dirty.screen = true
+
+                clock.sleep(0.2)
+
+                blink_level = 1
+                crops.dirty.screen = true
+            end)
+        end
+    )
+
+    return function(props)
+        _key.momentary{
+            n = props.n,
+            input = function(z) if z>0 then rand() end end
+        }
+        _screen.text{
+            text = 'x',
+            y = k[props.n].y, x = k[props.n].x,
+            level = ({ 4, 15 })[blink_level],
+        }
+    end
+end
+
+local function Window(args)
+    local voice = args.voice
+
+    local blink_level_st = 1
+    local blink_level_en = 1
+
+    local rand_wind = multipattern.wrap_set(
+        mpat, 'window'..voice..'_x', function(target) 
+            wparams:randomize(voice, target) 
+
+            clock.run(function() 
+                if target == 'both' or target == 'st' then blink_level_st = 2 end
+                if target == 'both' or target == 'en' then blink_level_en = 2 end
+                crops.dirty.screen = true
+
+                clock.sleep(0.2)
+
+                blink_level_st = 1
+                blink_level_en = 1
+                crops.dirty.screen = true
+            end)
+        end
+    )
+
+    local rand_wind_held = {}
+    local function set_rand_wind_held(v)
+        local old_st, old_en = rand_wind_held[1], rand_wind_held[2]
+        local new_st, new_en = v[1], v[2]
+
+        local both_last = old_st==1 and old_en==1
+        local both_falling = both_last and (
+            new_st==0 or new_en==0
         )
+        local st_falling = new_st==0 and old_st==1
+        local en_falling = new_en==0 and old_en==1
 
-        return function(props)
-            _rand{
-                label = 'x', n = props.n,
-                y = k[props.n].y, x = k[props.n].x,
-                action = rand,
-            }
+        if not both_last then
+            if st_falling then rand_wind('st')
+            elseif end_falling then rand_wind('en') end
+        elseif both_falling then
+            rand_wind('both')
         end
-    end
-    local function Window(args)
-        local voice = args.voice
 
-        local _win_view = Text.enc.number()
-        local _len_view = Text.enc.number()
+        rand_wind_held = v
+    end
+
+    return function(props)
+        local sens = 0.01
         
-        local _rand_wind = Text.key.trigger()
-        local rand_wind = multipattern.wrap_set(
-            mpat, 'window'..args.voice..'_x', function(target) wparams:randomize(voice, target) end
-        )
+        if sc.punch_in[sc.buffer[voice]].recorded then
+            if crops.device == 'enc' and crops.mode == 'input' then
+                local n, d = table.unpack(crops.args)
 
-        return function(props)
-            local sens = 0.01
-            
-            if sc.punch_in[sc.buffer[voice]].recorded then
-                _win_view{
-                    n = 2, x = e[2].x, y = e[2].y,
-                    label = 'win', 
-                    state = { wparams:get('start', voice, 'seconds') },
-                    input_enabled = false,
+                local st = { 
+                    wparams:get('start', voice), 
+                    wparams:get_preset_setter('start', voice)
                 }
-                _len_view{
-                    n = 3, x = e[3].x, y = e[3].y,
-                    label = 'len', 
-                    state = { wparams:get('length', voice, 'seconds') },
-                    input_enabled = false,
+                local en = { 
+                    wparams:get('end', voice), 
+                    wparams:get_preset_setter('end', voice)
                 }
+               
+                if n == 2 then
+                    st[2](st[1] + d * sens)
+                    en[2](en[1] + d * sens)
 
-                if nest.enc.has_input() then
-                    local n, d = nest.enc.input_args()
+                    crops.dirty.screen = true
+                elseif n == 3 then
+                    en[2](en[1] + d * sens)
 
-                    local st = { 
-                        wparams:get('start', voice), 
-                        wparams:get_preset_setter('start', voice)
-                    }
-                    local en = { 
-                        wparams:get('end', voice), 
-                        wparams:get_preset_setter('end', voice)
-                    }
-                   
-                    -- if n == 1 then
-                    --     st[2](st[1] + d * sens)
-
-                    --     nest.screen.make_dirty()
-                    if n == 2 then
-                        st[2](st[1] + d * sens)
-                        en[2](en[1] + d * sens)
-
-                        nest.screen.make_dirty()
-                    elseif n == 3 then
-                        en[2](en[1] + d * sens)
-
-                        nest.screen.make_dirty()
-                    end
+                    crops.dirty.screen = true
                 end
-
-                _rand_wind{
-                    label = { 'x', 'x' },
-                    edge = 'falling',
-                    n = { 2, 3 },
-                    y = k[2].y, x = { { k[2].x }, { k[3].x } },
-                    action = function(v, t, d, add, rem, l)
-                        if #l == 2 then rand_wind('both')
-                        else rand_wind(add==2 and 'len' or 'st') end
-                    end
-                }
             end
+            _screen.list{
+                x = e[2].x, y = e[2].y,
+                text = { 
+                    win = util.round(wparams:get('start', voice, 'seconds'), 0.01)
+                },
+            }
+            _screen.list{
+                x = e[3].x, y = e[3].y,
+                text = { 
+                    len = util.round(wparams:get('length', voice, 'seconds'), 0.01)
+                },
+            }
+
+            _key.momentaries{
+                n = { 2, 3 },
+                state = { 
+                    rand_wind_held, 
+                    set_rand_wind_held,
+                }
+            }
+            _screen.text{
+                text = 'x',
+                y = k[2].y, x = k[2].x,
+                level = ({ 4, 15 })[blink_level_st],
+            }
+            _screen.text{
+                text = 'x',
+                y = k[3].y, x = k[3].x,
+                level = ({ 4, 15 })[blink_level_en],
+            }
         end
     end
+end
 
-    local function Voice(args)
-        local n = args.n
+local function Voice(args)
+    local n = args.n
 
-        local _vol = Ctl()
-        local _old = Ctl()
-        local _rand_vol = Rand{ voice = n, id = 'vol' }
-        local _rand_old = Rand{ voice = n, id = 'old' }
+    local _vol = Ctl()
+    local _old = Ctl()
+    local _rand_vol = Rand{ voice = n, id = 'vol' }
+    local _rand_old = Rand{ voice = n, id = 'old' }
 
-        local _window = Window{ voice = n }
+    local _window = Window{ voice = n }
 
-        local _cut = Ctl()
-        local _q = Ctl()
-        local _rand_cut = Rand{ voice = n, id = 'cut' }
-        local _typ = Text.key.option()
+    local _cut = Ctl()
+    local _q = Ctl()
+    local _rand_cut = Rand{ voice = n, id = 'cut' }
 
-        local _pan = Ctl()
-        local _rand_pan = Rand{ voice = n, id = 'pan' }
-        local set_bnd = multipattern.wrap_set(mpat, 'bnd '..n, function(v)
-            params:set('bnd '..n, v)
-        end)
-        local _bnd = Text.enc.control()
+    local _pan = Ctl()
+    local _rand_pan = Rand{ voice = n, id = 'pan' }
+    local set_bnd = multipattern.wrap_set(mpat, 'bnd '..n, function(v)
+        params:set('bnd '..n, v)
+    end)
 
-        return function(props)
-            if props.tab == 1 then
-                _vol{ id = 'vol', voice = n, n = 2 }
-                _old{ id = 'old', voice = n, n = 3 }
-                _rand_vol{ n = 2 }
-                _rand_old{ n = 3 }
-            elseif props.tab == 2 then
-                _window()
-            elseif props.tab == 3 then
-                _cut{ id = 'cut', voice = n, n = 2 }
-                _q{ id = 'q', voice = n, n = 3 }
-                _rand_cut{ n = 2 }
-                _typ{
-                    n = 3, y = k[3].y, x = k[3].x, 
-                    scroll_window = { 1, 1 }, options = mparams:get_options('type'),
-                    state = of_mparam(n, 'type'),
-                }
-            elseif props.tab == 4 then
-                _pan{ id = 'pan', voice = n, n = 2 }
-                _bnd{
-                    n = 3, x = e[3].x, y = e[3].y,
-                    label = 'bnd', 
-                    state = { params:get('bnd '..n), set_bnd },
-                    controlspec = of.controlspec('bnd '..n),
-                }
-                _rand_pan{ n = 2 }
-            end
+    return function(props)
+        if props.tab == 1 then
+            _vol{ id = 'vol', voice = n, n = 2 }
+            _old{ id = 'old', voice = n, n = 3 }
+            _rand_vol{ n = 2 }
+            _rand_old{ n = 3 }
+        elseif props.tab == 2 then
+            _window()
+        elseif props.tab == 3 then
+            _cut{ id = 'cut', voice = n, n = 2 }
+            _q{ id = 'q', voice = n, n = 3 }
+            _rand_cut{ n = 2 }
+
+            _key.integer{
+                n_next = 3, min = 1,
+                max = #mparams:get_options('type'),
+                state = of_mparam(n, 'type'),
+            }
+            _screen.text{
+                text = mparams:get_options('type')[mparams:get(n, 'type')],
+                y = k[3].y, x = k[3].x, 
+                level = 15,
+            }
+        elseif props.tab == 4 then
+            _pan{ id = 'pan', voice = n, n = 2 }
+
+            _enc.control{
+                n = 3, 
+                level = { 4, 16 },
+                state = { params:get('bnd '..n), set_bnd },
+                controlspec = params:lookup_param('bnd '..n).controlspec,
+            }
+            _screen.list{
+                x = e[3].x, y = e[3].y,
+                text = { 
+                    bnd = util.round(params:get('bnd '..n), 0.01) 
+                },
+            }
+
+            _rand_pan{ n = 2 }
         end
     end
-    
-    local _voices = {}
-    for i = 1, voices do
-        _voices[i] = Voice{ n = i }
-    end
+end
+
+local function App()
+    -- local _alt = Key.momentary()
 
     local _waveform = Components.norns.waveform{ 
         x = { x[1], x[3] },
         y = { e[1].y + 8, e[2].y - 4 },
         --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
     }
-
-    local norns_view_pages = {}
-    for i = 1,voices do norns_view_pages[i] = i end
+    
+    local remainder_view_page = 0
+    local remainder_view_track = 0
+    
+    local track_names = {}
+    for i = 1,voices do track_names[i] = i end
+    
+    local _voices = {}
+    for i = 1, voices do
+        _voices[i] = Voice{ n = i }
+    end
 
     return function()
         -- _alt{
@@ -212,18 +282,7 @@ local function App()
         --     }
         -- }
 
-        if nest.screen.is_drawing() then
-            --draw view display
-            -- for p = 1, 4 do
-            --     for t = 1, voices do
-            --         local x = (p-1)*2 + x[3] - (3*2)
-            --         local y = (t-1)*2 + y[1] - 2
-            --         local hl = (p == view.page) and (t == view.track)
-            --         screen.level(hl and 15 or 4)
-            --         screen.pixel(x, y)
-            --         screen.fill()
-            --     end
-            -- end
+        if crops.device == 'screen' and crops.mode == 'redraw' then
             --draw preset display
             do
                 local n = view.track
@@ -280,19 +339,46 @@ local function App()
             }
         end
 
-        _tab{
-            x = e[1].x, y = e[1].y, n = 1, sens = 0.5,
-            options = page_names, state = { view.page, function(v) view.page = v end }
+        _enc.integer{
+            n = 1, max = #page_names,
+            sens = 0.5,
+            state = { 
+                view.page, 
+                function(v) 
+                    view.page = v
+                    crops.dirty.screen = true 
+                    crops.dirty.grid = true 
+                end 
+            },
+            state_remainder = { 
+                remainder_view_page, 
+                function(v) remainder_view_page = v end
+            }
         }
-        _norns_view_tab{
-            x = e[4].x, y = e[4].y, n = 4, sens = 0.5, options = norns_view_pages, 
+        _screen.list{
+            x = e[1].x, y = e[1].y, 
+            text = page_names, focus = view.page,
+        }
+
+        _enc.integer{
+            n = 4, max = #track_names,
+            sens = 0.5,
             state = { 
                 view.track, 
                 function(v) 
-                    view.track = v 
-                    nest.grid.make_dirty()
+                    view.track = v
+                    crops.dirty.screen = true 
+                    crops.dirty.grid = true 
                 end 
+            },
+            state_remainder = { 
+                remainder_view_page, 
+                function(v) remainder_view_page = v end
             }
+        }
+        _screen.list{
+            x = e[4].x, y = e[4].y, 
+            text = track_names, focus = view.track,
         }
 
         _voices[view.track]{ tab = view.page//1 }

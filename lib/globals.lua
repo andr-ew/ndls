@@ -26,24 +26,20 @@ arc_view = tall and {
 }
 
 
-function pattern_time:resume()
-    if self.count > 0 then
-        self.prev_time = util.time()
-        self.process(self.event[self.step])
-        self.play = 1
-        self.metro.time = self.time[self.step] * self.time_factor
-        self.metro:start()
-    end
-end
+-- function pattern_time:resume()
+--     if self.count > 0 then
+--         self.prev_time = util.time()
+--         self.process(self.event[self.step])
+--         self.play = 1
+--         self.metro.time = self.time[self.step] * self.time_factor
+--         self.metro:start()
+--     end
+-- end
 
-pattern, mpat, pattern_states = {}, {}, { main = {}, alt = {} }
+pattern, mpat = {}, {}
 for i = 1,16 do
     pattern[i] = pattern_time.new() 
     mpat[i] = multipattern.new(pattern[i])
-end
-for i = 1,8 do
-    pattern_states.main[i] = 0
-    pattern_states.alt[i] = 0
 end
 
 wparams = windowparams:new()
@@ -93,7 +89,6 @@ do
         local name = 'pset-'..string.format("%02d", slot)
         local data = {
             pattern = {},
-            pattern_states = pattern_states,
         }
         for i,pat in ipairs(pattern) do
             local d = {}
@@ -116,8 +111,6 @@ do
         local data = tab.load(fname)
 
         if data then
-            pattern_states = data.pattern_states
-
             for i,pat in ipairs(data.pattern) do
                 for k,v in pairs(pat) do
                     pattern[i][k] = v
