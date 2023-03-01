@@ -73,12 +73,15 @@ sc = {
         update = function(s, n) softcut.pan(n, util.clamp(s[n].pan, -1, 1)) end
     },
     ratemx = {
-            { oct = 1, bnd = 0, dir = 1, rate = 1 },
-            update = function(s, n)
-                s[n].rate = 2^s[n].oct * 2^(s[n].bnd) * s[n].dir
-                sc.send('rate', n, s[n].rate)
-                --set phase_quant to a constant when rate < 1
-            end
+        { oct = 1, bnd = 0, dir = 1, rate = 1, recording = false },
+        update = function(s, n)
+            local dir = s[n].recording and math.abs(s[n].dir) or s[n].dir
+
+            s[n].rate = 2^s[n].oct * 2^(s[n].bnd) * dir
+            sc.send('rate', n, s[n].rate)
+
+            --set phase_quant to a constant when rate < 1
+        end
     },
     --[[
     inmx = {
@@ -267,7 +270,6 @@ end
 --FIXME: punch-in with rate < 0 results in blank buffer
 --TODO: manual initialization (via "end" controls)
 --FIXME: intital recording at very low rates (?)
---FIXME: intial recording in non-default buffer clears default buffer (?)
 sc.punch_in = { -- [buf] = {}
     min_size = 0.5,
     { 
@@ -277,6 +279,12 @@ sc.punch_in = { -- [buf] = {}
         for n,v in ipairs(sc.buffer) do if v == z then
             sc.lvlmx[n].recorded = s[z].play
             sc.lvlmx:update(n)
+        end end
+    end,
+    update_recording = function(s, z)
+        for n,v in ipairs(sc.buffer) do if v == z then
+            sc.ratemx[n].recording = s[z].recording
+            sc.ratemx:update(n)
         end end
     end,
     set = function(s, z, v)
@@ -298,6 +306,8 @@ sc.punch_in = { -- [buf] = {}
                 s[buf].recorded = true
                 s[buf].recording = false
             end
+
+            s:update_recording(buf)
         end
     end,
     is_recorded = function(s, track)
@@ -322,7 +332,7 @@ sc.punch_in = { -- [buf] = {}
             
             s[buf].manual = true
             s[buf].recorded = true
-            s[buf].recording = false
+            s[buf].recording = false; s:update_recording(buf)
         end
     end,
     clear = function(s, z)
@@ -335,7 +345,7 @@ sc.punch_in = { -- [buf] = {}
 
 
         s[buf].recorded = false
-        s[buf].recording = false
+        s[buf].recording = false; s:update_recording(buf)
         s[buf].manual = false
         --s:untap(pair)
 
@@ -347,7 +357,7 @@ sc.punch_in = { -- [buf] = {}
     end,
     was_loaded = function(s, b)
         s[b].recorded = true
-        s[b].recording = false
+        s[buf].recording = false; s:update_recording(buf)
         s[b].manual = false
         
         s[b].play = 1; s:update_play(b)

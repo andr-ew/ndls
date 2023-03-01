@@ -158,11 +158,13 @@ local function Voice(args)
         end
 
         if wide then
-            _grid.integer{
-                x = 3, y = bottom,
-                size = tall and 6 or 4,
-                state = { params:get('buffer '..n), set_buffer }
-            }
+            if not (crops.mode == 'input' and recording) then
+                _grid.integer{
+                    x = 3, y = bottom,
+                    size = tall and 6 or 4,
+                    state = { params:get('buffer '..n), set_buffer }
+                }
+            end
         else
             --TODO: binary buffer selection
         end
