@@ -140,7 +140,7 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ## arc
 
-when arc is connected, the **arc focus** component will be visible instead of **page focus**. the [norns](#norns) section above contains more info about the available [metaparams](#metaparams) (**vol**, **cut**, **st**, **len**). any changes to these controls can be pattern recorded using the grid.
+when arc is connected, the **arc focus** component will be visible to the right of **track focus**. the [norns](#norns) section above contains more info about the available [metaparams](#metaparams) (**vol**, **cut**, **st**, **len**). any changes to these controls can be pattern recorded using the grid.
 
 ### horizontal orientation
 
