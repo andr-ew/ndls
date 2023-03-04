@@ -1,19 +1,20 @@
 local x,y = {}, {}
 
-local mar = { left = 2, top = 4, right = 2, bottom = 0 }
+local mar = { left = 14, top = 4, right = 14, bottom = 0 }
 local w = 128 - mar.left - mar.right
 local h = 64 - mar.top - mar.bottom
 
+x[0] = 2
 x[1] = mar.left
-x[1.5] = w * 5/16 + mar.left + 4
+x[1.5] = w * 5/16 + mar.left + 6
 x[2] = w/2 + mar.left
-x[2.5] = w * 13/16 + mar.left + 4
+x[2.5] = w * 13/16 + mar.left + 6
 x[3] = 128 - mar.right
 y[1] = mar.top + 4
-y[2] = nil
-y[3] = mar.top + h*(5.5/8) + 4
+y[2] = y[1] + 4
 y[4] = mar.top + h*(7/8) + 4
-y[5] = 64 - mar.bottom - 2 + 4
+y[3] = y[4] - 16
+y[2.5] = 64 - mar.bottom - 2 + 4
 
 local e = {
     { x = x[1], y = y[1] },
@@ -90,7 +91,7 @@ local function Window(args)
 
             clock.run(function() 
                 if target == 'both' or target == 'st' then blink_level_st = 2 end
-                if target == 'both' or target == 'en' then blink_level_en = 2 end
+                if target == 'both' or target == 'len' then blink_level_en = 2 end
                 crops.dirty.screen = true
 
                 clock.sleep(0.2)
@@ -116,7 +117,7 @@ local function Window(args)
 
         if not both_last then
             if st_falling then rand_wind('st')
-            elseif end_falling then rand_wind('en') end
+            elseif en_falling then rand_wind('len') end
         elseif both_falling then
             rand_wind('both')
         end
@@ -252,9 +253,9 @@ end
 local function App()
     -- local _alt = Key.momentary()
 
-    local _waveform = Components.norns.waveform{ 
+    local _waveform = Components.screen.waveform{ 
         x = { x[1], x[3] },
-        y = { e[1].y + 8, e[2].y - 4 },
+        y = { y[2], y[3] },
         --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
     }
     
@@ -293,7 +294,7 @@ local function App()
                     if wide then
                         for i = 1, slices do
                             local x = i + x[3] - slices
-                            local y = y[5] - 2
+                            local y = y[2.5] - 2
                             local hl = i == sl
                             local frst = i == 1
                             screen.level(hl and 15 or frst and 8 or 4)
@@ -376,9 +377,9 @@ local function App()
                 function(v) remainder_view_page = v end
             }
         }
-        _screen.list{
-            x = e[4].x, y = e[4].y, 
-            text = track_names, focus = view.track,
+        _routines.screen.list_highlight{
+            x = x[0], y = y[2] + 6, flow = 'down', margin = 4,
+            text = track_names, focus = view.track, fixed_width = 4,
         }
 
         _voices[view.track]{ tab = view.page//1 }
