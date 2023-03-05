@@ -3,17 +3,21 @@ local x,y = {}, {}
 local mar = { left = 14, top = 4, right = 14, bottom = 0 }
 local w = 128 - mar.left - mar.right
 local h = 64 - mar.top - mar.bottom
+local xmar = 35
 
 x[0] = 2
 x[1] = mar.left
-x[1.5] = w * 5/16 + mar.left + 6
-x[2] = w/2 + mar.left
-x[2.5] = w * 13/16 + mar.left + 6
+-- x[1.5] = w * 5/16 + mar.left + 6
+x[1.5] = x[1] + xmar
+-- x[2.5] = w * 13/16 + mar.left + 6
 x[3] = 128 - mar.right
+x[2.5] = x[3] - 3
+x[2] = x[2.5] - xmar
 y[1] = mar.top + 4
 y[2] = y[1] + 4
-y[4] = mar.top + h*(7/8) + 4
-y[3] = y[4] - 16
+y[4] = mar.top + h*(7/8) + 4 + 2
+y[3] = y[4] - 17
+y[3.5] = y[3] + 7
 y[2.5] = 64 - mar.bottom - 2 + 4
 
 local e = {
@@ -254,7 +258,7 @@ local function App()
     -- local _alt = Key.momentary()
 
     local _waveform = Components.screen.waveform{ 
-        x = { x[1], x[3] },
+        x = { x[1] + 1, x[3] - 1 },
         y = { y[2], y[3] },
         --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
     }
@@ -325,19 +329,41 @@ local function App()
         do
             local n = view.track
             local b = sc.buffer[n]
+            local recording = sc.punch_in[b].recording
+            local recorded = sc.punch_in[b].recorded
+
             _waveform{
                 reg = reg.rec[b], samples = sc.samples[b],
                 --st = get_start(n), en = get_end(n), 
                 st = wparams:get('start', n), en = wparams:get('end', n),
                 phase = sc.phase[n].rel,
-                recording = sc.punch_in[b].recording,
-                recorded = sc.punch_in[b].recorded,
+                recording = recording,
+                recorded = recorded,
                 show_phase = sc.lvlmx[n].play == 1,
                 --rec_flag = params:get('rec '..n)
                 render = function()
                     sc.samples:render(b)
                 end
             }
+            _screen.list{
+                x = x[1], y = y[3.5], levels = { 2, 4 }, flow = 'right',
+                focus = params:get('buffer '..n), margin = 2,
+                text = tall and { 1, 2, 3, 4, 5, 6 } or { 1, 2, 3, 4 },
+            }
+            if recorded then
+                _routines.screen.list_underline{
+                    x = x[3], y = y[3.5], levels = { 2, 4 }, flow = 'left', margin = 2,
+                    focus = (wide and 7 or 9) - (sc.phase[n].delta==0 and -1 or preset:get(n)) + 1, 
+                    text = wide and { 
+                        -- 'A', 'B', 'C', 'D', 'E', 'F', 'G' 
+                        -- 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+                        -- 1, 2, 3, 4, 5, 6, 7
+                        7, 6, 5, 4, 3, 2, 1
+                    } or {
+                        --TODO
+                    },
+                }
+            end
         end
 
         _enc.integer{
@@ -378,7 +404,7 @@ local function App()
             }
         }
         _routines.screen.list_highlight{
-            x = x[0], y = y[2] + 6, flow = 'down', margin = 4,
+            x = x[0], y = y[2] + 6, flow = 'down', margin = 4, levels = { 4, 10 },
             text = track_names, focus = view.track, fixed_width = 4,
         }
 

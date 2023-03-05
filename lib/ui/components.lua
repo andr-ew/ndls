@@ -38,7 +38,7 @@ do
 
                 local function txt(v)
                     local focus = i == props.focus
-                    local w = screen.text_extents(v)
+                    local w = props.fixed_width or screen.text_extents(v)
                     local h = props.font_size * (1 - props.font_headroom)
 
                     if focus then
@@ -46,7 +46,7 @@ do
                         screen.rect(
                             x - props.padding, 
                             y - h - props.padding,
-                            (props.fixed_width or w) + props.padding*2,
+                            w + props.padding*2,
                             h + props.padding*2
                         )
                         screen.fill()
@@ -54,6 +54,78 @@ do
                     
                     screen.move(x, y)
                     screen.level(focus and 0 or props.levels[1])
+
+                    if flow == 'left' then screen.text_right(v)
+                    else screen.text(v) end
+
+                    if flow == 'right' then 
+                        x = x + w + props.margin
+                    elseif flow == 'left' then 
+                        x = x - w - props.margin
+                    elseif flow == 'down' then 
+                        y = y + h + props.margin
+                    elseif flow == 'up' then 
+                        y = y - h - props.margin
+                    end
+
+                    i = i + 1
+                end
+
+                if #props.text > 0 then for _,v in ipairs(props.text) do txt(v) end
+                else for k,v in pairs(props.text) do txt(k); txt(v) end end
+            end
+        end
+    end
+end
+
+do
+    local defaults = {
+        text = {},               --list of strings to display. non-numeric keys are displayed as labels with thier values. (e.g. { cutoff = value })
+        x = 10,                  --x position
+        y = 10,                  --y position
+        font_face = 1,           --font face
+        font_size = 8,           --font size
+        margin = 5,              --pixel space betweeen list items
+        levels = { 4, 15 },      --table of 2 brightness levels, 0-15 (text, underline)
+        focus = 2,               --only this index in the resulting list will be underlined
+        flow = 'right',          --direction of list to flow: 'up', 'down', 'left', 'right'
+        font_headroom = 3/8,     --used to calculate height of letters. might need to adjust for non-default fonts
+        padding = 1,             --padding below text
+        -- font_leftroom = 1/16,
+        fixed_width = nil,
+    }
+    defaults.__index = defaults
+
+    function _routines.screen.list_underline(props)
+        if crops.device == 'screen' then
+            setmetatable(props, defaults)
+
+            if crops.mode == 'redraw' then
+                screen.font_face(props.font_face)
+                screen.font_size(props.font_size)
+
+                local x, y, i, flow = props.x, props.y, 1, props.flow
+
+                local function txt(v)
+                    local focus = i == props.focus
+                    local w = props.fixed_width or screen.text_extents(v)
+                    local h = props.font_size * (1 - props.font_headroom)
+
+                    if focus then
+                        screen.level(props.levels[2])
+                        -- screen.rect(
+                        --     x - props.padding, 
+                        --     y - h - props.padding,
+                        --     (props.fixed_width or w) + props.padding*2,
+                        --     h + props.padding*2
+                        -- )
+                        screen.move(flow == 'left' and x-w or x, y + props.padding + 1)
+                        screen.line_rel(w, 0)
+                        screen.stroke()
+                    end
+                    
+                    screen.move(x, y)
+                    screen.level(props.levels[(i == props.focus) and 2 or 1])
 
                     if flow == 'left' then screen.text_right(v)
                     else screen.text(v) end

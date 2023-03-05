@@ -54,7 +54,7 @@ function of_mparam(track, id)
     }
 end
 
-preset = { --[voice][buffer] = slice
+preset = { --[voice][buffer] = preset
     --TODO: depricate
     set = function(s, n, b, v)
         local id = 'preset '..n..' buffer '..b
