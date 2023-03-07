@@ -1,7 +1,6 @@
 alt = false
 view = { track = 1, page = 1 }
-page_names = { 'v', 's', 'f', 'p' }
-MIX, WINDOW, FILTER, LFO = 1, 2, 3, 4
+page_names = { 'm', 't', 'f' }
 
 voices = tall and 6 or 4
 buffers = voices
@@ -54,7 +53,7 @@ function of_mparam(track, id)
     }
 end
 
-preset = { --[voice][buffer] = slice
+preset = { --[voice][buffer] = preset
     --TODO: depricate
     set = function(s, n, b, v)
         local id = 'preset '..n..' buffer '..b

@@ -36,7 +36,7 @@ cs = require 'controlspec'
 
 --git submodule libs
 
-include 'lib/crops/core'                               --crops, a UI component framework
+include 'lib/crops/core'                                 --crops, a UI component framework
 _grid = include 'lib/crops/routines/grid'
 _arc = include 'lib/crops/routines/arc'
 _enc = include 'lib/crops/routines/enc'
@@ -51,16 +51,16 @@ cartographer, Slice = include 'lib/cartographer/cartographer'
 
 --script files
 
-metaparams = include 'ndls/lib/metaparams'             --abstraction around params
-windowparams = include 'ndls/lib/windowparams'         --abstraction around params
-include 'ndls/lib/globals'                             --global variables
-sc, reg = include 'ndls/lib/softcut'                   --softcut utilities
-include 'ndls/lib/params'                              --create (meta)params
-Components = include 'ndls/lib/ui/components'          --UI components
+metaparams = include 'ndls/lib/metaparams'               --abstraction around params
+windowparams = include 'ndls/lib/windowparams'           --abstraction around params
+include 'ndls/lib/globals'                               --global variables
+sc, reg = include 'ndls/lib/softcut'                     --softcut utilities
+include 'ndls/lib/params'                                --create (meta)params
+Components, _routines = include 'ndls/lib/ui/components' --UI components
 App = {}
-App.grid = include 'ndls/lib/ui/grid'                  --grid UI
-App.arc = include 'ndls/lib/ui/arc'                    --arc UI
-App.norns = include 'ndls/lib/ui/norns'                --norns UI
+App.grid = include 'ndls/lib/ui/grid'                    --grid UI
+App.arc = include 'ndls/lib/ui/arc'                      --arc UI
+App.norns = include 'ndls/lib/ui/norns'                  --norns UI
 
 --create, connect UI components
 

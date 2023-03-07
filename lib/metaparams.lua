@@ -355,6 +355,9 @@ end
 function metaparams:get_controlspec(id)
     return self.lookup[id]:get_controlspec()
 end
+function metaparams:get_scope(id)
+    return self.lookup[id]:get_scope()
+end
 function metaparams:get_options(id)
     return self.lookup[id]:get_options()
 end
