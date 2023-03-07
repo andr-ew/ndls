@@ -336,7 +336,7 @@ local function App()
         end
 
         _screen.glyph{
-            x = e[4].x, y = e[4].y - 5,
+            x = x[3] - 1, y = e[4].y, align = 'right',
             glyph = [[
                 . # . . # . . . . @ @ . . . @ @ . . . % % % % . .
                 # # # . # . . . @ . . @ . @ . . @ . . . . . . % .
