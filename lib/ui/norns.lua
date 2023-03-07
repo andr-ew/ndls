@@ -258,7 +258,7 @@ local function Voice(args)
             _cut{ id = 'cut', voice = n, n = 2 }
             _typ{ id = 'type', voice = n, n = 3 }
             _rand_cut{ n = 2 }
-            _rand_typ{ n = 2 }
+            _rand_typ{ n = 3 }
         end
     end
 end
@@ -335,9 +335,21 @@ local function App()
             end
         end
 
-        _screen.list{
-            x = e[4].x, y = e[1].y, 
-            text = page_names, focus = view.page,
+        _screen.glyph{
+            x = e[4].x, y = e[4].y - 5,
+            glyph = [[
+                . # . . # . . . . @ @ . . . @ @ . . . % % % % . .
+                # # # . # . . . @ . . @ . @ . . @ . . . . . . % .
+                . # . . # . . . @ . . @ . @ . . @ . . . . . . % .
+                . # . # # # . . . @ @ . . . @ @ . . . . . . . . %
+                . # . . # . . . . . @ @ @ @ @ . . . . . . . . . %
+            ]],
+            levels = { 
+                ['.'] = 0, 
+                ['#'] = view.page==1 and 15 or 4, 
+                ['@'] = view.page==2 and 15 or 4,
+                ['%'] = view.page==3 and 15 or 4,
+            }
         }
         _routines.screen.list_highlight{
             x = x[0], y = y[2] + 6, flow = 'down', margin = 4, levels = { 4, 10 },
