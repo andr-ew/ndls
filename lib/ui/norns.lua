@@ -3,7 +3,7 @@ local x,y = {}, {}
 local mar = { left = 14, top = 4, right = 14, bottom = 0 }
 local w = 128 - mar.left - mar.right
 local h = 64 - mar.top - mar.bottom
-local xmar = 35
+local xmar = 40
 
 x[0] = 2
 x[1] = mar.left
@@ -41,7 +41,7 @@ local function Ctl()
             controlspec = mparams:get_controlspec(props.id),
         }
         _screen.list{
-            x = e[props.n].x, y = e[props.n].y,
+            x = e[props.n].x, y = e[props.n].y, margin = 4,
             text = { 
                 [props.id] = util.round(mparams:get(props.voice, props.id), props.round or 0.01) 
             },
@@ -63,7 +63,7 @@ local function Opt()
             }
         }
         _screen.list{
-            x = e[props.n].x, y = e[props.n].y,
+            x = e[props.n].x, y = e[props.n].y, margin = 4,
             text = { 
                 [props.id] = options[mparams:get(props.voice, props.id)]
             },
