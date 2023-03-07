@@ -37,7 +37,6 @@ local function Ctl()
     return function(props)
         _enc.control{
             n = props.n, 
-            level = { 4, 16 },
             state = of_mparam(props.voice, props.id),
             controlspec = mparams:get_controlspec(props.id),
         }
@@ -45,6 +44,28 @@ local function Ctl()
             x = e[props.n].x, y = e[props.n].y,
             text = { 
                 [props.id] = util.round(mparams:get(props.voice, props.id), props.round or 0.01) 
+            },
+        }
+    end
+end
+local function Opt()
+    local remainder = 0.0
+
+    return function(props)
+        local options = mparams:get_options(props.id)
+
+        _enc.integer{
+            n = props.n, 
+            max = #options,
+            state = of_mparam(props.voice, props.id),
+            state_remainder = {
+                remainder, function(v) remainder = v end
+            }
+        }
+        _screen.list{
+            x = e[props.n].x, y = e[props.n].y,
+            text = { 
+                [props.id] = options[mparams:get(props.voice, props.id)]
             },
         }
     end
@@ -193,78 +214,61 @@ end
 local function Voice(args)
     local n = args.n
 
-    local _vol = Ctl()
     local _old = Ctl()
+    local _vol = Ctl()
+    local _pan = Ctl()
     local _rand_vol = Rand{ voice = n, id = 'vol' }
-    local _rand_old = Rand{ voice = n, id = 'old' }
+    local _rand_pan = Rand{ voice = n, id = 'pan' }
 
     local _window = Window{ voice = n }
 
-    local _cut = Ctl()
     local _q = Ctl()
+    local _cut = Ctl()
+    local _typ = Opt()
     local _rand_cut = Rand{ voice = n, id = 'cut' }
+    local _rand_typ = Rand{ voice = n, id = 'type' }
 
-    local _pan = Ctl()
-    local _rand_pan = Rand{ voice = n, id = 'pan' }
     local set_bnd = multipattern.wrap_set(mpat, 'bnd '..n, function(v)
         params:set('bnd '..n, v)
     end)
 
     return function(props)
         if props.tab == 1 then
+            _old{ id = 'old', voice = n, n = 1 }
             _vol{ id = 'vol', voice = n, n = 2 }
-            _old{ id = 'old', voice = n, n = 3 }
+            _pan{ id = 'pan', voice = n, n = 3 }
             _rand_vol{ n = 2 }
-            _rand_old{ n = 3 }
+            _rand_pan{ n = 3 }
         elseif props.tab == 2 then
-            _window()
-        elseif props.tab == 3 then
-            _cut{ id = 'cut', voice = n, n = 2 }
-            _q{ id = 'q', voice = n, n = 3 }
-            _rand_cut{ n = 2 }
-
-            _key.integer{
-                n_next = 3, min = 1,
-                max = #mparams:get_options('type'),
-                state = of_mparam(n, 'type'),
-            }
-            _screen.text{
-                text = mparams:get_options('type')[mparams:get(n, 'type')],
-                y = k[3].y, x = k[3].x, 
-                level = 15,
-            }
-        elseif props.tab == 4 then
-            _pan{ id = 'pan', voice = n, n = 2 }
-
             _enc.control{
-                n = 3, 
+                n = 1, 
                 level = { 4, 16 },
                 state = { params:get('bnd '..n), set_bnd },
                 controlspec = params:lookup_param('bnd '..n).controlspec,
             }
             _screen.list{
-                x = e[3].x, y = e[3].y,
+                x = e[1].x, y = e[1].y,
                 text = { 
                     bnd = util.round(params:get('bnd '..n), 0.01) 
                 },
             }
-
-            _rand_pan{ n = 2 }
+            _window()
+        elseif props.tab == 3 then
+            _q{ id = 'q', voice = n, n = 1 }
+            _cut{ id = 'cut', voice = n, n = 2 }
+            _typ{ id = 'type', voice = n, n = 3 }
+            _rand_cut{ n = 2 }
+            _rand_typ{ n = 2 }
         end
     end
 end
 
 local function App()
-    -- local _alt = Key.momentary()
-
     local _waveform = Components.screen.waveform{ 
         x = { x[1] + 1, x[3] - 1 },
         y = { y[2], y[3] },
         --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
     }
-    
-    local remainder_view_page = 0
-    local remainder_view_track = 0
     
     local track_names = {}
     for i = 1,voices do track_names[i] = i end
@@ -288,41 +292,6 @@ local function App()
         -- }
 
         if crops.device == 'screen' and crops.mode == 'redraw' then
-            --draw preset display
-            do
-                local n = view.track
-                local b = sc.buffer[n]
-                local sl = sc.slice[n][b]
-
-                if sc.punch_in[b].recorded then
-                    if wide then
-                        for i = 1, slices do
-                            local x = i + x[3] - slices
-                            local y = y[2.5] - 2
-                            local hl = i == sl
-                            local frst = i == 1
-                            screen.level(hl and 15 or frst and 8 or 4)
-                            screen.pixel(x, y)
-                            screen.fill()
-                        end
-                    else
-                        for ix = 1, 3 do
-                            for iy = 1,3 do
-                                local x = (ix-1)*2 + x[3] - (2*2)
-                                local y = (iy-1)*2 + y[5] - (3*2)
-                                local sx = (sl-1) % 3 + 1
-                                local sy = (sl - 1) // 3 + 1
-                                local hl = (ix == sx) and (iy == sy)
-                                local frst = (ix == 1) and (iy == 1)
-                                screen.level(hl and 15 or frst and 8 or 4)
-                                screen.pixel(x, y)
-                                screen.fill()
-                            end
-                        end
-                    end
-                end
-            end
-
             freeze_patrol:ping('screen')
         end
 
@@ -366,49 +335,16 @@ local function App()
             end
         end
 
-        _enc.integer{
-            n = 1, max = #page_names,
-            sens = 0.5,
-            state = { 
-                view.page, 
-                function(v) 
-                    view.page = v
-                    crops.dirty.screen = true 
-                    crops.dirty.grid = true 
-                end 
-            },
-            state_remainder = { 
-                remainder_view_page, 
-                function(v) remainder_view_page = v end
-            }
-        }
         _screen.list{
-            x = e[1].x, y = e[1].y, 
+            x = e[4].x, y = e[1].y, 
             text = page_names, focus = view.page,
-        }
-
-        _enc.integer{
-            n = 4, max = #track_names,
-            sens = 0.5,
-            state = { 
-                view.track, 
-                function(v) 
-                    view.track = v
-                    crops.dirty.screen = true 
-                    crops.dirty.grid = true 
-                end 
-            },
-            state_remainder = { 
-                remainder_view_page, 
-                function(v) remainder_view_page = v end
-            }
         }
         _routines.screen.list_highlight{
             x = x[0], y = y[2] + 6, flow = 'down', margin = 4, levels = { 4, 10 },
             text = track_names, focus = view.track, fixed_width = 4,
         }
 
-        _voices[view.track]{ tab = view.page//1 }
+        _voices[view.track]{ tab = view.page }
     end
 end
 

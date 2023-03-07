@@ -357,7 +357,7 @@ sc.punch_in = { -- [buf] = {}
     end,
     was_loaded = function(s, b)
         s[b].recorded = true
-        s[buf].recording = false; s:update_recording(buf)
+        s[b].recording = false; s:update_recording(b)
         s[b].manual = false
         
         s[b].play = 1; s:update_play(b)

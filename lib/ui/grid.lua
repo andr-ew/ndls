@@ -246,6 +246,9 @@ local function App(args)
 
     local _arc_focus = (wide and (not tall) and arc_connected) and Components.grid.arc_focus()
 
+    local next_page = 0
+    local prev_page = 0
+
     return function()
         _grid.integer{
             x = 1, y = 1, size = voices, flow = 'down',
@@ -272,10 +275,37 @@ local function App(args)
                     crops.dirty.grid = true
                 end
             }
-        elseif wide then
+            _grid.momentary{
+                x = 2, y = 1, levels = mid_shade,
+                state = { next_page, function(v) 
+                    next_page = v
+                    crops.dirty.grid = true
+
+                    if v>0 then
+                        view.page = util.wrap(view.page + 1, 1, #page_names)
+                        crops.dirty.screen = true
+                    end
+                end }
+            }
+            -- _grid.momentary{
+            --     x = 2, y = 3, levels = mid_shade,
+            --     state = { prev_page, function(v) 
+            --         prev_page = v
+            --         crops.dirty.grid = true
+
+            --         if v>0 then
+            --             view.page = util.wrap(view.page - 1, 1, #page_names)
+            --             crops.dirty.screen = true
+            --         end
+            --     end }
+            -- }
+        else
             _grid.integer{
-                y = 1, x = 2, size = #page_names,
-                levels = mid_shade,
+                y = 1, 
+                x = _arc_focus and 2 or 3, 
+                flow = _arc_focus and 'down' or 'right',
+                size = #page_names,
+                levels = shaded,
                 state = { 
                     view.page, 
                     function(v) 
