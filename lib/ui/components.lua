@@ -45,7 +45,8 @@ do
                         screen.level(props.levels[2])
                         screen.rect(
                             x - props.padding, 
-                            y - h - props.padding,
+                            --TODO: the nudge is wierd... fix if including in common lib
+                            y - h - props.padding + (props.nudge and 0 or 1),
                             w + props.padding*2,
                             h + props.padding*2
                         )

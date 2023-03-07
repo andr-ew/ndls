@@ -15,21 +15,21 @@ x[2.5] = x[3] - 3
 x[2] = x[2.5] - xmar
 y[1] = mar.top + 4
 y[2] = y[1] + 4
-y[4] = mar.top + h*(7/8) + 4 + 2
+y[4] = mar.top + h*(7/8) + 4 + 2 - 1
 y[3] = y[4] - 17
 y[3.5] = y[3] + 7
 y[2.5] = 64 - mar.bottom - 2 + 4
 
 local e = {
     { x = x[1], y = y[1] },
-    { x = x[1], y = y[4] },
-    { x = x[2], y = y[4] },
+    { x = x[1], y = y[3.5] },
+    { x = x[2], y = y[3.5] },
     { x = x[2], y = y[1] },
 }
 local k = {
     {  },
-    { x = x[1.5], y = y[4] },
-    { x = x[2.5], y = y[4] },
+    { x = x[1.5], y = y[3.5] },
+    { x = x[2.5], y = y[3.5] },
     { x = x[2.5], y = y[1] }
 }
 
@@ -40,8 +40,14 @@ local function Ctl()
             state = of_mparam(props.voice, props.id),
             controlspec = mparams:get_controlspec(props.id),
         }
-        _screen.list{
-            x = e[props.n].x, y = e[props.n].y, margin = 4,
+
+        local scope = mparams:get_scope(props.id); --wild -- the semicolin is needed here !
+        (
+            scope=='global' and _screen.list 
+            or scope=='track' and _routines.screen.list_highlight
+            or scope=='preset' and _routines.screen.list_underline
+        ){
+            x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
             text = { 
                 [props.id] = util.round(mparams:get(props.voice, props.id), props.round or 0.01) 
             },
@@ -62,8 +68,14 @@ local function Opt()
                 remainder, function(v) remainder = v end
             }
         }
-        _screen.list{
-            x = e[props.n].x, y = e[props.n].y, margin = 4,
+
+        local scope = mparams:get_scope(props.id);
+        (
+            scope=='global' and _screen.list 
+            or scope=='track' and _routines.screen.list_highlight
+            or scope=='preset' and _routines.screen.list_underline
+        ){
+            x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
             text = { 
                 [props.id] = options[mparams:get(props.voice, props.id)]
             },
@@ -177,13 +189,15 @@ local function Window(args)
                     crops.dirty.screen = true
                 end
             end
-            _screen.list{
+
+            --TODO: adjust list style based on scope
+            _routines.screen.list_underline{
                 x = e[2].x, y = e[2].y,
                 text = { 
                     win = util.round(wparams:get('start', voice, 'seconds'), 0.01)
                 },
             }
-            _screen.list{
+            _routines.screen.list_underline{
                 x = e[3].x, y = e[3].y,
                 text = { 
                     len = util.round(wparams:get('length', voice, 'seconds'), 0.01)
@@ -246,8 +260,9 @@ local function Voice(args)
                 state = { params:get('bnd '..n), set_bnd },
                 controlspec = params:lookup_param('bnd '..n).controlspec,
             }
-            _screen.list{
-                x = e[1].x, y = e[1].y,
+            --TODO: adjust list style based on scope
+            _routines.screen.list_highlight{
+                x = e[1].x, y = e[1].y, nudge = true,
                 text = { 
                     bnd = util.round(params:get('bnd '..n), 0.01) 
                 },
@@ -315,13 +330,13 @@ local function App()
                 end
             }
             _screen.list{
-                x = x[1], y = y[3.5], levels = { 2, 4 }, flow = 'right',
+                x = x[1], y = y[4], levels = { 2, 4 }, flow = 'right',
                 focus = params:get('buffer '..n), margin = 2,
                 text = tall and { 1, 2, 3, 4, 5, 6 } or { 1, 2, 3, 4 },
             }
             if recorded then
                 _routines.screen.list_underline{
-                    x = x[3], y = y[3.5], levels = { 2, 4 }, flow = 'left', margin = 2,
+                    x = x[3], y = y[4], levels = { 2, 4 }, flow = 'left', margin = 2,
                     focus = (wide and 7 or 9) - (sc.phase[n].delta==0 and -1 or preset:get(n)) + 1, 
                     text = wide and { 
                         -- 'A', 'B', 'C', 'D', 'E', 'F', 'G' 
@@ -352,8 +367,8 @@ local function App()
             }
         }
         _routines.screen.list_highlight{
-            x = x[0], y = y[2] + 6, flow = 'down', margin = 4, levels = { 4, 10 },
-            text = track_names, focus = view.track, fixed_width = 4,
+            x = x[0], y = y[2] + 5, flow = 'down', margin = 4, levels = { 4, 10 },
+            text = track_names, focus = view.track, fixed_width = 4, nudge = true,
         }
 
         do
@@ -375,9 +390,11 @@ local function App()
                     }
                 }
 
-                y = y + 10
+                y = y + 9
             end
         end
+
+        
 
         _voices[view.track]{ tab = view.page }
     end
