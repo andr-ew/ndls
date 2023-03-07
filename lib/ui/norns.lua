@@ -10,7 +10,7 @@ x[1] = mar.left
 -- x[1.5] = w * 5/16 + mar.left + 6
 x[1.5] = x[1] + xmar
 -- x[2.5] = w * 13/16 + mar.left + 6
-x[3] = 128 - mar.right
+x[3] = 128 - mar.right - 1
 x[2.5] = x[3] - 3
 x[2] = x[2.5] - xmar
 y[1] = mar.top + 4
@@ -355,6 +355,29 @@ local function App()
             x = x[0], y = y[2] + 6, flow = 'down', margin = 4, levels = { 4, 10 },
             text = track_names, focus = view.track, fixed_width = 4,
         }
+
+        do
+            local y = y[2]
+            for i = 1,tracks do
+                _screen.glyph{
+                    x = x[3] + 3, y = y,
+                    glyph = [[
+                        . # # # # . . @ . . . .
+                        . . . # # . . . @ . . @
+                        . . # . # . . . . @ . @
+                        . # . . # . . . . . @ @
+                        # . . . . . . . @ @ @ @
+                    ]],
+                    levels = { 
+                        ['.'] = 0, 
+                        ['#'] = params:get('send '..i)>0 and 6 or 2, 
+                        ['@'] = params:get('return '..i)>0 and 6 or 2,
+                    }
+                }
+
+                y = y + 10
+            end
+        end
 
         _voices[view.track]{ tab = view.page }
     end
