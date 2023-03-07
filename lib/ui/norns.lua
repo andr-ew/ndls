@@ -394,8 +394,6 @@ local function App()
             end
         end
 
-        
-
         _voices[view.track]{ tab = view.page }
     end
 end
