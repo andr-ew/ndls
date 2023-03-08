@@ -151,6 +151,58 @@ do
     end
 end
 
+function Components.screen.recglyph()
+    local blinking = false
+    local blink = 0
+
+    local blink_time = 0.4
+    clock.run(function()
+        while true do
+            if blinking then
+                blink = 1
+                crops.dirty.screen = true
+                clock.sleep(blink_time)
+
+                blink = 0
+                crops.dirty.screen = true
+                clock.sleep(blink_time)
+            else
+                blink = 0
+                clock.sleep(blink_time)
+            end
+        end
+    end)
+
+    return function(props)
+        blinking = props.recording
+    
+        _screen.glyph{
+            x = props.x, y = props.y,
+            glyph = props.recorded and props.play==1 and [[
+                . # # # .
+                # # # # #
+                # # # # #
+                # # # # #
+                . # # # .
+            ]] or [[
+                . # # # .
+                # . . . #
+                # . . . #
+                # . . . #
+                . # # # .
+            ]],
+            levels = {
+                ['.'] = 0, 
+                ['#'] = (
+                    props.recording and props.levels[blink+1]
+                    or props.rec==1 and props.levels[2]
+                    or props.levels[1]
+                )
+            }
+        }
+    end
+end
+
 function Components.screen.waveform(args)
     local left, right = args.x[1], args.x[2]
     local width = right - left + 1

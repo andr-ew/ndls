@@ -1,6 +1,6 @@
 local x,y = {}, {}
 
-local mar = { left = 14, top = 4, right = 14, bottom = 0 }
+local mar = { left = 17, top = 4, right = 17, bottom = 0 }
 local w = 128 - mar.left - mar.right
 local h = 64 - mar.top - mar.bottom
 local xmar = 40
@@ -49,7 +49,7 @@ local function Ctl()
         ){
             x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
             text = { 
-                [props.id] = util.round(mparams:get(props.voice, props.id), props.round or 0.01) 
+                [props.id] = string.format('%.2f', mparams:get(props.voice, props.id))
             },
         }
     end
@@ -287,6 +287,8 @@ local function App()
     
     local track_names = {}
     for i = 1,voices do track_names[i] = i end
+
+    local _recglyph = Components.screen.recglyph()
     
     local _voices = {}
     for i = 1, voices do
@@ -375,7 +377,7 @@ local function App()
             local y = y[2]
             for i = 1,tracks do
                 _screen.glyph{
-                    x = x[3] + 3, y = y,
+                    x = 128 - 12, y = y,
                     glyph = [[
                         . # # # # . . @ . . . .
                         . . . # # . . . @ . . @
@@ -383,7 +385,7 @@ local function App()
                         . # . . # . . . . . @ @
                         # . . . . . . . @ @ @ @
                     ]],
-                    levels = { 
+                    levels = {
                         ['.'] = 0, 
                         ['#'] = params:get('send '..i)>0 and 6 or 2, 
                         ['@'] = params:get('return '..i)>0 and 6 or 2,
@@ -392,6 +394,18 @@ local function App()
 
                 y = y + 9
             end
+        end
+
+        do
+            local n = view.track
+            local b = sc.buffer[n]
+            _recglyph{
+                x = x[0], y = y[4] - 4,
+                rec = sc.oldmx[n].rec, play = sc.lvlmx[n].play,
+                recorded = sc.punch_in[b].recorded,
+                recording = sc.punch_in[b].recording,
+                levels = { 2, 6 },
+            }
         end
 
         _voices[view.track]{ tab = view.page }
