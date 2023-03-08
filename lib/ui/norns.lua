@@ -399,13 +399,35 @@ local function App()
         do
             local n = view.track
             local b = sc.buffer[n]
+            local recording = sc.punch_in[b].recording
+            local recorded = sc.punch_in[b].recorded
+            local play = sc.lvlmx[n].play
             _recglyph{
                 x = x[0], y = y[4] - 4,
-                rec = sc.oldmx[n].rec, play = sc.lvlmx[n].play,
-                recorded = sc.punch_in[b].recorded,
-                recording = sc.punch_in[b].recording,
+                rec = sc.oldmx[n].rec, play = play,
+                recorded = recorded,
+                recording = recording,
                 levels = { 2, 6 },
             }
+            if recorded then
+                _screen.glyph{
+                    x = x[0] + 5 + 3, y = y[4] - 4,
+                    levels = { ['.'] = 0, ['#'] = 6 },
+                    glyph = play>0 and [[
+                        # . . #
+                        # . . #
+                        # . . #
+                        # . . #
+                        # . . #
+                    ]] or [[
+                        # . .
+                        # # .
+                        # # #
+                        # # .
+                        # . .
+                    ]]
+                }
+            end
         end
 
         _voices[view.track]{ tab = view.page }
