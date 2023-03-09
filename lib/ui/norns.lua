@@ -427,8 +427,28 @@ local function App()
                         # . .
                     ]]
                 }
+
+                local loop = sc.loopmx[n].loop
+                _screen.glyph{
+                    x = 128 - 12, y = e[4].y - 5,
+                    levels = { ['.'] = 0, ['#'] = 4 },
+                    glyph = loop>0 and [[
+                        . # # # # # # # # # # .
+                        # . . . . . . . . . . #
+                        # . . # . . . . . . . #
+                        . # # # # . . # # # # .
+                        . . . # . . . . . . . .
+                    ]] or [[
+                        . . . . . . . . # . . #
+                        . . . . . . . . . # . #
+                        # # # # # # # # # # # #
+                        . . . . . . . . . # . #
+                        . . . . . . . . # . . #
+                    ]]
+                }
             end
         end
+
 
         _voices[view.track]{ tab = view.page }
     end

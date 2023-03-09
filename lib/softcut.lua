@@ -108,7 +108,7 @@ sc = {
         update = function(s, n)
             softcut.loop(n, s[n].loop)
             if s[n].loop > 0 then
-                --sc.trigger(n)
+                sc.trigger(n)
             end
         end
     }
