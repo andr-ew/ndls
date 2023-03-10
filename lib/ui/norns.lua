@@ -33,6 +33,7 @@ local k = {
     { x = x[2.5], y = y[1] }
 }
 
+--TODO: combine
 local function Ctl()
     return function(props)
         _enc.control{
@@ -85,6 +86,8 @@ end
 
 local function Rand(args)
     local blink_level = 1
+    local holdblink = false
+    local downtime = nil
 
     local rand = multipattern.wrap_set(
         mpat, args.id..'_'..args.voice..'_x', 
@@ -102,15 +105,50 @@ local function Rand(args)
             end)
         end
     )
+    local def = multipattern.wrap_set(
+        mpat, args.id..'_'..args.voice..'_d', 
+        function() 
+            holdblink = true
+            blink_level = 1
+            crops.dirty.screen = true
+
+            clock.run(function() 
+                clock.sleep(0.1)
+                blink_level = 2
+                crops.dirty.screen = true
+
+                mparams:defaultize(args.voice, args.id) 
+
+                clock.sleep(0.2)
+                blink_level = 1
+                crops.dirty.screen = true
+
+                clock.sleep(0.4)
+                holdblink = false
+                crops.dirty.screen = true
+            end)
+        end
+    )
 
     return function(props)
-        _key.momentary{
-            n = props.n,
-            input = function(z) if z>0 then rand() end end
-        }
+        if crops.device == 'key' and crops.mode == 'input' then
+            local n, z = table.unpack(crops.args) 
+
+            if n == props.n then
+                if z==1 then
+                    downtime = util.time()
+                elseif z==0 then
+                    if downtime and ((util.time() - downtime) > 0.5) then def()
+                    else rand() end
+                    
+                    downtime = nil
+                end
+            end
+        end
+
         _screen.text{
-            text = 'x',
-            y = k[props.n].y, x = k[props.n].x,
+            x = k[props.n].x, y = k[props.n].y,
+            text = holdblink and 'd' or 'x',
             level = ({ 4, 15 })[blink_level],
         }
     end
@@ -121,6 +159,9 @@ local function Window(args)
 
     local blink_level_st = 1
     local blink_level_en = 1
+    local holdblink_st = false
+    local holdblink_en = false
+    local downtime = nil
 
     local rand_wind = multipattern.wrap_set(
         mpat, 'window'..voice..'_x', function(target) 
@@ -139,24 +180,70 @@ local function Window(args)
             end)
         end
     )
+    local def_wind = multipattern.wrap_set(
+        mpat, 'window'..voice..'_d', function(target) 
+            if target == 'both' or target == 'st' then holdblink_st = true end
+            if target == 'both' or target == 'len' then holdblink_en = true end
+            blink_level_st = 1
+            blink_level_en = 1
+            crops.dirty.screen = true
+
+            clock.run(function() 
+                clock.sleep(0.1)
+                if target == 'both' or target == 'st' then blink_level_st = 2 end
+                if target == 'both' or target == 'len' then blink_level_en = 2 end
+                crops.dirty.screen = true
+
+                wparams:defaultize(voice, target) 
+
+                clock.sleep(0.2)
+                blink_level_st = 1
+                blink_level_en = 1
+                crops.dirty.screen = true
+
+                clock.sleep(0.4)
+                holdblink_st = false
+                holdblink_en = false
+                crops.dirty.screen = true
+            end)
+        end
+    )
+
 
     local rand_wind_held = {}
     local function set_rand_wind_held(v)
-        local old_st, old_en = rand_wind_held[1], rand_wind_held[2]
+        local old_st, old_en = rand_wind_held[1] or 0, rand_wind_held[2] or 0
         local new_st, new_en = v[1], v[2]
 
-        local both_last = old_st==1 and old_en==1
-        local both_falling = both_last and (
+        local both_last_low = old_st==0 and old_en==0
+        local both_last_high = old_st==1 and old_en==1
+
+        local any_rising = both_last_low and (
+            new_st==1 or new_en==1
+        )
+        local both_falling = both_last_high and (
             new_st==0 or new_en==0
         )
         local st_falling = new_st==0 and old_st==1
         local en_falling = new_en==0 and old_en==1
 
-        if not both_last then
-            if st_falling then rand_wind('st')
-            elseif en_falling then rand_wind('len') end
+        if any_rising then
+            downtime = util.time()
+        elseif not both_last_high then
+            if st_falling then 
+                if downtime and ((util.time() - downtime) > 0.5) then def_wind('st')
+                else rand_wind('st') end
+                downtime = nil
+            elseif en_falling then 
+                if downtime and ((util.time() - downtime) > 0.5) then def_wind('len')
+                else rand_wind('len') end
+                downtime = nil
+            end
         elseif both_falling then
-            rand_wind('both')
+            if downtime and ((util.time() - downtime) > 0.5) then def_wind('both')
+            else rand_wind('both') end
+            
+            downtime = nil
         end
 
         rand_wind_held = v
@@ -212,12 +299,12 @@ local function Window(args)
                 }
             }
             _screen.text{
-                text = 'x',
+                text =  holdblink_st and 'd' or 'x',
                 y = k[2].y, x = k[2].x,
                 level = ({ 4, 15 })[blink_level_st],
             }
             _screen.text{
-                text = 'x',
+                text =  holdblink_en and 'd' or 'x',
                 y = k[3].y, x = k[3].x,
                 level = ({ 4, 15 })[blink_level_en],
             }
@@ -363,9 +450,9 @@ local function App()
             ]],
             levels = { 
                 ['.'] = 0, 
-                ['#'] = view.page==1 and 15 or 4, 
-                ['@'] = view.page==2 and 15 or 4,
-                ['%'] = view.page==3 and 15 or 4,
+                ['#'] = view.page==1 and 10 or 4, 
+                ['@'] = view.page==2 and 10 or 4,
+                ['%'] = view.page==3 and 10 or 4,
             }
         }
         _routines.screen.list_highlight{

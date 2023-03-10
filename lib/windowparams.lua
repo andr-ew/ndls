@@ -3,39 +3,6 @@ local windowparams = {}
 function windowparams:new()
     local m = setmetatable({}, { __index = self })
 
-    -- m.mappable_id = {}
-    -- for t = 1,tracks do
-    --     m.mappable_id[t] = {
-    --         win = (
-    --             'window'
-    --             ..'_track_'..t
-    --         ),
-    --         len = (
-    --             'length'
-    --             ..'_track_'..t
-    --         )
-    --     }
-    -- end
-    -- m.base_id = {}
-    -- for t = 1,tracks do
-    --     m.base_id[t] = {}
-    --     for b = 1,buffers do
-    --         m.base_id[t][b] = {
-    --             win = (
-    --                 'window'
-    --                 ..'_t'..t
-    --                 ..'_buf'..b
-    --                 ..'_base'
-    --             ),
-    --             len = (
-    --                 'length'
-    --                 ..'_t'..t
-    --                 ..'_buf'..b
-    --                 ..'_base'
-    --             )
-    --         }
-    --     end
-    -- end
     m.preset_id = {}
     for t = 1,tracks do
         m.preset_id[t] = {}
@@ -107,18 +74,24 @@ function windowparams:bang(t)
     crops.dirty.screen = true; crops.dirty.arc = true
 end
 
-function windowparams:expand(t, b, p, silent)
+function windowparams:defaultize(t, target, b, p, silent)
+    local vc = t
     b = b or sc.buffer[vc]
     p = p or preset:get(t)
     local vc = t
     local sl = p
+    
+    local do_st = target == 'st' or target == 'both'
+    local do_len = target == 'len' or target == 'both'
 
     local id_start = self.preset_id[t][b][p].st
     local id_end = self.preset_id[t][b][p].en
 
-    local silent = true
-    params:set(id_start, 0, silent)
-    params:set(id_end, 1, silent)
+    do
+        local silent = true
+        if do_st then params:set(id_start, 0, silent) end
+        if do_len then params:set(id_end, 1, silent) end
+    end
     
     if not silent then
         self:bang(t)
@@ -187,12 +160,12 @@ windowparams.resets = {
     -- none = function() end,
     default = function(self, t, b, p)
         local silent = true
-        self:expand(t, b, p, silent)
+        self:defaultize(t, 'both', b, p, silent)
     end,
     random = function(self, t, b, p)
         local silent = true
         if p == 1 then
-            windowparams.resets.default(self, t, b, p)
+            self:defaultize(t, 'both', b, p, silent)
         else
             self:randomize(t, 'both', b, p, silent)
         end

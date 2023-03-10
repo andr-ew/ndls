@@ -113,6 +113,13 @@ function metaparam:new(args)
     return m
 end
 
+function metaparam:default_func(param_id, silent)
+    local p = params:lookup_param(param_id)
+    params:set(
+        param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
+    )
+end
+
 function metaparam:get_scope()
     return scopes[params:get(self.scope_id)]
 end
@@ -128,14 +135,22 @@ function metaparam:randomize(t, b, p, silent)
     self.random_func(self, p_id, silent)
 end
 
+function metaparam:defaultize(t, b, p, silent)
+    b = b or sc.buffer[t]
+    p = p or preset:get(t)
+
+    local scope = self:get_scope()
+
+    local p_id = scope == 'preset' and self.preset_id[t][b][p] or self.track_id[t]
+    
+    self.default_func(self, p_id, silent)
+end
+
 metaparams.resets = {
     -- none = function() end,
     default = function(self, param_id)
-        local p = params:lookup_param(param_id)
         local silent = true
-        params:set(
-            param_id, p.default or (p.controlspec and p.controlspec.default) or 0, silent
-        )
+        self:default_func(param_id, silent)
     end,
     random = function(self, param_id, t, b, p)
         local silent = true
@@ -344,6 +359,9 @@ end
 -- end
 function metaparams:randomize(track, id, buffer, preset, silent)
     return self.lookup[id]:randomize(track, buffer, preset, silent)
+end
+function metaparams:defaultize(track, id, buffer, preset, silent)
+    return self.lookup[id]:defaultize(track, buffer, preset, silent)
 end
 
 function metaparams:get_setter(track, id)
