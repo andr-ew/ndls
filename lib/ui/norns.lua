@@ -33,14 +33,44 @@ local k = {
     { x = x[2.5], y = y[1] }
 }
 
---TODO: combine
-local function Ctl()
+local function Mparam()
+    local remainder_mparam = 0.0
+    local remainer_scope = 0.0
+
+    local nicknames = {
+        global = 'glob',
+        track = 'trk',
+        preset = 'prst'
+    }
+
     return function(props)
-        _enc.control{
-            n = props.n, 
-            state = of_mparam(props.voice, props.id),
-            controlspec = mparams:get_controlspec(props.id),
-        }
+        local options = mparams:get_options(props.id)
+        local scope_id = mparams.lookup[props.id].scope_id
+
+        if alt then
+            _enc.integer{
+                n = props.n, 
+                max = #params:lookup_param(scope_id).options,
+                state = {
+                    params:get(scope_id),
+                    params.set, params, scope_id,
+                },
+                state_remainder = { remainder_scope, function(v) remainder_scope = v end }
+            }
+        elseif options then
+            _enc.integer{
+                n = props.n, 
+                max = #options,
+                state = of_mparam(props.voice, props.id),
+                state_remainder = { remainder_mparam, function(v) remainder_mparam = v end }
+            }
+        else
+            _enc.control{
+                n = props.n, 
+                state = of_mparam(props.voice, props.id),
+                controlspec = mparams:get_controlspec(props.id),
+            }
+        end
 
         local scope = mparams:get_scope(props.id); --wild -- the semicolin is needed here !
         (
@@ -50,35 +80,13 @@ local function Ctl()
         ){
             x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
             text = { 
-                [props.id] = string.format('%.2f', mparams:get(props.voice, props.id))
-            },
-        }
-    end
-end
-local function Opt()
-    local remainder = 0.0
-
-    return function(props)
-        local options = mparams:get_options(props.id)
-
-        _enc.integer{
-            n = props.n, 
-            max = #options,
-            state = of_mparam(props.voice, props.id),
-            state_remainder = {
-                remainder, function(v) remainder = v end
-            }
-        }
-
-        local scope = mparams:get_scope(props.id);
-        (
-            scope=='global' and _screen.list 
-            or scope=='track' and _routines.screen.list_highlight
-            or scope=='preset' and _routines.screen.list_underline
-        ){
-            x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
-            text = { 
-                [props.id] = options[mparams:get(props.voice, props.id)]
+                [props.id] = alt and (
+                    nicknames[scope]
+                ) or options and (
+                    options[mparams:get(props.voice, props.id)]
+                ) or (
+                    string.format('%.2f', mparams:get(props.voice, props.id))
+                )
             },
         }
     end
@@ -315,17 +323,17 @@ end
 local function Voice(args)
     local n = args.n
 
-    local _old = Ctl()
-    local _vol = Ctl()
-    local _pan = Ctl()
+    local _old = Mparam()
+    local _vol = Mparam()
+    local _pan = Mparam()
     local _rand_vol = Rand{ voice = n, id = 'vol' }
     local _rand_pan = Rand{ voice = n, id = 'pan' }
 
     local _window = Window{ voice = n }
 
-    local _q = Ctl()
-    local _cut = Ctl()
-    local _typ = Opt()
+    local _q = Mparam()
+    local _cut = Mparam()
+    local _typ = Mparam()
     local _rand_cut = Rand{ voice = n, id = 'cut' }
     local _rand_typ = Rand{ voice = n, id = 'type' }
 
@@ -394,6 +402,18 @@ local function App()
         --         end
         --     }
         -- }
+
+        _key.momentary{
+            n = 1,
+            state = {
+                alt and 1 or 0,
+                function(v)
+                    alt = v==1
+                    crops.dirty.screen = true
+                    crops.dirty.grid = true
+                end
+            }
+        }
 
         if crops.device == 'screen' and crops.mode == 'redraw' then
             freeze_patrol:ping('screen')
@@ -535,7 +555,6 @@ local function App()
                 }
             end
         end
-
 
         _voices[view.track]{ tab = view.page }
     end
