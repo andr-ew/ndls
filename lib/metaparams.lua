@@ -315,6 +315,7 @@ function metaparam:add_reset_preset_action_param()
         allow_pmap = false,
         action = function(v)
             self:set_reset_presets(funcs[v])
+            crops.dirty.screen = true
         end
     }
 end

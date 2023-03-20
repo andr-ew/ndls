@@ -137,28 +137,52 @@ local function Rand(args)
             end)
         end
     )
+    
+    local nicknames = {
+        default = 'd',
+        random = 'x',
+    }
 
     return function(props)
-        if crops.device == 'key' and crops.mode == 'input' then
-            local n, z = table.unpack(crops.args) 
+        if alt then
+            if mparams:get_scope(args.id) == 'preset' then
+                local reset_id = args.id..'_reset'
 
-            if n == props.n then
-                if z==1 then
-                    downtime = util.time()
-                elseif z==0 then
-                    if downtime and ((util.time() - downtime) > 0.5) then def()
-                    else rand() end
-                    
-                    downtime = nil
+                _key.integer{
+                    n_next = props.n, max = #params:lookup_param(reset_id).options,
+                    state = {
+                        params:get(reset_id),
+                        params.set, params, reset_id,
+                    },
+                }
+                _screen.text{
+                    x = k[props.n].x, y = k[props.n].y,
+                    text = nicknames[params:string(reset_id)],
+                    level = 15,
+                }
+            end
+        else
+            if crops.device == 'key' and crops.mode == 'input' then
+                local n, z = table.unpack(crops.args) 
+
+                if n == props.n then
+                    if z==1 then
+                        downtime = util.time()
+                    elseif z==0 then
+                        if downtime and ((util.time() - downtime) > 0.5) then def()
+                        else rand() end
+                        
+                        downtime = nil
+                    end
                 end
             end
-        end
 
-        _screen.text{
-            x = k[props.n].x, y = k[props.n].y,
-            text = holdblink and 'd' or 'x',
-            level = ({ 4, 15 })[blink_level],
-        }
+            _screen.text{
+                x = k[props.n].x, y = k[props.n].y,
+                text = holdblink and 'd' or 'x',
+                level = ({ 4, 15 })[blink_level],
+            }
+        end
     end
 end
 

@@ -187,6 +187,7 @@ do
                 options = names, default = 1, allow_pmap = false,
                 action = function(v)
                     wparams:set_reset_presets(funcs[v])
+                    crops.dirty.screen = true
                 end
             }
         end
