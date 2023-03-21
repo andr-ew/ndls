@@ -4,6 +4,7 @@
 
 local sc
 
+
 sc = {
     phase = {
         { rel = 0, abs = 0, delta = 0, last = 0 },
@@ -19,6 +20,7 @@ sc = {
             s[n].last = v
         end
     },
+    --TODO: stereofy
     inmx = {
         {},
         route = 'left',
@@ -34,6 +36,7 @@ sc = {
     },
     sendmx = {
         { vol = 1, old = 1, send = 0, ret = 1 },
+        --TODO: stereofy
         update = function(s)
             for dst = 1, voices do
                 for src = 1,voices do if src ~= dst then
@@ -56,7 +59,7 @@ sc = {
                 [2] = (s.cf < 0) and (1 + s.cf) or 1
             }
 
-            softcut.level(n, v * fades[s[n].cf_assign] * s[n].mix_vol)
+            sc.send('level', n, v * fades[s[n].cf_assign] * s[n].mix_vol)
             sc.sendmx[n].vol = v; sc.sendmx:update(n)
         end
     },
@@ -68,9 +71,12 @@ sc = {
             sc.sendmx[n].old = s[n].old
         end
     },
+    --TODO: pan -> width
     panmx = {
         { pan = 0 },
-        update = function(s, n) softcut.pan(n, util.clamp(s[n].pan, -1, 1)) end
+        update = function(s, n) 
+            softcut.pan(n, util.clamp(s[n].pan, -1, 1)) 
+        end
     },
     ratemx = {
         { oct = 1, bnd = 0, dir = 1, rate = 1, recording = false },
@@ -95,18 +101,18 @@ sc = {
         { alias = 0 },
         update = function(s, n)
             if s[n].alias == 1 then
-                softcut.pre_filter_dry(n, 1)
-                softcut.pre_filter_lp(n, 0)
+                sc.send('pre_filter_dry', n, 1)
+                sc.send('pre_filter_lp', n, 0)
             else
-                softcut.pre_filter_dry(n, 0)
-                softcut.pre_filter_lp(n, 1)
+                sc.send('pre_filter_dry', n, 0)
+                sc.send('pre_filter_lp', n, 1)
             end
         end
     },
     loopmx = {
         { loop = 1 },
         update = function(s, n)
-            softcut.loop(n, s[n].loop)
+            sc.send('loop', n, s[n].loop)
             if s[n].loop > 0 then
                 sc.trigger(n)
             end
@@ -123,9 +129,20 @@ for k,o in pairs(sc) do
         end
     end
 end
+    
+sc.io = {
+    [1] = 'stereo', [2] = 'stereo', [3] = 'mono', [4] = 'mono',
+    voices = {
+        [1] = { 1, 2 },
+        [2] = { 3, 4 },
+        [3] = { 5 },
+        [4] = { 6 },
+    }
+}
 
 --softcut buffer regions
 local reg = {}
+--TODO: stereofy
 reg.blank = cartographer.divide(cartographer.buffer[1], buffers)
 reg.rec = cartographer.subloop(reg.blank)
 reg.play = cartographer.subloop(reg.rec, voices)
@@ -151,15 +168,15 @@ sc.init = function()
     audio.level_adc_cut(1)
 
     for i = 1, voices do
-        softcut.enable(i, 1)
-        softcut.rec(i, 1)
-        softcut.play(i, 1)
+        sc.send('enable', i, 1)
+        sc.send('rec', i, 1)
+        sc.send('play', i, 1)
         --softcut.loop(i, 1)
-        softcut.level_slew_time(i, sc.lvl_slew)
+        sc.send('level_slew_time', i, sc.lvl_slew)
         --softcut.recpre_slew_time(i, 1)
-        softcut.rate(i, 1)
-        softcut.post_filter_dry(i, 0)
-        softcut.pre_filter_fc_mod(i, 0)
+        sc.send('rate', i, 1)
+        sc.send('post_filter_dry', i, 0)
+        sc.send('pre_filter_fc_mod', i, 0)
 
         --softcut.level_input_cut(1, i, 1)
         --softcut.level_input_cut(2, i, 1)
@@ -181,11 +198,13 @@ sc.init = function()
     -- end)
     -- softcut.poll_start_phase()
 
+    --TODO: stereofy (map softcut voice index to track index)
     softcut.event_position(function(i, ph)
         if i <= voices then
             sc.phase:set(i, ph)
         end
     end)
+    --TODO: stereofy (map softcut voice index to track index)
     clock.run(function() while true do for i = 1,4 do
         softcut.query_position(i)
         clock.sleep(1/90/2) -- 2x fps of arc
@@ -203,6 +222,7 @@ do
             util.make_dir(dir)
         end
 
+        --TODO: stereofy (?)
         for b = 1,buffers do
             if sc.punch_in[b].recorded then
                 local f = dir..pfx..b
@@ -223,6 +243,7 @@ do
         local dir = _path.audio..'ndls/'..name..'/'
 
         local loaded = {}
+        --TODO: stereofy (?)
         for b = 1,buffers do
             local f = dir..pfx..b
             if util.file_exists(f) then
@@ -263,7 +284,7 @@ sc.trigger = function(n)
     -- local en = get_end(n, 'seconds', 'absolute')
     local st = wparams:get('start', n, 'seconds', 'absolute')
     local en = wparams:get('end', n, 'seconds', 'absolute')
-    softcut.position(n, sc.ratemx[n].rate > 0 and st or en)
+    sc.send('position', n, sc.ratemx[n].rate > 0 and st or en)
 end
 
 
@@ -375,6 +396,8 @@ end
 local function update_assignment(n)
     local b = sc.buffer[n]
     local sl = reg.play[b][n]
+
+    --TODO: stereofy
     cartographer.assign(sl, n)
     
     sc.punch_in:update_play(b)
@@ -425,6 +448,7 @@ sc.samples = { -- [buffer] = { samples }
             end)
         end
 
+        --TODO: stereofy
         softcut.event_render(function(...)
             for i,e in ipairs(events) do e(...) end
             crops.dirty.screen = true
