@@ -121,6 +121,7 @@ do
                         --     h + props.padding*2
                         -- )
                         screen.move(flow == 'left' and x-w or x, y + props.padding + 1)
+                        screen.line_width(1)
                         screen.line_rel(w, 0)
                         screen.stroke()
                     end
@@ -147,6 +148,44 @@ do
                 if #props.text > 0 then for _,v in ipairs(props.text) do txt(v) end
                 else for k,v in pairs(props.text) do txt(k); txt(v) end end
             end
+        end
+    end
+end
+
+function _routines.screen.meter(props)
+    if crops.device == 'screen' and crops.mode == 'redraw' then
+        if props.mark then
+            local len = props.length * props.mark
+            local w = props.width + 2
+
+            screen.level(props.levels[1])
+            screen.line_width(1)
+
+            if props.flow == 'up' then
+                screen.move(props.x - 2, props.y - len)
+                screen.line_rel(w, 0)
+            else
+                screen.move(props.x + len, props.y - 2)
+                screen.line_rel(0, w)
+            end
+            
+            screen.stroke()
+        end
+
+        for i = 1,2 do
+            local len = props.length * (i==1 and 1 or props.amount)
+
+            screen.level(props.levels[i])
+            screen.move(props.x, props.y)
+            screen.line_width(props.width or 1)
+
+            if props.flow == 'up' then
+                screen.line_rel(0, -len)
+            else
+                screen.line_rel(len, 0)
+            end
+
+            screen.stroke()
         end
     end
 end
@@ -228,6 +267,7 @@ function Components.screen.waveform(args)
 
             screen.level(lvl.wave)
             screen.move(left, equator)
+            screen.line_width(1)
             screen.line(right, equator)
             screen.stroke()
 
@@ -235,6 +275,7 @@ function Components.screen.waveform(args)
                 if recording then
                     screen.level(lvl.window)
                     screen.move(left + width * reg:get_start('fraction'), equator)
+                    screen.line_width(1)
                     screen.line(left + width * reg:get_end('fraction'), equator)
                     screen.stroke()
 
@@ -250,6 +291,7 @@ function Components.screen.waveform(args)
                         --local db = 20 * math.log(a, 10)
                         local db = a
                         screen.move(x, equator - db - 1)
+                        screen.line_width(1)
                         screen.line_rel(0, 2 * db + 1)
                         screen.stroke()
                     end
@@ -258,16 +300,19 @@ function Components.screen.waveform(args)
                 screen.level(lvl.window)
                 --st
                 screen.move(left + width * st, top)
+                screen.line_width(1)
                 screen.line(left + width * st, bottom)
                 screen.stroke()
                 --en
                 screen.move(left + width * en, top)
+                screen.line_width(1)
                 screen.line(left + width * en, bottom)
                 screen.stroke()
                 --phase
                 if show_phase then
                     screen.level(lvl.phase)
                     screen.move(left + width * ph, top)
+                    screen.line_width(1)
                     screen.line(left + width * ph, bottom)
                     screen.stroke()
                 end
@@ -278,8 +323,6 @@ function Components.screen.waveform(args)
         end
     end
 end
-
-
 
 function Components.grid.arc_focus()
     local held = {}

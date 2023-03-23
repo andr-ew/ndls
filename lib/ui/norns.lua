@@ -448,20 +448,49 @@ local function App()
             local b = sc.buffer[n]
             local recording = sc.punch_in[b].recording
             local recorded = sc.punch_in[b].recorded
+            local tab = view.page
 
-            _waveform{
-                reg = reg.rec[b], samples = sc.samples[b],
-                --st = get_start(n), en = get_end(n), 
-                st = wparams:get('start', n), en = wparams:get('end', n),
-                phase = sc.phase[n].rel,
-                recording = recording,
-                recorded = recorded,
-                show_phase = sc.lvlmx[n].play == 1,
-                --rec_flag = params:get('rec '..n)
-                render = function()
-                    sc.samples:render(b)
+            if tab == 1 then
+                local levels_focus = { 4, 15 }
+                local levels = { 2, 8 }
+
+                for i = 1,4 do
+                    local y = y[2] + 2 + ((i-1) * (5 + 4))
+
+                    do
+                        local x = e[2].x
+                        local l = k[2].x - e[2].x
+                        local spec = mparams:get_controlspec('vol')
+
+                        _routines.screen.meter{
+                            x = x, y = y, length = l, width = 2,
+                            levels = i==view.track and levels_focus or levels,
+                            amount = util.linlin(
+                                spec.minval, spec.maxval, 0, 1, mparams:get(i, 'vol')
+                            ),
+                            mark = util.linlin(
+                                spec.minval, spec.maxval, 0, 1, 1
+                            )
+                        }
+                    end
                 end
-            }
+            elseif tab == 2 then
+                _waveform{
+                    reg = reg.rec[b], samples = sc.samples[b],
+                    --st = get_start(n), en = get_end(n), 
+                    st = wparams:get('start', n), en = wparams:get('end', n),
+                    phase = sc.phase[n].rel,
+                    recording = recording,
+                    recorded = recorded,
+                    show_phase = sc.lvlmx[n].play == 1,
+                    --rec_flag = params:get('rec '..n)
+                    render = function()
+                        sc.samples:render(b)
+                    end
+                }
+            elseif tab == 3 then
+            end
+
             _screen.list{
                 x = x[1], y = y[4], levels = { 2, 4 }, flow = 'right',
                 focus = params:get('buffer '..n), margin = 2,

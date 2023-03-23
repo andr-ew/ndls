@@ -130,6 +130,7 @@ for k,o in pairs(sc) do
     end
 end
     
+--for use with eventual stereo features
 sc.io = {
     [1] = 'stereo', [2] = 'stereo', [3] = 'mono', [4] = 'mono',
     voices = {
