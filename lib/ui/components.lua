@@ -190,6 +190,62 @@ function _routines.screen.meter(props)
     end
 end
 
+function _routines.screen.dial(props)
+    if crops.device == 'screen' and crops.mode == 'redraw' then
+        if props.mark then
+            local prot = 2
+            local len = props.length * props.mark
+            local w = props.width + prot
+
+            screen.level(props.levels[1])
+            screen.line_width(1)
+
+            if props.flow == 'up' then
+                screen.move(props.x - prot, props.y - len)
+                screen.line_rel(w, 0)
+            else
+                screen.move(props.x + len, props.y - prot)
+                screen.line_rel(0, w)
+            end
+            
+            screen.stroke()
+        end
+        do
+            local len = props.length
+
+            screen.level(props.levels[1])
+            screen.move(props.x, props.y)
+            screen.line_width(props.width or 1)
+
+            if props.flow == 'up' then
+                screen.line_rel(0, -len)
+            else
+                screen.line_rel(len, 0)
+            end
+
+            screen.stroke()
+        end
+        do
+            local prot = 4
+            local len = props.length * props.amount
+            local w = props.width + prot
+
+            screen.level(props.levels[2])
+            screen.line_width(1)
+
+            if props.flow == 'up' then
+                screen.move(props.x - prot + 1, props.y - len)
+                screen.line_rel(w, 0)
+            else
+                screen.move(props.x + len, props.y - prot + 1)
+                screen.line_rel(0, w)
+            end
+            
+            screen.stroke()
+        end
+    end
+end
+
 function Components.screen.recglyph()
     local blinking = false
     local blink = 0

@@ -455,7 +455,7 @@ local function App()
                 local levels = { 2, 8 }
 
                 for i = 1,4 do
-                    local y = y[2] + 2 + ((i-1) * (5 + 4))
+                    local y = y[2] + 3 + ((i-1) * (5 + 4 - 1))
 
                     do
                         local x = e[2].x
@@ -470,6 +470,22 @@ local function App()
                             ),
                             mark = util.linlin(
                                 spec.minval, spec.maxval, 0, 1, 1
+                            )
+                        }
+                    end
+                    do
+                        local x = e[3].x
+                        local l = k[3].x - e[3].x
+                        local spec = mparams:get_controlspec('pan')
+
+                        _routines.screen.dial{
+                            x = x, y = y, length = l, width = 1,
+                            levels = i==view.track and levels_focus or levels,
+                            amount = util.linlin(
+                                spec.minval, spec.maxval, 0, 1, mparams:get(i, 'pan')
+                            ),
+                            mark = util.linlin(
+                                spec.minval, spec.maxval, 0, 1, 0
                             )
                         }
                     end
@@ -529,7 +545,7 @@ local function App()
             }
         }
         _routines.screen.list_highlight{
-            x = x[0], y = y[2] + 5, flow = 'down', margin = 4, levels = { 4, 10 },
+            x = x[0], y = y[2] + 5, flow = 'down', margin = 3, levels = { 4, 10 },
             text = track_names, focus = view.track, fixed_width = 4, nudge = true,
         }
 
@@ -552,7 +568,7 @@ local function App()
                     }
                 }
 
-                y = y + 9
+                y = y + 8
             end
         end
 
