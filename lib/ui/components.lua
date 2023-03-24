@@ -158,35 +158,51 @@ function _routines.screen.meter(props)
             local len = props.length * props.mark
             local w = props.width + 2
 
-            screen.level(props.levels[1])
+            screen.level(props.level_mark)
             screen.line_width(1)
 
             if props.flow == 'up' then
-                screen.move(props.x - 2, props.y - len)
+                screen.move(props.x - 2 - 1, props.y - len)
                 screen.line_rel(w, 0)
             else
-                screen.move(props.x + len, props.y - 2)
+                screen.move(props.x + len, props.y - 2 - 1)
                 screen.line_rel(0, w)
             end
             
             screen.stroke()
         end
 
-        for i = 1,2 do
+        for i = 1,2 do if props.levels[i] > 0 then
             local len = props.length * (i==1 and 1 or props.amount)
-
             screen.level(props.levels[i])
-            screen.move(props.x, props.y)
-            screen.line_width(props.width or 1)
 
-            if props.flow == 'up' then
-                screen.line_rel(0, -len)
+            if i==2 and props.outline then
+                screen.line_width(1)
+
+                if props.flow == 'up' then
+                    screen.rect(
+                        props.x - props.width/2, props.y,
+                        props.width - 1, -len
+                    )
+                else
+                    screen.rect(
+                        props.x, props.y - props.width/2,
+                        len, props.width - 1
+                    )
+                end
             else
-                screen.line_rel(len, 0)
+                screen.move(props.x, props.y)
+                screen.line_width(props.width or 1)
+
+                if props.flow == 'up' then
+                    screen.line_rel(0, -len)
+                else
+                    screen.line_rel(len, 0)
+                end
             end
 
             screen.stroke()
-        end
+        end end
     end
 end
 

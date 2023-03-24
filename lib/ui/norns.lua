@@ -453,42 +453,84 @@ local function App()
             if tab == 1 then
                 local levels_focus = { 4, 15 }
                 local levels = { 2, 8 }
+                local level_mark_focus = 4
+                local level_mark = 2
 
                 for i = 1,4 do
-                    local y = y[2] + 3 + ((i-1) * (5 + 4 - 1))
-
                     do
-                        local x = e[2].x
-                        local l = k[2].x - e[2].x
-                        local spec = mparams:get_controlspec('vol')
+                        local y = y[2] + 3 + ((i-1) * (5 + 4 - 1))
 
-                        _routines.screen.meter{
-                            x = x, y = y, length = l, width = 2,
-                            levels = i==view.track and levels_focus or levels,
-                            amount = util.linlin(
-                                spec.minval, spec.maxval, 0, 1, mparams:get(i, 'vol')
-                            ),
-                            mark = util.linlin(
-                                spec.minval, spec.maxval, 0, 1, 1
-                            )
-                        }
-                    end
-                    do
-                        local x = e[3].x
-                        local l = k[3].x - e[3].x
-                        local spec = mparams:get_controlspec('pan')
+                        do
+                            local x = e[2].x
+                            local l = k[2].x - e[2].x
+                            local spec = mparams:get_controlspec('vol')
 
-                        _routines.screen.dial{
-                            x = x, y = y, length = l, width = 1,
-                            levels = i==view.track and levels_focus or levels,
-                            amount = util.linlin(
-                                spec.minval, spec.maxval, 0, 1, mparams:get(i, 'pan')
-                            ),
-                            mark = util.linlin(
-                                spec.minval, spec.maxval, 0, 1, 0
-                            )
-                        }
+                            _routines.screen.meter{
+                                x = x, y = y, length = l, width = 3,
+                                levels = i==view.track and { 0, 12 } or { 0, 4 },
+                                outline = true,
+                                level_mark = i==view.track and level_mark_focus or level_mark,
+                                amount = util.linlin(
+                                    spec.minval, spec.maxval, 0, 1, mparams:get(i, 'vol')
+                                ),
+                                mark = util.linlin(
+                                    spec.minval, spec.maxval, 0, 1, 1
+                                )
+                            }
+                        end
+                        do
+                            local x = k[2].x
+                            local l = e[3].x - k[2].x - 3
+                            local spec = mparams:get_controlspec('old')
+
+                            _routines.screen.meter{
+                                x = x, y = y, length = l, width = 1,
+                                levels = i==view.track and levels_focus or levels,
+                                amount = util.linlin(
+                                    spec.minval, spec.maxval, 0, 1, mparams:get(i, 'old')
+                                )
+                            }
+                        end
+                        do
+                            -- local x = e[3].x 
+                            local l = k[3].x - e[3].x
+                            local x = x[3] - l
+                            local spec = mparams:get_controlspec('pan')
+
+                            _routines.screen.dial{
+                                x = x, y = y, length = l, width = 1,
+                                levels = i==view.track and levels_focus or levels,
+                                amount = util.linlin(
+                                    spec.minval, spec.maxval, 0, 1, mparams:get(i, 'pan')
+                                ),
+                                mark = util.linlin(
+                                    spec.minval, spec.maxval, 0, 1, 0
+                                )
+                            }
+                        end
                     end
+                    -- do
+                    --     local y = y[2] + ((i-1) * 8)
+                    --     local spec = mparams:get_controlspec('old')
+
+                    --     _screen.glyph{
+                    --         x = k[2].x + 5, y = y,
+                    --         glyph = [[
+                    --             . # # # .
+                    --             . . . . #
+                    --             # # # . #
+                    --             # # . . #
+                    --             # . # # .
+                    --         ]],
+                    --         levels = {
+                    --             ['.'] = 0, 
+                    --             ['#'] = util.round(util.linlin(
+                    --                 spec.minval, spec.maxval, 0, 15, mparams:get(i, 'old')
+                    --             ))
+                    --         }
+                    --     }
+
+                    -- end
                 end
             elseif tab == 2 then
                 _waveform{
