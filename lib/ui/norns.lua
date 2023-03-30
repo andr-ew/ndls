@@ -522,17 +522,16 @@ local function App()
                     end
                 }
             elseif tab == 3 then
-                local typ = mparams:get(n, 'type')
-                -- local DRY = 4
-                -- if typ ~= DRY then
-                    _filtergraph{
-                        filter_type = ({ 'lowpass', 'bandpass', 'highpass', 'bypass' })[typ],
-                        freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
-                        -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
-                        resonance = mparams:get(n, 'q'),
-                    }
-                -- else
-                -- end
+                _filtergraph{
+                    filter_type = ({ 
+                        'lowpass', 'bandpass', 'highpass', 'bypass' 
+                    })[
+                        mparams:get(n, 'type')
+                    ],
+                    freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
+                    -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
+                    resonance = mparams:get(n, 'q'),
+                }
             end
 
             _screen.list{
