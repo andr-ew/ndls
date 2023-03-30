@@ -396,6 +396,21 @@ function Components.screen.waveform(args)
     end
 end
 
+function Components.screen.filtergraph(args)
+    local fg = filtergraph.new(args.x_min, args.x_max, args.y_min, args.y_max)
+        
+    fg:set_position_and_size(args.x, args.y, args.w, args.h)
+
+    return function(props)
+        if props.filter_type ~= 'bypass' then
+            fg:edit(props.filter_type, props.slope, props.freq, props.resonance)
+        else
+            fg:remove_all_points()
+        end
+        fg:redraw()
+    end
+end
+
 function Components.grid.arc_focus()
     local held = {}
 

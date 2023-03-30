@@ -33,6 +33,7 @@ varibright = true
 --system libs
 
 cs = require 'controlspec'
+filtergraph = require 'filtergraph'
 
 --git submodule libs
 

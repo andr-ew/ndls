@@ -398,11 +398,21 @@ local function Voice(args)
 end
 
 local function App()
-    local _waveform = Components.screen.waveform{ 
-        x = { x[1] + 1, x[3] - 1 },
-        y = { y[2], y[3] },
-        --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
-    }
+    local _waveform, _filtergraph
+    do
+        local left, right = x[1] + 1, x[3] - 1
+        local top, bottom = y[2], y[3]
+
+        _waveform = Components.screen.waveform{ 
+            x = { left, right },
+            y = { top, bottom },
+            --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
+        }
+        _filtergraph = Components.screen.filtergraph{
+            x = left, w = right - left, 
+            y = top, h = bottom - top,
+        }
+    end
     
     local track_names = {}
     for i = 1,voices do track_names[i] = i end
@@ -415,18 +425,6 @@ local function App()
     end
 
     return function()
-        -- _alt{
-        --     n = 1, 
-        --     state = {
-        --         alt and 1 or 0,
-        --         function(v)
-        --             alt = v==1
-        --             nest.arc.make_dirty()
-        --             nest.grid.make_dirty()
-        --         end
-        --     }
-        -- }
-
         _key.momentary{
             n = 1,
             state = {
@@ -492,7 +490,6 @@ local function App()
                             }
                         end
                         do
-                            -- local x = e[3].x 
                             local l = k[3].x - e[3].x
                             local x = x[3] - l
                             local spec = mparams:get_controlspec('pan')
@@ -509,28 +506,6 @@ local function App()
                             }
                         end
                     end
-                    -- do
-                    --     local y = y[2] + ((i-1) * 8)
-                    --     local spec = mparams:get_controlspec('old')
-
-                    --     _screen.glyph{
-                    --         x = k[2].x + 5, y = y,
-                    --         glyph = [[
-                    --             . # # # .
-                    --             . . . . #
-                    --             # # # . #
-                    --             # # . . #
-                    --             # . # # .
-                    --         ]],
-                    --         levels = {
-                    --             ['.'] = 0, 
-                    --             ['#'] = util.round(util.linlin(
-                    --                 spec.minval, spec.maxval, 0, 15, mparams:get(i, 'old')
-                    --             ))
-                    --         }
-                    --     }
-
-                    -- end
                 end
             elseif tab == 2 then
                 _waveform{
@@ -547,6 +522,17 @@ local function App()
                     end
                 }
             elseif tab == 3 then
+                local typ = mparams:get(n, 'type')
+                -- local DRY = 4
+                -- if typ ~= DRY then
+                    _filtergraph{
+                        filter_type = ({ 'lowpass', 'bandpass', 'highpass', 'bypass' })[typ],
+                        freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
+                        -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
+                        resonance = mparams:get(n, 'q'),
+                    }
+                -- else
+                -- end
             end
 
             _screen.list{
