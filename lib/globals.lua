@@ -83,6 +83,9 @@ preset = { --[voice][buffer] = preset
     end
 }
 
+pset_default_slot = 1
+pset_last_session_slot = 2
+
 do
     function pattern_write(slot)
         local name = 'pset-'..string.format("%02d", slot)

@@ -87,24 +87,23 @@ crops.connect_screen(_app.norns, fps.screen)
 
 --init/cleanup
 
-local default_slot = 1
-local last_session_slot = 2
-
 function init()
     sc.init()
 
     if 
-        false and --for testing
+        -- false and --for testing
         util.file_exists(
-        norns.state.data..norns.state.shortname..'-'..string.format("%02d", default_slot)..'.pset'
+        norns.state.data..norns.state.shortname..'-'..string.format("%02d", pset_default_slot)..'.pset'
     ) then
-        params:read(default_slot)
+        params:read(pset_default_slot)
     else
         params:bang()
-        params:write(default_slot, 'default')
+        params:write(pset_default_slot, 'default')
     end
 end
 
 function cleanup()
-    params:write(last_session_slot, 'last session')
+    params:write(pset_last_session_slot, 'last session')
+
+    if params:string('autosave pset') == 'yes' then params:write(pset_default_slot, 'default') end
 end

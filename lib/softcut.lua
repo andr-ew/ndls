@@ -229,6 +229,8 @@ do
                 local f = dir..pfx..b
                 reg.rec[b]:write(f)
                 print('write '..f)
+            else
+                --TODO: check for existing buffer WAVs and delete if present
             end
         end
     end

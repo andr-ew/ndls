@@ -239,7 +239,7 @@ do
     --TODO: rate glide enable/disable
 end
 
--- add other params
+-- add other track params
 do
     params:add_separator('params_sep', 'track params')
 
@@ -377,6 +377,44 @@ do
             end
         }
     end
+end
+
+--add pset params
+do
+    params:add_separator('pset')
+
+    params:add{
+        id = 'reset all params', type = 'binary', behavior = 'trigger',
+        action = function()
+            for i = 1, voices do
+                params:delta('clear '..i)
+            end
+
+            for _,p in ipairs(params.params) do if p.save then
+                params:set(p.id, p.default or (p.controlspec and p.controlspec.default) or 0, true)
+            end end
+    
+            params:bang()
+        end
+    }
+    params:add{
+        id = 'overwrite default pset', type = 'binary', behavior = 'trigger',
+        action = function()
+            params:write(pset_default_slot, 'default')
+        end
+    }
+    params:add{
+        id = 'load last session pset', type = 'binary', behavior = 'trigger',
+        action = function()
+            params:read(pset_last_session_slot)
+        end
+    }
+    params:add{
+        id = 'autosave to default pset', type = 'option', options = { 'no', 'yes' },
+        action = function()
+            params:write(pset_default_slot, 'default')
+        end
+    }
 end
 
 return params_read, params_bang
