@@ -45,9 +45,10 @@ local function Mparam()
 
     return function(props)
         local options = mparams:get_options(props.id)
-        local scope_id = mparams.lookup[props.id].scope_id
 
         if alt then
+            local scope_id = mparams.lookup[props.id].scope_id
+
             _enc.integer{
                 n = props.n, 
                 max = #params:lookup_param(scope_id).options,
@@ -354,6 +355,7 @@ local function Voice(args)
     local _rand_pan = Rand{ voice = n, id = 'pan' }
 
     local _window = Window{ voice = n }
+    local _loop = Mparam()
 
     local _q = Mparam()
     local _cut = Mparam()
@@ -373,20 +375,24 @@ local function Voice(args)
             _rand_vol{ n = 2 }
             _rand_pan{ n = 3 }
         elseif props.tab == 2 then
-            _enc.control{
-                n = 1, 
-                level = { 4, 16 },
-                state = { params:get('bnd '..n), set_bnd },
-                controlspec = params:lookup_param('bnd '..n).controlspec,
-            }
-            --TODO: adjust list style based on scope
-            _routines.screen.list_highlight{
-                x = e[1].x, y = e[1].y, nudge = true,
-                text = { 
-                    bnd = util.round(params:get('bnd '..n), 0.01) 
-                },
-            }
-            _window()
+            if alt then
+                _loop{ id = 'loop', voice = n, n = 3 }
+            else
+                _enc.control{
+                    n = 1, 
+                    level = { 4, 16 },
+                    state = { params:get('bnd '..n), set_bnd },
+                    controlspec = params:lookup_param('bnd '..n).controlspec,
+                }
+                --TODO: adjust list style based on scope
+                _routines.screen.list_highlight{
+                    x = e[1].x, y = e[1].y, nudge = true,
+                    text = { 
+                        bnd = util.round(params:get('bnd '..n), 0.01) 
+                    },
+                }
+                _window()
+            end
         elseif props.tab == 3 then
             _q{ id = 'q', voice = n, n = 1 }
             _cut{ id = 'cut', voice = n, n = 2 }
