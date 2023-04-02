@@ -108,11 +108,10 @@ do
         end
     }
 
-    --TODO: build into rate mparam slew data or just hide
     mparams:add{
         id = 'rate_slew', type = 'control', 
         controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
-        default_scope = 'preset',
+        default_scope = 'preset', hidden = true,
         action = function(i, v)
             sc.slew(i, v)
         end

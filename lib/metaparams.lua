@@ -72,6 +72,8 @@ function metaparam:new(args)
 
     m.global_id = args.id..'_global'
 
+    m.hidden = args.hidden
+
     --TODO: slew time data
     
     m.track_id = {}
@@ -226,8 +228,6 @@ function metaparam:bang(track)
     self.args.action(track, self:get(track))
 end
 
---TODO: hide & show params based on active scope
-
 function metaparam:add_global_param()
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
@@ -263,6 +263,28 @@ function metaparam:add_preset_param(t, b, p)
     params:add(args)
 end
 
+local function set_visibility(id, v)
+    if v then params:show(id) else params:hide(id) end
+end
+
+function metaparam:show_hide_params()
+    local scope = self:get_scope()
+    local visible = not self.hidden
+
+    set_visibility(self.global_id, visible and scope == 'global')
+
+    for t,id in ipairs(self.track_id) do
+        set_visibility(id, visible and scope == 'track')
+    end
+    for t,bufs in ipairs(self.preset_id) do
+        for b, prsts in ipairs(bufs) do
+            for p, id in ipairs(prsts) do
+                set_visibility(id, visible and scope == 'preset')
+            end
+        end
+    end
+end
+
 function metaparam:add_scope_param()
     params:add{
         name = self.args.id, id = self.scope_id, type = 'option',
@@ -271,9 +293,14 @@ function metaparam:add_scope_param()
             for t = 1, tracks do
                 self:bang(t) 
             end
+
+            self:show_hide_params()
+            _menu.rebuild_params() --questionable?
         end,
         allow_pmap = false,
     }
+
+    set_visibility(self.scope_id, not self.hidden)
 end
 
 function metaparam:add_random_range_params()
@@ -292,6 +319,7 @@ function metaparam:add_random_range_params()
         min = min, max = max, default = self.args.type == 'number' and self.args.random_min_default,
         allow_pmap = false,
     }
+    set_visibility(self.random_min_id, not self.hidden)
     params:add{
         id = self.random_max_id, type = self.args.type, name = self.args.id..' max',
         controlspec = self.args.type == 'control' and cs.def{
@@ -301,6 +329,7 @@ function metaparam:add_random_range_params()
         min = min, max = max, default = self.args.type == 'number' and self.args.random_max_default,
         allow_pmap = false,
     }
+    set_visibility(self.random_max_id, not self.hidden)
     --TODO: probabalility for binary type
 end
 
@@ -318,6 +347,7 @@ function metaparam:add_reset_preset_action_param()
             crops.dirty.screen = true
         end
     }
+    set_visibility(id..'_reset', not self.hidden)
 end
 
 function metaparams:new()

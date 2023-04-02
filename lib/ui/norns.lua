@@ -388,7 +388,7 @@ local function Voice(args)
                 _routines.screen.list_highlight{
                     x = e[1].x, y = e[1].y, nudge = true,
                     text = { 
-                        bnd = util.round(params:get('bnd '..n), 0.01) 
+                        rate = util.round(params:get('bnd '..n), 0.01) 
                     },
                 }
                 _window()
