@@ -71,11 +71,12 @@ sc = {
             sc.sendmx[n].old = s[n].old
         end
     },
-    --TODO: pan -> width
-    panmx = {
-        { pan = 0 },
+    sprmx = {
+        { spr = 0, pan = 0 },
+        scale = { 1, -0.75, 0.5, -0.25 },
         update = function(s, n) 
-            softcut.pan(n, util.clamp(s[n].pan, -1, 1)) 
+            s[n].pan = util.clamp(s[n].spr * s.scale[n], -1, 1)
+            softcut.pan(n, s[n].pan)
         end
     },
     ratemx = {
