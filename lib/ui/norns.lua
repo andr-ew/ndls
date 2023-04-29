@@ -350,9 +350,9 @@ local function Voice(args)
 
     local _old = Mparam()
     local _vol = Mparam()
-    local _pan = Mparam()
+    local _spr = Mparam()
     local _rand_vol = Rand{ voice = n, id = 'vol' }
-    local _rand_pan = Rand{ voice = n, id = 'pan' }
+    local _rand_spr = Rand{ voice = n, id = 'spr' }
 
     local _window = Window{ voice = n }
     local _loop = Mparam()
@@ -371,9 +371,9 @@ local function Voice(args)
         if props.tab == 1 then
             _old{ id = 'old', voice = n, n = 1 }
             _vol{ id = 'vol', voice = n, n = 2 }
-            _pan{ id = 'pan', voice = n, n = 3 }
+            _spr{ id = 'spr', voice = n, n = 3 }
             _rand_vol{ n = 2 }
-            _rand_pan{ n = 3 }
+            _rand_spr{ n = 3 }
         elseif props.tab == 2 then
             if alt then
                 _loop{ id = 'loop', voice = n, n = 3 }
@@ -498,16 +498,15 @@ local function App()
                         do
                             local l = k[3].x - e[3].x
                             local x = x[3] - l
-                            local spec = mparams:get_controlspec('pan')
 
                             _routines.screen.dial{
                                 x = x, y = y, length = l, width = 1,
                                 levels = i==view.track and levels_focus or levels,
                                 amount = util.linlin(
-                                    spec.minval, spec.maxval, 0, 1, mparams:get(i, 'pan')
+                                    -1, 1, 0, 1, sc.sprmx[i].pan
                                 ),
                                 mark = util.linlin(
-                                    spec.minval, spec.maxval, 0, 1, 0
+                                    -1, 1, 0, 1, 0
                                 )
                             }
                         end

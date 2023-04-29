@@ -13,16 +13,16 @@ do
         end
     }
     mparams:add{
-        id = 'pan',
+        id = 'spr',
         type = 'control', 
         controlspec = cs.def{ 
-            min = -1, max = 1, default = 0,
+            min = -4, max = 4, default = 0, quantum = 1/100/4,
         },
-        default_scope = 'track',
+        default_scope = 'global',
         default_reset_preset_action = 'random',
-        random_min_default = -1, random_max_default = 1,
+        random_min_default = -2, random_max_default = 2,
         action = function(i, v)
-            sc.panmx[i].pan = v; sc.panmx:update(i)
+            sc.sprmx[i].spr = v; sc.sprmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
