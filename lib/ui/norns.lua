@@ -474,7 +474,7 @@ local function App()
                                 levels = i==view.track and { 0, 12 } or { 0, 4 },
                                 outline = true,
                                 level_mark = i==view.track and level_mark_focus or level_mark,
-                                amount = mparams:get_raw(i, 'lvl'),
+                                amount = spec:unmap(sc.lvlmx[i].db),
                                 mark = spec:unmap(0)
                             }
                         end

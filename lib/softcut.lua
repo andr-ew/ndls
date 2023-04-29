@@ -4,6 +4,8 @@
 
 local sc
 
+local function ampdb(amp) return math.log10(amp) * 20.0 end
+local function dbamp(db) return math.pow(10.0, db*0.05) end
 
 sc = {
     phase = {
@@ -49,18 +51,14 @@ sc = {
         end
     },
     lvlmx = {
-        { vol = 1, play = 0, recorded = 0, send = 1, cf_assign = 1, mix_vol = 1 },
-        cf = 0,
+        { lvl = 1, gain = 1, amp = 1, db = 0, play = 0, recorded = 0, send = 1 },
         update = function(s, n)
-            local v = s[n].vol * s[n].play * s[n].recorded
-            local fades = {
-                [0] = 1,
-                [1] = (s.cf > 0) and (1 - s.cf) or 1,
-                [2] = (s.cf < 0) and (1 + s.cf) or 1
-            }
+            s[n].amp = s[n].lvl * s[n].gain
+            s[n].db = ampdb(s[n].amp)
+            local out = s[n].amp * s[n].play * s[n].recorded
 
-            sc.send('level', n, v * fades[s[n].cf_assign] * s[n].mix_vol)
-            sc.sendmx[n].vol = v; sc.sendmx:update(n)
+            sc.send('level', n, out)
+            sc.sendmx[n].vol = out; sc.sendmx:update(n)
         end
     },
     oldmx = {

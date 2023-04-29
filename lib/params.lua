@@ -1,3 +1,20 @@
+-- add gains
+do
+    params:add_separator('gain')
+
+    for i = 1,4 do
+        params:add{
+            id = 'gain '..i,
+            type = 'control', 
+            controlspec = cs.new(-math.huge, 6, 'db', nil, 0, 'dB'),
+            action = function(v)
+                sc.lvlmx[i].gain = util.dbamp(v); sc.lvlmx:update(i)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
+        }
+    end
+end
+
 -- add metaparams
 do
     mparams:add{
@@ -8,7 +25,7 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            sc.lvlmx[i].vol = util.dbamp(v); sc.lvlmx:update(i)
+            sc.lvlmx[i].lvl = util.dbamp(v); sc.lvlmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
