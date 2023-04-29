@@ -349,9 +349,9 @@ local function Voice(args)
     local n = args.n
 
     local _old = Mparam()
-    local _vol = Mparam()
+    local _lvl = Mparam()
     local _spr = Mparam()
-    local _rand_vol = Rand{ voice = n, id = 'vol' }
+    local _rand_lvl = Rand{ voice = n, id = 'lvl' }
     local _rand_spr = Rand{ voice = n, id = 'spr' }
 
     local _window = Window{ voice = n }
@@ -370,9 +370,9 @@ local function Voice(args)
     return function(props)
         if props.tab == 1 then
             _old{ id = 'old', voice = n, n = 1 }
-            _vol{ id = 'vol', voice = n, n = 2 }
+            _lvl{ id = 'lvl', voice = n, n = 2 }
             _spr{ id = 'spr', voice = n, n = 3 }
-            _rand_vol{ n = 2 }
+            _rand_lvl{ n = 2 }
             _rand_spr{ n = 3 }
         elseif props.tab == 2 then
             if alt then
@@ -467,19 +467,15 @@ local function App()
                         do
                             local x = e[2].x
                             local l = k[2].x - e[2].x
-                            local spec = mparams:get_controlspec('vol')
+                            local spec = mparams:get_controlspec('lvl')
 
                             _routines.screen.meter{
                                 x = x, y = y, length = l, width = 3,
                                 levels = i==view.track and { 0, 12 } or { 0, 4 },
                                 outline = true,
                                 level_mark = i==view.track and level_mark_focus or level_mark,
-                                amount = util.linlin(
-                                    spec.minval, spec.maxval, 0, 1, mparams:get(i, 'vol')
-                                ),
-                                mark = util.linlin(
-                                    spec.minval, spec.maxval, 0, 1, 1
-                                )
+                                amount = mparams:get_raw(i, 'lvl'),
+                                mark = spec:unmap(0)
                             }
                         end
                         do

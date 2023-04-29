@@ -1,14 +1,14 @@
 -- add metaparams
 do
-    --TODO: switch to decibels / exp
     mparams:add{
-        id = 'vol',
-        type = 'control', controlspec = cs.def{ default = 1, max = 2.5 },
-        random_min_default = 0.5, random_max_default = 1.5,
+        id = 'lvl',
+        type = 'control', 
+        controlspec = cs.new(-math.huge, 6, 'db', nil, 0, 'dB'),
+        random_min_default = -24, random_max_default = 6,
         default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            sc.lvlmx[i].vol = v; sc.lvlmx:update(i)
+            sc.lvlmx[i].vol = util.dbamp(v); sc.lvlmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
@@ -16,7 +16,7 @@ do
         id = 'spr',
         type = 'control', 
         controlspec = cs.def{ 
-            min = -4, max = 4, default = 0, quantum = 1/100/4,
+            min = -4, max = 4, default = 0.7, quantum = 1/100/4,
         },
         default_scope = 'global',
         default_reset_preset_action = 'random',

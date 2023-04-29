@@ -197,18 +197,22 @@ function metaparam:set(track, v)
     self:get_setter(track)(v)
 end
 
-function metaparam:get(track)
+function metaparam:get(track, raw)
     local scope = self:get_scope()
 
     if scope == 'global' then
-        return params:get(self.global_id)
+        return raw and params:get_raw(self.global_id) or params:get(self.global_id)
     elseif scope == 'track' then
-        return params:get(self.track_id[track])
+        return raw and params:get_raw(self.track_id[track]) or params:get(self.track_id[track])
     elseif scope == 'preset' then
         local b = sc.buffer[track]
         local p = sc.slice:get(track)
 
-        return params:get(self.preset_id[track][b][p])
+        return raw and (
+            params:get_raw(self.preset_id[track][b][p])
+        ) or (
+            params:get(self.preset_id[track][b][p])
+        )
     end
 end
 function metaparam:get_controlspec(scope)
@@ -419,6 +423,10 @@ for _, name in ipairs{ 'min', 'max', 'default' } do
 end
 function metaparams:get(track, id)
     return self.lookup[id]:get(track)
+end
+function metaparams:get_raw(track, id)
+    local raw = true
+    return self.lookup[id]:get(track, raw)
 end
 
 function metaparams:global_params_count() return #self.list end
