@@ -1,13 +1,29 @@
 local Destinations = {}
 
-function Destinations.vol(n, x)
+function Destinations.gain(n, x)
     return function() 
-        _arc.decimal{
+        local id = 'gain '..n
+        local x = { 42 - 4, 42 + 16 + 3 }
+
+        _arc.control{
             n = tonumber(arc_vertical and n or x),
-            sensitivity = 0.25/64, max = 2.5,
-            state = of_mparam(n, 'vol'),
-            levels = { 0, 15 },
+            sensitivity = 0.5, 
+            controlspec = params:lookup_param(id).controlspec,
+            state = { params:get(id), params.set, params, id },
+            levels = { 0, 4, 4 },
+            -- x = { 33, 33 },
+            x = x,
         }
+        if crops.mode == 'redraw' then
+            _arc.control{
+                n = tonumber(arc_vertical and n or x),
+                controlspec = params:lookup_param(id).controlspec,
+                state = { 0 },
+                levels = { 0, 0, 15 },
+                -- x = { 33, 33 },
+                x = x,
+            }
+        end
     end
 end
 

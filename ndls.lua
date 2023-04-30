@@ -72,7 +72,7 @@ local _app = {
         varibright = varibright 
     },
     arc = App.arc{ 
-        map = not arc2 and { 'vol', 'cut', 'st', 'len' } or { 'st', 'len', 'vol', 'cut' }, 
+        map = not arc2 and { 'gain', 'cut', 'st', 'len' } or { 'st', 'len', 'gain', 'cut' }, 
         rotated = arc2,
         grid_wide = wide,
     },
