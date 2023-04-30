@@ -94,9 +94,7 @@ do
         }
         for i,pat in ipairs(pattern) do
             local d = {}
-            d.count = pat.count
-            d.event = pat.event
-            d.time = pat.time
+            d.data = pat.data
             d.time_factor = pat.time_factor
             d.step = pat.step
             d.play = pat.play
@@ -111,6 +109,8 @@ do
         local name = 'pset-'..string.format("%02d", slot)
         local fname = norns.state.data..name..'.data'
         local data = tab.load(fname)
+
+        print('pattern_read', fname, data)
 
         if data then
             for i,pat in ipairs(data.pattern) do

@@ -236,9 +236,9 @@ do
         end
     end
     sc.read = function(slot)
-        for i = 1, voices do
-            params:set('rec '..i, 0) 
-        end
+        -- for i = 1, voices do
+        --     params:set('rec '..i, 0) 
+        -- end
         for b = 1,buffers do
             sc.punch_in:clear(b)
         end
