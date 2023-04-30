@@ -213,6 +213,7 @@ end
 
 do
     local pfx = 'ndls_buffer_'
+    local ext = '.wav'
 
     sc.write = function(slot)
         local name = 'pset-'..string.format("%02d", slot)
@@ -222,14 +223,15 @@ do
             util.make_dir(dir)
         end
 
-        --TODO: stereofy (?)
         for b = 1,buffers do
+            local f = dir..pfx..b..ext
+
             if sc.punch_in[b].recorded then
-                local f = dir..pfx..b
                 reg.rec[b]:write(f)
-                print('write '..f)
+                print('sc write '..f)
             else
-                --TODO: check for existing buffer WAVs and delete if present
+                print('sc deleting if exists '..f)
+                norns.system_cmd("rm "..f)
             end
         end
     end
@@ -245,14 +247,21 @@ do
         local dir = _path.audio..'ndls/'..name..'/'
 
         local loaded = {}
-        --TODO: stereofy (?)
+
         for b = 1,buffers do
-            local f = dir..pfx..b
+            local f = dir..pfx..b..ext
+            local f2 = dir..pfx..b
+
             if util.file_exists(f) then
                 reg.rec[b]:read(f, nil, nil, 'source')
                 loaded[b] = true
                 sc.punch_in:was_loaded(b)
-                print('read '..f)
+                print('sc read '..f)
+            elseif util.file_exists(f2) then            --backwards compatibility for no ext
+                reg.rec[b]:read(f2, nil, nil, 'source')
+                loaded[b] = true
+                sc.punch_in:was_loaded(b)
+                print('sc read '..f2)
             end
         end
         for i = 1, voices do
@@ -262,6 +271,18 @@ do
 
             for b = 1, buffers do
                 preset:update(i, b)
+            end
+        end
+    end
+    sc.delete = function(slot)
+        local name = 'pset-'..string.format("%02d", slot)
+        local dir = _path.audio..'ndls/'..name..'/'
+        
+        for b = 1,buffers do
+            local f = dir..pfx..b..ext
+            if util.file_exists(f) then
+                print('deleting if exists '..f)
+                norns.system_cmd("rm "..f)
             end
         end
     end

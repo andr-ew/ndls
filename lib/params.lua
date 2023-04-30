@@ -414,8 +414,17 @@ do
         end
     }
     params:add{
+        id = 'force clear all buffers', type = 'binary', behavior = 'trigger',
+        action = function()
+            for i = 1, voices do
+                params:delta('clear '..i)
+            end
+        end
+    }
+    params:add{
         id = 'overwrite default pset', type = 'binary', behavior = 'trigger',
         action = function()
+            print('overwrite default pset param triggered')
             params:write(pset_default_slot, 'default')
         end
     }
@@ -427,9 +436,12 @@ do
     }
     params:add{
         id = 'autosave to default pset', type = 'option', options = { 'no', 'yes' },
-        action = function()
-            params:write(pset_default_slot, 'default')
-        end
+
+        -- this being banged on pset load is v bad. not overwriting default on change might be confusing but I'm just going to leave it out for now if/until I think of a better solution
+        -- action = function()
+        --     print('overwrite default pset param banged')
+        --     params:write(pset_default_slot, 'default')
+        -- end
     }
 end
 

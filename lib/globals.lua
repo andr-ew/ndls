@@ -127,7 +127,8 @@ do
 end
 
 local function action_read(file, name, slot)
-    print('pset read', file, name, slot)
+    print('pset action read', file, name, slot)
+
     sc.read(slot)
 
     params:bang()
@@ -135,11 +136,15 @@ local function action_read(file, name, slot)
     pattern_read(slot)
 end
 local function action_write(file, name, slot)
+    print('pset action write', file, name, slot)
+
     sc.write(slot)
 
     pattern_write(slot)
 end
 local function action_delete(file, name, slot)
+    print('pset action delete', file, name, slot)
+
     --TODO: delete files
 end
 
