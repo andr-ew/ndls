@@ -10,15 +10,9 @@ local function Preset(args)
     local top, bottom = n, n + voices
 
     local set_preset = multipattern.wrap_set(mpat, 'preset '..n, 
-        wide and function(b, v)
+        function(b, v)
             local id = 'preset '..n..' buffer '..b
             params:set(id, v, true) 
-            params:lookup_param(id):bang()
-        end or function(b, v)
-            local vv = v.x + (((3 - v.y + 1) - 1) * 3)
-            local id = 'preset '..n..' buffer '..b
-
-            params:set(id, vv, true) 
             params:lookup_param(id):bang()
         end
     )
@@ -27,19 +21,36 @@ local function Preset(args)
         local b = sc.buffer[n]
         local recd = sc.punch_in:is_recorded(n)
         local sl = preset[n][b]
-
-        _grid.fill{ x = wide and (tall and 9 or 7) or 5, y = bottom, level = 8 }
-        _grid.fill{ x = wide and ((tall and 9 or 7) + 3) or (5 + 2), y = bottom, level = 4 }
-        _grid.fill{ x = wide and ((tall and 9 or 7) + 3 + 3) or -1, y = bottom, level = 4 }
         
-        if recd then 
-            _grid.integer{
-                x = wide and (tall and 9 or 7) or 5,
-                y = bottom,
-                size = wide and 7 or 4,
-                levels = { lo, sc.phase[n].delta==0 and lo or hi },
-                state = { sl, set_preset, b }
-            }
+        if wide then
+            _grid.fill{ x = wide and (tall and 9 or 7) or 5, y = bottom, level = 8 }
+            _grid.fill{ x = wide and ((tall and 9 or 7) + 3) or (5 + 2), y = bottom, level = 4 }
+            _grid.fill{ x = wide and ((tall and 9 or 7) + 3 + 3) or -1, y = bottom, level = 4 }
+            
+            if recd then 
+                _grid.integer{
+                    x = (tall and 9 or 7),
+                    y = bottom,
+                    size = wide and 7 or 4,
+                    levels = { lo, sc.phase[n].delta==0 and lo or hi },
+                    state = { sl, set_preset, b }
+                }
+            end
+        elseif view.track == n then
+            local x, y, wrap, size = 3, 1, 3, 9
+
+            if varibright then 
+                _grid.fills{ x = x, y = y, wrap = wrap, size = size, level = 4 } 
+                _grid.fill{ x = x, y = y, lvl = 8 }
+            end
+            
+            if recd then 
+                _grid.integer{
+                    x = x, y = y, wrap = wrap, size = size,
+                    levels = { lo, sc.phase[n].delta==0 and lo or hi },
+                    state = { sl, set_preset, b }
+                }
+            end
         end
     end
 end
@@ -167,7 +178,7 @@ local function Voice(args)
             }
         end
 
-        if wide then _preset() end
+        _preset()
     end
 end
 
@@ -176,8 +187,8 @@ local function App(args)
     local wide = args.wide
     local tall = args.tall
     local mid = varibright and 4 or 15
-    local low_shade = varibright and { 2, 8 } or 15
-    local mid_shade = varibright and { 4, 8 } or 15
+    local low_shade = varibright and { 2, 8 } or { 0, 15 }
+    local mid_shade = varibright and { 4, 8 } or { 0, 15 }
 
     local _voices = {}
     for i = 1, voices do
