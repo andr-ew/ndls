@@ -41,7 +41,7 @@ local function Preset(args)
 
             if varibright then 
                 _grid.fills{ x = x, y = y, wrap = wrap, size = size, level = 4 } 
-                _grid.fill{ x = x, y = y, lvl = 8 }
+                _grid.fill{ x = x, y = y, lvl = 6 }
             end
             
             if recd then 
@@ -165,14 +165,16 @@ local function Voice(args)
                 state = of_mparam(n, 'loop'),
             }
         end
-        if wide then
+        if wide or view.track == n then
             _grid.toggle{
-                x = tall and 16 or 14, y = tall and top or bottom, 
+                x = wide and (tall and 16 or 14) or 4, 
+                y = wide and (tall and top or bottom) or 4, 
                 levels = { 2, 15 },
                 state = { params:get('send '..n), set_send }
             }
             _grid.toggle{
-                x = tall and 16 or 15, y = bottom, 
+                x = wide and (tall and 16 or 15) or 5, 
+                y = wide and bottom or 4, 
                 levels = { 2, 15 },
                 state = { params:get('return '..n), set_ret }
             }
@@ -197,7 +199,10 @@ local function App(args)
         }
     end
 
-    local _patrec = PatternRecorder()
+    -- local _patrec = PatternRecorder()
+
+    local _patrecs = {}
+    for i = 1,16 do _patrecs[i] = PatternRecorder() end
 
     local _arc_focus = wide and arc_connected and Components.grid.arc_focus()
 
@@ -281,7 +286,7 @@ local function App(args)
 
         if wide then
             for i = 1,(tall and 16 or 8) do
-                _patrec{
+                _patrecs[i]{
                     x = tall and i or 16, 
                     y = tall and 16 or i, 
                     pattern = pattern[i], 
@@ -289,21 +294,24 @@ local function App(args)
                 }
             end
         else
-            for i = 1,4 do
-                _patrec{
-                    x = 2 + i - 1, y = 4, 
-                    pattern = pattern[i], 
-                    varibright = varibright
-                }
-            end
-            _patrec{
+            _patrecs[1]{
                 x = 2, y = 2, 
-                pattern = pattern[5], 
+                pattern = pattern[1], 
                 varibright = varibright
             }
-            _patrec{
+            _patrecs[2]{
                 x = 2, y = 3, 
-                pattern = pattern[6], 
+                pattern = pattern[2], 
+                varibright = varibright
+            }
+            _patrecs[3]{
+                x = 2, y = 4, 
+                pattern = pattern[3], 
+                varibright = varibright
+            }
+            _patrecs[4]{
+                x = 3, y = 4, 
+                pattern = pattern[4], 
                 varibright = varibright
             }
         end

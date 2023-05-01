@@ -1,7 +1,7 @@
 local Destinations = {}
 
 function Destinations.gain(n, x)
-    return function() 
+    return function(props) 
         local id = 'gain '..n
         local xx = { 42 - 4, 42 + 16 + 3 }
 
@@ -30,7 +30,7 @@ end
 function Destinations.cut(n, x)
     local _filt = Components.arc.filter()
 
-    return function() 
+    return function(props) 
         if crops.mode == 'input' then
             _arc.control{
                 n = tonumber(arc_vertical and n or x),
@@ -51,7 +51,7 @@ end
 function Destinations.st(n, x)
     _st = Components.arc.st()
 
-    return function() 
+    return function(props) 
         local b = sc.buffer[n]
 
         _st{
@@ -72,7 +72,7 @@ function Destinations.st(n, x)
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,
             reg = reg.rec[b],
-            rotated = rotated,
+            rotated = props.rotated,
         }
     end
 end
@@ -80,7 +80,7 @@ end
 function Destinations.len(n, x)
     _len = Components.arc.len()
 
-    return function() 
+    return function(props) 
         local b = sc.buffer[n]
 
         _len{
@@ -104,7 +104,7 @@ function Destinations.len(n, x)
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,
             reg = reg.rec[b],
-            rotated = rotated,
+            rotated = props.rotated,
         }
     end
 end
@@ -128,13 +128,13 @@ local function App(args)
         if wide then
             for y = 1,voices do for x = 1,4 do
                 if arc_view[y][x] > 0 then
-                    _params[y][x]()
+                    _params[y][x]{ rotated = rotated }
                 end
             end end
         else
             local y = view.track
             for x = 1,4 do
-                _params[y][x]()
+                _params[y][x]{ rotated = rotated }
             end
         end
     end
