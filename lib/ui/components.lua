@@ -6,6 +6,7 @@ local Components = {
 
 local _routines = {
     screen = {},
+    grid = {},
 }
 
 do
@@ -486,6 +487,62 @@ function Components.grid.phase()
     end
 end
 
+function Components.grid.togglehold()
+    local downtime = nil
+
+    return function(props)
+        props.edge = 'falling'
+        props.input = function(z)
+            if z==1 then
+                downtime = util.time()
+            elseif z==0 then
+                local heldtime = util.time() - downtime
+
+                if heldtime > (props.hold_time or 0.5) then
+                    if props.hold_action then props.hold_action(heldtime) end
+                end
+
+                downtime = nil --probably extraneous
+            end
+        end
+
+        _grid.toggle(props)
+    end
+end
+
+function Components.grid.integerglide()
+    local downtime = nil
+    local held = false
+
+    return function(props)
+        if crops.mode == 'input' and crops.device == 'grid' then 
+            local x, y, z = table.unpack(crops.args) 
+            local n = _grid.util.xy_to_index(props, x, y)
+
+            if n then 
+                local old = crops.get_state(props.state)
+                local new = n
+
+                if z==1 then
+                    if not held then downtime = util.time() end
+                    held = true
+
+                    if new ~= old then
+                        local heldtime = util.time() - downtime
+
+                        if props.hold_action then props.hold_action(heldtime) end
+                        crops.set_state(props.state, new) 
+                        
+                        held = false
+                    end
+                end
+            end
+        elseif crops.mode == 'redraw' then
+            _grid.integer(props)
+        end
+    end
+end
+
 function Components.grid.buffer64(args)
     local n = args.voice
     local x = args.x
@@ -536,6 +593,78 @@ function Components.grid.buffer64(args)
     end)
 
     return function() _l(); _r() end
+end
+
+do
+    local index_to_xy = _grid.util.index_to_xy
+    local xy_to_index = _grid.util.xy_to_index
+
+    local function binary_get(data, bit) --get bit
+        return (data >> (bit-1)) & 1
+    end
+    -- function binary_set(data, bit) --set bit to 1
+    --     return data | (1 << (bit-1))
+    -- end
+    -- function binary_clear(data, bit) --set bit to 0
+    --     return data & ~(1 << (bit-1))
+    -- end
+
+    local function binary_toggle(data, bit) --toggle bit
+        return data ~ (1 << (bit-1))
+    end
+
+    local defaults = {
+        state = {0},
+        x = 1,                      --x position of the component
+        y = 1,                      --y position of the component
+        edge = 'rising',            --input edge sensitivity. 'rising' or 'falling'.
+        input = function(n, z) end, --input callback, passes last key state on any input
+        levels = { 0, 15 },         --brightness levels. expects a table of 2 ints 0-15
+        size = 2,                 --total number of keys
+        wrap = 16,                  --wrap to the next row/column every n keys
+        flow = 'right',             --primary direction to flow: 'up', 'down', 'left', 'right'
+        flow_wrap = 'down',         --direction to flow when wrapping. must be perpendicular to flow
+        padding = 0,                --add blank spaces before the first key
+    }
+    defaults.__index = defaults
+
+    function _routines.grid.integerbinary(props)
+        if crops.device == 'grid' then
+            setmetatable(props, defaults) 
+
+            if crops.mode == 'input' then 
+                local x, y, z = table.unpack(crops.args) 
+                local n = xy_to_index(props, x, y)
+
+                if n then 
+                    props.input(n, z)
+
+                    if
+                        (z == 1 and props.edge == 'rising')
+                        or (z == 0 and props.edge == 'falling')
+                    then
+                        local old = crops.get_state(props.state) - 1
+
+                        local new = binary_toggle(old, n) + 1
+
+                        crops.set_state(props.state, new) 
+                    end
+                end
+            elseif crops.mode == 'redraw' then 
+                local g = crops.handler 
+
+                for i = 1, props.size do
+                    local v = crops.get_state(props.state) - 1
+
+                    local vbit = binary_get(v, i)
+                    local lvl = props.levels[vbit + 1] 
+
+                    local x, y = index_to_xy(props, i)
+                    if lvl>0 then g:led(x, y, lvl) end
+                end
+            end
+        end
+    end
 end
 
 function Components.arc.filter()

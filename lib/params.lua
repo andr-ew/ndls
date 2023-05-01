@@ -33,7 +33,7 @@ do
         id = 'spr',
         type = 'control', 
         controlspec = cs.def{ 
-            min = -4, max = 4, default = 0.7, quantum = 1/100/4,
+            min = -4, max = 4, default = 0.0, quantum = 1/100/4,
         },
         default_scope = 'global',
         default_reset_preset_action = 'random',

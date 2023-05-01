@@ -3,7 +3,7 @@ local Destinations = {}
 function Destinations.gain(n, x)
     return function() 
         local id = 'gain '..n
-        local x = { 42 - 4, 42 + 16 + 3 }
+        local xx = { 42 - 4, 42 + 16 + 3 }
 
         _arc.control{
             n = tonumber(arc_vertical and n or x),
@@ -12,7 +12,7 @@ function Destinations.gain(n, x)
             state = { params:get(id), params.set, params, id },
             levels = { 0, 4, 4 },
             -- x = { 33, 33 },
-            x = x,
+            x = xx,
         }
         if crops.mode == 'redraw' then
             _arc.control{
@@ -21,7 +21,7 @@ function Destinations.gain(n, x)
                 state = { 0 },
                 levels = { 0, 0, 15 },
                 -- x = { 33, 33 },
-                x = x,
+                x = xx,
             }
         end
     end
