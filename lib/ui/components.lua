@@ -426,7 +426,7 @@ function Components.grid.arc_focus()
                 local x, y, z = table.unpack(crops.args)
                 
                 if
-                    x >= props.x and x <= props.x + (tall and 5 or 3) 
+                    x >= props.x and x <= props.x + (3) 
                         and y >= props.y and y <= props.y + (tall and 5 or 3)
                 then
                     local dx, dy = x - props.x + 1, y - props.y + 1

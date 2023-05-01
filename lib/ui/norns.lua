@@ -606,13 +606,16 @@ local function App()
             local recording = sc.punch_in[b].recording
             local recorded = sc.punch_in[b].recorded
             local play = sc.lvlmx[n].play
-            _recglyph{
-                x = x[0], y = y[4] - 4,
-                rec = sc.oldmx[n].rec, play = play,
-                recorded = recorded,
-                recording = recording,
-                levels = { 2, 6 },
-            }
+
+            if not tall then
+                _recglyph{
+                    x = x[0], y = y[4] - 4,
+                    rec = sc.oldmx[n].rec, play = play,
+                    recorded = recorded,
+                    recording = recording,
+                    levels = { 2, 6 },
+                }
+            end
             if recorded then
                 _screen.glyph{
                     x = x[0] + 5 + 3, y = y[4] - 4,

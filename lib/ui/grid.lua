@@ -199,7 +199,7 @@ local function App(args)
 
     local _patrec = PatternRecorder()
 
-    local _arc_focus = (wide and (not tall) and arc_connected) and Components.grid.arc_focus()
+    local _arc_focus = wide and arc_connected and Components.grid.arc_focus()
 
     local next_page = 0
     local prev_page = 0

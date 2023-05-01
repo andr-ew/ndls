@@ -71,7 +71,7 @@ sc = {
     },
     sprmx = {
         { spr = 0, pan = 0 },
-        scale = { 1, -0.75, 0.5, -0.25 },
+        scale = { 1, -0.75, 0.5, -0.25, 0.75, -1 },
         update = function(s, n) 
             s[n].pan = util.clamp(s[n].spr * s.scale[n], -1, 1)
             softcut.pan(n, s[n].pan)
