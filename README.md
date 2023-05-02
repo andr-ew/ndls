@@ -39,50 +39,68 @@ the grid is split in two halves with two blocks of [metaparams](#metaparams) map
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
-### bottom half
+### rec & play
 
-- **rec & play:** toggle record & playback states. these controls are interdependent. here are some ways to use them:
-  - record a new loop in a blank buffer:
-    - 1 - toggle the **rec** key _on_
-    - 2 - play some audio into softcut from TAPE or norns' inputs
-    - 3 - toggle **rec** back _off_
-    - 4 - softcut will loop what you just played, loop pedal style.
-  - overdub into a playing loop:
-    - 1 - toggle the **rec** key _on_
-    - 2 - play some new material into softcut from TAPE or norns' inputs
-    - 3 - softcut will record the new material on top of the loop.
-      - the volume of the old material is set by the **old** control.
-  - silence a playing loop:
-    - toggle the **play** key _off_
-  - clear a buffer, and record a brand new loop:
-    - 1 - toggle the **play** key _off_
-    - 2 - toggle the **rec** key _on_. softcut will clear the old contents of the buffer.
-    - 3 - play some new material into softcut from TAPE or norns' inputs
-    - 4 - toggle **rec** back _off_
-    - 5 - softcut will loop the new material
-  - use a blank buffer as a delay
-    - 1 - toggle the **rec** key _on_
-    - 2 - toggle the **play** key _on_
-    - 3 - softcut will begin playing and overdubbing, like a delay.
-      - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
-      - delay feeback is set by the **old** control
-- **buffer:** select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer.
-- **preset:** 1 default preset + 6 unique, optionally randomized presets for any/all data in the track (loop windows, filter, rate, mix). see [metaparams](#metaparams) for advanced info.
-- **send & return:** these keys allow you to route the output of a track into the input of another track. all tracks with a lit **send** key will be routed into each track with a lit **return** key.
-  - idea: send a loop track into another track set up like a delay, for echoed loops.
+toggle record & playback states. these controls are interdependent. here are some ways to use them:
+- record a new loop in a blank buffer:
+  - 1 - toggle the **rec** key _on_
+  - 2 - play some audio into softcut from TAPE or norns' inputs
+  - 3 - toggle **rec** back _off_
+  - 4 - softcut will loop what you just played, loop pedal style.
+- overdub into a playing loop:
+  - 1 - toggle the **rec** key _on_
+  - 2 - play some new material into softcut from TAPE or norns' inputs
+  - 3 - softcut will record the new material on top of the loop.
+    - the volume of the old material is set by the **old** control.
+- silence a playing loop:
+  - toggle the **play** key _off_
+- clear a buffer, and record a brand new loop:
+  - 1 - toggle the **play** key _off_
+  - 2 - toggle the **rec** key _on_. softcut will clear the old contents of the buffer.
+  - 3 - play some new material into softcut from TAPE or norns' inputs
+  - 4 - toggle **rec** back _off_
+  - 5 - softcut will loop the new material
+- use a blank buffer as a delay
+  - 1 - toggle the **rec** key _on_
+  - 2 - toggle the **play** key _on_
+  - 3 - softcut will begin playing and overdubbing, like a delay.
+    - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
+    - delay feeback is set by the **old** control
 
-### top half
+### track focus & page focus
 
-- **track focus:** select which **track** to edit on the norns screen
-- **page focus:** select which **page** to edit on the norns screen
-- **rev:** set record/playback direction. hold & release to glide to the new direction.
-- **rate:** record & playback rate, quantized to octaves.
-  - press one key with one finger to jump instantly to a new pitch.
-  - to ~ glide ~ smoothly to a new pitch, do this:
+set the focus for the _norns screen & encoders_ (not grid). norns' controls are split into three pages: **MIX**, **TAPE**, and **FILTER**, and are editable intependently across four tracks. 
+- note that controls which have neither a white box nor underline are coupled to the same value across tracks, see [metaparams](#metaparams) for advanced info.
+
+### rate: reverse & octave
+
+set the record _and playback_ direction and power-of-two multiple (AKA octave). the rate of change (or slew) for both these controls is touch-reactive. a single key tap will jump instantly to a new value, while hold-and-release gestures increase slew time in proportion to the held duration.
+  - to glide to a new pitch with **rate: octave**:
     - 1 - hold one finger on the lit / current value key
     - 2 - press the key of the rate you'd like to glide to
-    - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key. this is an expressive gesture !
-- **loop:** set the loop state. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
+    - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key.
+  - to whip a 180 on **rate: reverse**:
+    - hold reverse, and release
+    - softcut will glide down to rate 0, then glide back up in the other direction, based on the amount of time you were holding down the key.
+
+### loop
+
+toggle looping on or off. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
+
+
+### buffer
+
+select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer, for multi-octave polyphonic looping & decoupled record & play head delay systems. lots of possibilities!
+- idea: set two tracks to share the same buffer, and **send** one track to the other.
+
+### preset
+
+select a preset. there is 1 default preset + 6 unique, optionally randomized presets for any/all track controls. by default, only window parameters will be included in the preset. see [metaparams](#metaparams) for advanced info.
+
+### send & return
+
+these keys allow you to **send** the output of a track into an invisibe audio bus & **return** them back into the input of another track. tracks with a lit **send** key will be routed into every track with a lit **return** key.
+- idea: send a loop track into another track set up like a delay, for echoed loops.
 
 ### pattern recorders
 
