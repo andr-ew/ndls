@@ -33,7 +33,7 @@ if you wish to install a different version, see the [releases](https://github.co
 
 ## start
 
-luanch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu. those unable to access the SELECT menu can launch the script from the browser via maiden:
+luanch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu. those unable to access the SELECT menu can launch the script from the browser via the maiden REPL:
 
 ```
 norns.script.load('/home/we/dust/code/ndls/ndls.lua')
