@@ -135,12 +135,12 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 across 3 pages, all 3 norns encoders are mapped to 9 [metaparams](#metaparams) for each track, with K2 & K3 mapped to randomizations of certain values. use the **track focus** + **page focus** components on the top left of the grid to switch between views. hold K1 on any page to assign [scopes](#metaparams). changes to any control can be pattern recorded using the grid.
 
-### MIX
+### page 1: MIX
 
 ![norns MIX page documentation image. labelled image of the norns sreen. text descriptions below.](lib/doc/ndls_MIX.png)
 
 #### E1: perserve/feedback level
-the rate at which old material fades away. turn it up in a delay for long echo tails, or turn it down in a loop for tape decay memory loss.
+the rate at which old material fades away. turn it up in a delay for long echo tails, or turn it down in a loop for tape decay memory loss. note that by default this is globally [scoped](#metaparams).
 
 #### E2: playback/output level
 this level is summed with the **gain** param in the params menu to set the actual output level.
@@ -154,29 +154,58 @@ hold to reset to 0db.
 #### K3: randomize spread 
 hold to reset to center.
 
-### TAPE
+### page 2: TAPE
 
 ![norns TAPE page documentation image. labelled image of the norns sreen. text descriptions below.](lib/doc/ndls_TAPE.png)
 
-#### E1: perserve/feedback level
-the rate at which old material fades away. turn it up in a delay for long echo tails, or turn it down in a loop for tape decay memory loss.
+#### E1: record & playback rate detune
 
-#### E2: playback/output level
-this level is summed with the **gain** param in the params menu to set the actual output level.
+non-quantized exponential rate multiple. +1 ocave to -1 octave.
 
-#### E3: stereo pan amount
-this does not set the pan value directly, but rather, each track has a unique multiple that sets the pan value relative to the **spread** value. by default, in the global scope, spread will spread out all tracks evenly in the stereo feild, but you can switch the [scope](#metaparams) to track or preset to set pans independently, there will just be some uneven scaling between tracks.
+#### E2: window position
 
-#### K2: randomize level
-hold to reset to 0db.
+adjusts both start & end points, displayed in seconds. note that by default this is preset [scoped](#metaparams).
+- idea: pattern record some adjustments for pseudo-granular playback.
 
-#### K3: randomize spread 
-hold to reset to center.
+#### E3: window length
 
+adjusts loop length in seconds. note that by default this is preset [scoped](#metaparams).
+
+#### K2: randomize position
+
+hold to reset to 0
+
+#### K3: randomize length
+
+hold to reset to full length of loop
+
+### page 3: FILTER
+
+![norns FILTER page documentation image. labelled image of the norns sreen. text descriptions below.](lib/doc/ndls_FILTER.png)
+
+#### E1: filter resonance
+
+make stuff sound pointy. note that by default this is globally [scoped](#metaparams).
+
+#### E2: filter cutoff
+
+cutoff frequency, from 20 to 20k Hz.
+
+#### E3: filter type
+
+select between lowpass (default), bandpass, highpass, and bypass (dry).
+
+#### K2: randomize cutoff
+
+hold to reset to 1.
+
+#### K3: randomize type
+
+hold to reset to lowpass
 
 ## arc UI
 
-when arc is connected, the **arc focus** component will be visible to the right of **track focus**. the [norns](#norns) section above contains more info about the available [metaparams](#metaparams) (**vol**, **cut**, **st**, **len**). any changes to these controls can be pattern recorded using the grid.
+when arc is connected, the **arc focus** component will be visible to the right of **track focus**. the [norns](#norns) section above contains more info about the available params & [metaparams](#metaparams) (**gain**, **cut**, **win**, **len**). any changes to these controls can be pattern recorded using the grid.
 
 ### horizontal orientation
 
@@ -190,7 +219,6 @@ by default, the arc will display four different metaparams from a single track â
 
 to rotate to the **vertical** orientation, hold & release any two keys in the same **column** with two fingers. now, arc will display the same metaparam across all four tracks. press any **column** to focus on another metaparam ( **vol**, **cut**, **st**, or **len**).
 
-
 ## metaparams
 
 (description)
@@ -201,10 +229,6 @@ to rotate to the **vertical** orientation, hold & release any two keys in the sa
 #### randomization
 #### initial preset values
 
-## saving sessions
+## PSETS
 
 u can save & load full sessions via the PSET menu. saves all data, buffer audio, and patterns. yay! additionally, your last session is auto-saved to the "last session" pset every time you exit the app.
-
-## roadmap
-
-[read here](https://github.com/users/andr-ew/projects/3/views/1)
