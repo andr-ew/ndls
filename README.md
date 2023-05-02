@@ -31,8 +31,6 @@ in the maiden REPL, type:
 
 if you wish to install a different version, see the [releases](https://github.com/andr-ew/ndls/releases) tab
 
-## quick start
-
 ## grid
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
