@@ -74,7 +74,7 @@ set the focus for the _norns screen & encoders_ (not grid). norns' controls are 
 
 ### rate: reverse & octave
 
-set the record _and playback_ direction and power-of-two multiple (AKA octave). the rate of change (or slew) for both these controls is touch-reactive. a single key tap will jump instantly to a new value, while hold-and-release gestures increase slew time in proportion to the held duration.
+set the record _and playback_ direction and power-of-two rate multiple (AKA octave, or time division). the rate of change (or slew) for both these controls is touch-reactive. a single key tap will jump instantly to a new value, while hold-and-release gestures increase slew time in proportion to the held duration.
   - to glide to a new pitch with **rate: octave**:
     - 1 - hold one finger on the lit / current value key
     - 2 - press the key of the rate you'd like to glide to
