@@ -83,11 +83,6 @@ set the record _and playback_ direction and power-of-two rate multiple (AKA octa
     - hold reverse, and release
     - softcut will glide down to rate 0, then glide back up in the other direction, based on the amount of time you were holding down the key.
 
-### loop
-
-toggle looping on or off. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
-
-
 ### buffer
 
 select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer, for multi-octave polyphonic looping & decoupled record & play head delay systems. lots of possibilities!
@@ -96,6 +91,10 @@ select which audio buffer (1-4) to record & play back from. multiple tracks can 
 ### preset
 
 select a preset. there is 1 default preset + 6 unique, optionally randomized presets for any/all track controls. by default, only window parameters will be included in the preset. see [metaparams](#metaparams) for advanced info.
+
+### loop
+
+toggle looping on or off. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
 
 ### send & return
 
