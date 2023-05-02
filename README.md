@@ -31,7 +31,7 @@ in the maiden REPL, type:
 
 if you wish to install a different version, see the [releases](https://github.com/andr-ew/ndls/releases) tab
 
-## grid
+## grid UI
 
 ![grid & arc documentation image](lib/doc/ndls_128.png)
 
@@ -95,7 +95,7 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - double tap: overdub pattern
 - hold: clear pattern
 
-## norns
+## norns UI
 
  the norns encoders are mapped to 8 [metaparams](#metaparams) for each track, with norns keys mapped to randomizations of certain values. use the **track focus** + **page focus** components on the top left of the grid to switch between views. changes to any control can be pattern recorded using the grid.
 
@@ -140,7 +140,7 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - **E3:** pitch bend (-1 to +1 octave)
 - **K2:** randomize pan
 
-## arc
+## arc UI
 
 when arc is connected, the **arc focus** component will be visible to the right of **track focus**. the [norns](#norns) section above contains more info about the available [metaparams](#metaparams) (**vol**, **cut**, **st**, **len**). any changes to these controls can be pattern recorded using the grid.
 
