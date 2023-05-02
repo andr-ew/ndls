@@ -35,7 +35,7 @@ if you wish to install a different version, see the [releases](https://github.co
 
 recommended: luanch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu. 
 
-those unable to access the SELECT menu can launch the script from the browser via the maiden REPL:
+users with accesibility needs who are unable to acess the norns system menus might consider launching the script from the maiden REPL via the [browser](https://monome.org/docs/norns/maiden/#repl) or another websocket-connected [application](https://github.com/szymonkaliski/maiden-remote-repl):
 ```
 norns.script.load('/home/we/dust/code/ndls/ndls.lua')
 ```
