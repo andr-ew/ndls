@@ -1,7 +1,7 @@
 
 <h1 align="center">NDLS (0.2.0-beta)</h1>
 
-![ndls overview documentation image, labeled diagrams of the grid, norns screen, and arc. see rest of document for accesible documentation](/lib/doc/ndls_overview.png)
+![ndls overview documentation image, labeled diagrams of the grid, norns screen, and arc. see rest of document for accesible text documentation](/lib/doc/ndls_overview.png)
 
 
 4-track, grid-based, tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
@@ -33,7 +33,7 @@ if you wish to install a different version, see the [releases](https://github.co
 
 ## grid UI
 
-![grid & arc documentation image](lib/doc/ndls_128.png)
+![grid & arc documentation image. a labeled diagram of the grid. text descriptions below](lib/doc/ndls_128.png)
 
 the grid is split in two halves with two blocks of [metaparams](#metaparams) mapped to four tracks of softcut. rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
@@ -114,48 +114,30 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ## norns UI
 
- the norns encoders are mapped to 8 [metaparams](#metaparams) for each track, with norns keys mapped to randomizations of certain values. use the **track focus** + **page focus** components on the top left of the grid to switch between views. changes to any control can be pattern recorded using the grid.
+across 3 pages, all 3 norns encoders are mapped to 9 [metaparams](#metaparams) for each track, with K2 & K3 mapped to randomizations of certain values. use the **track focus** + **page focus** components on the top left of the grid to switch between views. hold K1 on any page to assign [scopes](#metaparams). changes to any control can be pattern recorded using the grid.
 
-- **track focus:** displays the track focus (set using the top left keys on the grid)
-- **E1:** set page focus (also mapped to the grid)
-- **E2 - E3:** edit metaparam
-- **K2 - K3:** randomize metaparam or other.
+### MIX
 
-### page v (volume)
+![norns MIX page documentation image. labelled image of the norns sreen. text descriptions below.](lib/doc/ndls_MIX.png)
 
-![norns screen page v documentation image](lib/doc/ndls_screen_v.png)
+#### E1: perserve/feedback level
+the rate at which old material fades away. turn it up in a delay for long echo tails, or turn it down in a loop for tape decay memory loss.
 
-- **E2:** track output level
-- **E3:** volume of old material when overdubbing (i.e. obverdub level/feedback level)
-- **K2:** randomize vol
-- **K3:** randomize old
+#### E2: playback/output level
+this level is summed with the **gain** param in the params menu to set the actual output level.
 
-### page s (start/length)
+#### E3: stereo pan amount
+this does not set the pan value directly, but rather, each track has a unique multiple that sets the pan value relative to the **spread** value. by default, in the global scope, spread will spread out all tracks evenly in the stereo feild, but you can switch the [scope](#metaparams) to track or preset to set pans independently, there will just be some uneven scaling between tracks.
 
-![norns screen page s documentation image](lib/doc/ndls_screen_s.png)
+#### K2: randomize level
+hold to reset to 0db.
 
-- **E2:** slice window start point
-- **E3:** slice window length
-- **K2:** randomize start point
-- **K3:** randomize length
-- **K2 + K3:** random window
+#### randomize spread 
+hold to reset to center.
 
-### page f (filter)
+### TAPE
 
-![norns screen page f documentation image](lib/doc/ndls_screen_f.png)
 
-- **E2:** filter cutoff
-- **E3:** filter resonance
-- **K2:** randomize cutoff
-- **K3:** filter type (lowpass, bandpass, highpass, dry)
-
-### page p (pan/pitch)
-
-![norns screen page p documentation image](lib/doc/ndls_screen_p.png)
-
-- **E2:** pan
-- **E3:** pitch bend (-1 to +1 octave)
-- **K2:** randomize pan
 
 ## arc UI
 
