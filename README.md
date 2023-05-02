@@ -31,6 +31,14 @@ in the maiden REPL, type:
 
 if you wish to install a different version, see the [releases](https://github.com/andr-ew/ndls/releases) tab
 
+## start
+
+luanch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu. those unable to access the SELECT menu can launch the script from the browser via maiden:
+
+```
+norns.script.load('/home/we/dust/code/ndls/ndls.lua')
+```
+
 ## grid UI
 
 ![grid & arc documentation image. a labeled diagram of the grid. text descriptions below](lib/doc/ndls_128.png)
@@ -147,6 +155,22 @@ hold to reset to center.
 
 ### TAPE
 
+![norns TAPE page documentation image. labelled image of the norns sreen. text descriptions below.](lib/doc/ndls_TAPE.png)
+
+#### E1: perserve/feedback level
+the rate at which old material fades away. turn it up in a delay for long echo tails, or turn it down in a loop for tape decay memory loss.
+
+#### E2: playback/output level
+this level is summed with the **gain** param in the params menu to set the actual output level.
+
+#### E3: stereo pan amount
+this does not set the pan value directly, but rather, each track has a unique multiple that sets the pan value relative to the **spread** value. by default, in the global scope, spread will spread out all tracks evenly in the stereo feild, but you can switch the [scope](#metaparams) to track or preset to set pans independently, there will just be some uneven scaling between tracks.
+
+#### K2: randomize level
+hold to reset to 0db.
+
+#### K3: randomize spread 
+hold to reset to center.
 
 
 ## arc UI
