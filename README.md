@@ -1,6 +1,10 @@
-# ndls (0.2.0-beta)
 
-4-track, grid-based, asynchronous tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
+<h1 align="center">NDLS (0.2.0-beta)</h1>
+
+![ndls overview documentation image, labeled diagrams of the grid, norns screen, and arc. see rest of document for accesible documentation](/lib/doc/ndls_overview.png)
+
+
+4-track, grid-based, tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
 
 a spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim), [anaphora](https://github.com/andr-ew/prosody#anaphora), and several unreleased precursors.
 
@@ -26,8 +30,6 @@ in the maiden REPL, type:
 ```
 
 if you wish to install a different version, see the [releases](https://github.com/andr-ew/ndls/releases) tab
-
-## quick start
 
 ## grid
 
