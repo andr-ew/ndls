@@ -39,7 +39,7 @@ the grid is split in two halves with two blocks of [metaparams](#metaparams) map
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
-note: x & y postitions of each key in the 128 grid layout are labelled between the square brackets [] for those unable to view the daigrams in this document. if you need adjusted labels for 64 or 256 layout please email andrewcshike@gmail.com
+note: x & y ranges of each component in the 128 grid layout are labelled between the square brackets [] for those unable to view the daigrams in this document. if you need adjusted labels for 64 or 256 layout please email andrewcshike@gmail.com
 
 ### rec & play 
 [x: 1-2, y: 5-6]
