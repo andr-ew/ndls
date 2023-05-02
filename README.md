@@ -142,7 +142,7 @@ this does not set the pan value directly, but rather, each track has a unique mu
 #### K2: randomize level
 hold to reset to 0db.
 
-#### randomize spread 
+#### K3: randomize spread 
 hold to reset to center.
 
 ### TAPE
