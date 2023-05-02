@@ -4,7 +4,7 @@
 ![ndls overview documentation image, labeled diagrams of the grid, norns screen, and arc. see rest of document for accesible documentation](/lib/doc/ndls_overview.png)
 
 
-4-track, grid-based, asynchronous tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
+4-track, grid-based, tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
 
 a spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim), [anaphora](https://github.com/andr-ew/prosody#anaphora), and several unreleased precursors.
 
