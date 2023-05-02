@@ -41,7 +41,8 @@ see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midi
 
 note: x & y postitions of each key in the 128 grid layout are labelled between the square brackets [] for those unable to view the daigrams in this document. if you need adjusted labels for 64 or 256 layout please email andrewcshike@gmail.com
 
-### rec & play [x: 1-2, y: 5-6]
+### rec & play 
+[x: 1-2, y: 5-6]
 
 toggle record & playback states. these controls are interdependent. here are some ways to use them:
 - record a new loop in a blank buffer:
@@ -69,12 +70,14 @@ toggle record & playback states. these controls are interdependent. here are som
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
 
-### track focus & page focus [track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
+### track focus & page focus 
+[track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
 
 set the focus for the _norns screen & encoders_ (not grid). norns' controls are split into three pages: **MIX**, **TAPE**, and **FILTER**, and are editable intependently across four tracks, focused with **track focus**. 
 - note that controls which have neither a white box nor underline are coupled to the same value across tracks, see [metaparams](#metaparams) for advanced info.
 
-### rate: reverse & octave [reverse x: 7, y: 1-4; octave x: 8-14 ]
+### rate: reverse & octave 
+[reverse x: 7, y: 1-4; octave x: 8-14 ]
 
 set the record _and playback_ direction and power-of-two rate multiple (AKA octave, or time division). the rate of change (or slew) for both these controls is touch-reactive. a single key tap will jump instantly to a new value, while hold-and-release gestures increase slew time in proportion to the held duration.
   - to glide to a new pitch with **rate: octave**:
@@ -85,25 +88,30 @@ set the record _and playback_ direction and power-of-two rate multiple (AKA octa
     - hold reverse, and release
     - softcut will glide down to rate 0, then glide back up in the other direction, based on the amount of time you were holding down the key.
 
-### buffer [ x: 3-6, y: 5-8 ]
+### buffer 
+[ x: 3-6, y: 5-8 ]
 
 select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer, for multi-octave polyphonic looping & decoupled record & play head delay systems. lots of possibilities!
 - idea: set two tracks to share the same buffer, and **send** one track to the other.
 
-### preset [ x: 3-6, y: 7-13 ]
+### preset 
+[ x: 3-6, y: 7-13 ]
 
 select a preset. there is 1 default preset + 6 unique, optionally randomized presets for any/all track controls. by default, only window parameters will be included in the preset. see [metaparams](#metaparams) for advanced info.
 
-### loop [ x: 15, y: 1-4 ]
+### loop 
+[ x: 15, y: 1-4 ]
 
 toggle looping on or off. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
 
-### send & return [ send x: 14, y: 5-8; return x: 15, y: 5-8 ]
+### send & return 
+[ send x: 14, y: 5-8; return x: 15, y: 5-8 ]
 
 these keys allow you to **send** the output of a track into an invisibe audio bus & **return** them back into the input of another track. tracks with a lit **send** key will be routed into every track with a lit **return** key.
 - idea: send a loop track into another track set up like a delay, for echoed loops.
 
-### pattern recorders [ x: 16, y 1-8 ]
+### pattern recorders 
+[ x: 16, y 1-8 ]
 
 the rightmost column contans 8 pattern recorders, these can record & play back any combination of input on grid, norns, or arc. use them like this:
 
