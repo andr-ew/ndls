@@ -1,4 +1,8 @@
-# ndls (0.2.0-beta)
+
+<h1 align="center">NDLS (0.2.0-beta)</h1>
+
+![ndls overview documentation image, labeled diagrams of the grid, norns screen, and arc. see rest of document for accesible documentation](/lib/doc/ndls_overview.png)
+
 
 4-track, grid-based, asynchronous tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
 
