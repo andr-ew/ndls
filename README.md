@@ -205,7 +205,7 @@ hold to reset to lowpass
 
 ## arc UI
 
-when arc is connected, the **arc focus** component will be visible to the right of **track focus**. the [norns](#norns) section above contains more info about the available params & [metaparams](#metaparams) (**gain**, **cut**, **win**, **len**). any changes to these controls can be pattern recorded using the grid.
+when arc is connected, the **arc focus** component will be visible to the right of **track focus**. the [norns](#norns-ui) section above contains more info about the available params & [metaparams](#metaparams) (**gain**, **cut**, **win**, **len**). any changes to these controls can be pattern recorded using the grid.
 
 ### horizontal orientation
 
