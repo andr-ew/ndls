@@ -256,6 +256,10 @@ then assign rate & rev for octave & reverse
 
 to assist with differentiation across the 7 presets in **preset** scope, preset values can be optionally auto-randomized upon creating a new loop. this is called **preset intitalizatio** and there are two options, **random** (x) or **default** (d). while holding K1, preset initilizatition can be assigned using the K2 or K3 associated with the metaparam, assuming the scope has been assigned to preset. 
 
+### window scopes
+
+TODO: further descriptions for preset & global behaviors
+
 ## params
 
 ## PSETS
