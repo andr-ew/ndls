@@ -260,8 +260,9 @@ to assist with differentiation across the 7 presets in **preset** scope, preset 
 
 TODO: further descriptions for preset & global behaviors
 
-## params
-
 ## PSETS
 
 u can save & load full sessions via the PSET menu. saves all data, buffer audio, and patterns. yay! additionally, your last session is auto-saved to the "last session" pset every time you exit the app.
+
+## additional params
+
