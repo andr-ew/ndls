@@ -262,7 +262,7 @@ TODO: further descriptions for preset & global behaviors
 
 ## PSETS
 
-in ndls, norns PSET system serves two important roles: [saving sessings](#saving-sessions), and [overriding default values](#overwriting-default-values).
+in ndls, norns PSET system serves two important roles: [saving sessings](#saving-sessions), and [overriding default values](#overriding-default-values).
 
 ### saving sessions
 
