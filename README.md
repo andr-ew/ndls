@@ -262,7 +262,11 @@ TODO: further descriptions for preset & global behaviors
 
 ## PSETS
 
-u can save & load full sessions via the PSET menu. saves all data, buffer audio, and patterns. yay! additionally, your last session is auto-saved to the "last session" pset every time you exit the app.
+in ndls, norns PSET system serves two important roles: [saving sessings](#saving-sessions), and [overriding default values](#overwriting-default-values).
+
+### saving sessions
+
+### overriding default values
 
 ## additional params
 
