@@ -82,7 +82,7 @@ toggle record & playback states. these controls are interdependent. here are som
 ### track focus & page focus 
 [track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
 
-set the focus for the _norns screen & encoders_ (not grid). norns' controls are split into three pages: **MIX**, **TAPE**, and **FILTER**, and are editable intependently across four tracks, focused with **track focus**. 
+set the focus for the _norns screen & encoders_ (not grid). norns' controls are split into three pages: [**MIX**](#page-1-mix), [**TAPE**](#page-2-mix), and [**FILTER**](page-3-filter), and are editable intependently across four tracks, focused with **track focus**. 
 - note that controls which have neither a white box nor underline are coupled to the same value across tracks, see [metaparams](#metaparams) for advanced info.
 
 ### rate: reverse & octave 
