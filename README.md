@@ -221,13 +221,13 @@ to rotate to the **vertical** orientation, hold & release any two keys in the sa
 
 ## metaparams
 
-(description)
+the majority of the values mapped to norns, grid, and arc, are **metaparams**. metaparams are a way of connecting one or more intependently-editable values to a single destination, like filter cutoff or window length. each metaparam has an assignable **scope**, which detirmines whether values are edited globally (across tracks), on a per-track, or a per-preset basis. the three scopes are (predictably) called **global**, **track**, and **preset**.
 
-### metaparam options
+time for a diagram!
 
-#### scope
-#### randomization
-#### initial preset values
+![a diagram visually illustrating the relationships between the three scopes. text desctiptions above & below.](doc/ndls_scope_diagram.png)
+
+## params
 
 ## PSETS
 
