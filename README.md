@@ -225,9 +225,36 @@ the majority of the values mapped to norns, grid, and arc, are **metaparams**. m
 
 the three scopes are (predictably) called **global**, **track**, and **preset**. on the norns screen, **track**-scoped metaparams are boxed-out while **preset**-scoped metaparams are underlined. by default, window+length are the only metaparams in the preset scope, while old, spread, and q start out in global scope.
 
-time for a diagram!
-
 ![a diagram visually illustrating the relationships between the three scopes. text desctiptions above & below.](lib/doc/ndls_scope_diagram.png)
+
+you can think of each metaparam as having either **1**, **4**, or **28** true values, either shared, different between tracks, or different between presets on different tracks, depending on the scope. in the diagram, the true values have the box around it.
+
+### assigning scope
+
+![a diagram showing the scope assignment modal. text description below.](lib/doc/ndls_SCOPE.png)
+
+to change a scope, hold K1 on any page & turn the encoder associated with the metaparam you'd like to edit.
+
+**----------------------------------------------------------------------------------------**
+
+**TODO: TAPE page scope capture**
+
+`![a diagram showing the scope assignment on the TAPE page. text description below.](lib/doc/ndls_SCOPE_TAPE.png)`
+
+**----------------------------------------------------------------------------------------**
+
+note that on the TAPE page, E1 sets the scope for all rate controls (**rate**, **rate: reverse**, and **rate: octave**), E2 sets the scope for both **window** and **length**, and E3 is left over to set the scope for **loop**
+
+**---------------------------------- BETA 0.2 NOTE --------------------------------------**
+- rate scopes are currently only editable under the params menu. go to EDIT > metaparam options > scopes, 
+then assign rate & rev for octave & reverse
+- window & length scopes are not yet editable at this time. they are fixed to **preset**
+
+**----------------------------------------------------------------------------------------**
+
+### preset initialization
+
+to assist with differentiation across the 7 presets in **preset** scope, preset values can be optionally auto-randomized upon creating a new loop. this is called **preset intitalizatio** and there are two options, **random** (x) or **default** (d). while holding K1, preset initilizatition can be assigned using the K2 or K3 associated with the metaparam, assuming the scope has been assigned to preset. 
 
 ## params
 
