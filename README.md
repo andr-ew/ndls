@@ -211,13 +211,13 @@ when arc is connected, the **arc focus** component will be visible to the right 
 
 ![arc documentation image](lib/doc/ndls_arc_horizontal.png)
 
-by default, the arc will display four different metaparams from a single track – **gain**, **cut**, **st**, and **len**. press any **row** in the 4x4 grid with one finger to focus on another track.
+by default, the arc will display four different metaparams from a single track – **gain**, **cut**, **win**, and **len**. press any **row** in the 4x4 grid with one finger to focus on another track.
 
 ### vertical orientation
 
 ![arc documentation image](lib/doc/ndls_arc_vertical.png)
 
-to rotate to the **vertical** orientation, hold & release any two keys in the same **column** with two fingers. now, arc will display the same metaparam across all four tracks. press any **column** to focus on another metaparam ( **gain**, **cut**, **st**, or **len**).
+to rotate to the **vertical** orientation, hold & release any two keys in the same **column** with two fingers. now, arc will display the same metaparam across all four tracks. press any **column** to focus on another metaparam ( **gain**, **cut**, **win**, or **len**).
 
 ## metaparams
 
