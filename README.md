@@ -78,6 +78,8 @@ toggle record & playback states. these controls are interdependent. here are som
   - 3 - softcut will begin playing and overdubbing, like a delay.
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
+    
+by default, ndls loops asynchronously between tracks, see (window scopes)(#window-scopes) for info on synchronous modality.
 
 ### track focus & page focus 
 [track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
@@ -252,7 +254,7 @@ to assist with differentiation across the 7 presets in **preset** scope, preset 
 
 ### window scopes
 
-TODO: further descriptions for preset & global behaviors
+TODO: further descriptions for preset & global behaviors. **BETA NOTE:** these modes aren't done yet.
 
 ## PSETs
 
