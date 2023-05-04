@@ -283,3 +283,13 @@ there are a couple more useful tweaks under the **PSET options** header in PARAM
 ## additional params
 
 a few more params can be accessed exclusively in the params menu
+
+### track params
+
+- **gain:** this is a second, regular param summed with **level** to set the output level for each track. can be useful to midi map these and still adjust outputs on the track scope if you've assigned **level** to global or preset scope.
+
+### softcut options
+
+- **input routing:** set whether mono audio input comes from the left or right channel
+- **alias:** when on, disables the antialiasing filter
+- **rec transistion:** set the slew time for the record input levels. can smooth out loop points.
