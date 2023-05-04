@@ -79,7 +79,7 @@ toggle record & playback states. these controls are interdependent. here are som
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
     
-by default, ndls loops asynchronously between tracks, see (window scopes)(#window-scopes) for info on synchronous modality.
+by default, ndls loops asynchronously between tracks, see (window scopes)(#window-scopes) for info on synchronous & beat-synced modalities.
 
 ### track focus & page focus 
 [track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
