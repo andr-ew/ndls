@@ -79,7 +79,7 @@ toggle record & playback states. these controls are interdependent. here are som
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
     
-by default, ndls loops asynchronously between tracks, see (window scopes)(#window-scopes) for info on synchronous & beat-synced modalities.
+by default, ndls loops asynchronously between tracks & independently from the global clock. see [window scopes](#window-scopes) for info on synchronous modes & [additional params](#additional-params) for clock-synced settings.
 
 ### track focus & page focus 
 [track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
@@ -295,3 +295,10 @@ a few more params can be accessed exclusively in the params menu
 - **input routing:** set whether mono audio input comes from the left or right channel
 - **alias:** when on, disables the antialiasing filter
 - **rec transistion:** set the slew time for the record input levels. can smooth out loop points.
+
+**---------------------------------- BETA 0.2 NOTE --------------------------------------**
+
+clock-sync forthcoming
+
+**----------------------------------------------------------------------------------------**
+
