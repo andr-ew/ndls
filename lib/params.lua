@@ -1,20 +1,3 @@
--- add gains
-do
-    params:add_separator('gain')
-
-    for i = 1,4 do
-        params:add{
-            id = 'gain '..i,
-            type = 'control', 
-            controlspec = cs.new(-math.huge, 6, 'db', nil, 0, 'dB'),
-            action = function(v)
-                sc.lvlmx[i].gain = util.dbamp(v); sc.lvlmx:update(i)
-                crops.dirty.screen = true; crops.dirty.arc = true
-            end
-        }
-    end
-end
-
 -- add metaparams
 do
     mparams:add{
@@ -164,100 +147,22 @@ do
     end
 end
 
--- add metaparam options
-do
-    params:add_separator('metaparam options')
-
-    do
-        params:add_group('scopes', mparams:scope_params_count())
-        mparams:add_scope_params()
-    end
-
-    do
-        params:add_group('randomization', 2 + mparams:random_range_params_count())
-
-        params:add{
-            id = 'len min', name = 'len min', type = 'control', 
-            controlspec = cs.def{ min = 0, max = 1, default = 0.15 },
-            allow_pmap = false,
-        }
-        params:add{
-            id = 'len max', name = 'len max', type = 'control', 
-            controlspec = cs.def{ min = 0.5, max = 10, default = 0.75 },
-            allow_pmap = false,
-        }
-
-        mparams:add_random_range_params()
-    end
-
-    do
-        params:add_group(
-            'initial preset values', 
-            1 + mparams:reset_preset_action_params_count()
-        )
-        do
-            local names = { 'random', 'default' }
-            local funcs = { windowparams.resets.random, windowparams.resets.default }
-            params:add{
-                id = 'window_reset', name = 'st + len', type = 'option',
-                options = names, default = 1, allow_pmap = false,
-                action = function(v)
-                    wparams:set_reset_presets(funcs[v])
-                    crops.dirty.screen = true
-                end
-            }
-        end
-
-        mparams:add_reset_preset_action_params()
-    end
-
-
-    --TODO: slew group
-end
-
--- add softcut options
-do
-    params:add_separator('softcut options')
-
-    --TODO: input routing per-voice 🧠
-    local ir_op = { 'left', 'right' }
-    params:add{
-        type = 'option', id = 'input routing', options = ir_op,
-        action = function(v)
-            sc.inmx.route = ir_op[v]
-            for i = 1,voices do sc.inmx:update(i) end
-        end,
-        allow_pmap = false,
-    }
-
-    params:add{
-        id = 'alias',
-        type = 'binary', behavior = 'toggle', default = 0,
-        action = function(v)
-            for i = 1, voices do
-                sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
-            end
-        end,
-        allow_pmap = false,
-    }
-
-    params:add{
-        type = 'control', id = 'rec transition',
-        controlspec = cs.def{ default = 1, min = 0, max = 5 },
-        allow_pmap = false,
-        action = function(v)
-            for i = 1, voices do
-                softcut.recpre_slew_time(i, v)
-            end
-        end
-    }
-
-    --TODO: rate glide enable/disable
-end
-
 -- add other track params
 do
     params:add_separator('params_sep', 'track params')
+
+    params:add_group('gain', tracks)
+    for i = 1, voices do
+        params:add{
+            id = 'gain '..i,
+            type = 'control', 
+            controlspec = cs.new(-math.huge, 6, 'db', nil, 0, 'dB'),
+            action = function(v)
+                sc.lvlmx[i].gain = util.dbamp(v); sc.lvlmx:update(i)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
+        }
+    end
 
     params:add_group('record & play', 5 * tracks)
     for i = 1, voices do
@@ -395,9 +300,100 @@ do
     end
 end
 
+-- add metaparam options
+do
+    params:add_separator('metaparam options')
+
+    do
+        params:add_group('scopes', mparams:scope_params_count())
+        mparams:add_scope_params()
+    end
+
+    do
+        params:add_group('randomization', 2 + mparams:random_range_params_count())
+
+        params:add{
+            id = 'len min', name = 'len min', type = 'control', 
+            controlspec = cs.def{ min = 0, max = 1, default = 0.15 },
+            allow_pmap = false,
+        }
+        params:add{
+            id = 'len max', name = 'len max', type = 'control', 
+            controlspec = cs.def{ min = 0.5, max = 10, default = 0.75 },
+            allow_pmap = false,
+        }
+
+        mparams:add_random_range_params()
+    end
+
+    do
+        params:add_group(
+            'initial preset values', 
+            1 + mparams:reset_preset_action_params_count()
+        )
+        do
+            local names = { 'random', 'default' }
+            local funcs = { windowparams.resets.random, windowparams.resets.default }
+            params:add{
+                id = 'window_reset', name = 'st + len', type = 'option',
+                options = names, default = 1, allow_pmap = false,
+                action = function(v)
+                    wparams:set_reset_presets(funcs[v])
+                    crops.dirty.screen = true
+                end
+            }
+        end
+
+        mparams:add_reset_preset_action_params()
+    end
+
+
+    --TODO: slew group
+end
+
+-- add softcut options
+do
+    params:add_separator('softcut options')
+
+    --TODO: input routing per-voice 🧠
+    local ir_op = { 'left', 'right' }
+    params:add{
+        type = 'option', id = 'input routing', options = ir_op,
+        action = function(v)
+            sc.inmx.route = ir_op[v]
+            for i = 1,voices do sc.inmx:update(i) end
+        end,
+        allow_pmap = false,
+    }
+
+    params:add{
+        id = 'alias',
+        type = 'binary', behavior = 'toggle', default = 0,
+        action = function(v)
+            for i = 1, voices do
+                sc.aliasmx[i].alias = v; sc.aliasmx:update(i)
+            end
+        end,
+        allow_pmap = false,
+    }
+
+    params:add{
+        type = 'control', id = 'rec transition',
+        controlspec = cs.def{ default = 1, min = 0, max = 5 },
+        allow_pmap = false,
+        action = function(v)
+            for i = 1, voices do
+                softcut.recpre_slew_time(i, v)
+            end
+        end
+    }
+
+    --TODO: rate glide enable/disable
+end
+
 --add pset params
 do
-    params:add_separator('pset')
+    params:add_separator('PSET options')
 
     params:add{
         id = 'reset all params', type = 'binary', behavior = 'trigger',
