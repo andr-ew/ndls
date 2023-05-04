@@ -24,7 +24,7 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 ## install
 
-in the maiden REPL, type: 
+in the maiden [REPL](https://monome.org/docs/norns/image/wifi_maiden-images/install-repl.png), type: 
 ```
 ;install https://github.com/andr-ew/ndls/releases/download/v0.2.0-beta/complete-source-code.zip
 ```
