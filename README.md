@@ -260,13 +260,30 @@ to assist with differentiation across the 7 presets in **preset** scope, preset 
 
 TODO: further descriptions for preset & global behaviors
 
-## PSETS
+## PSETs
 
 in ndls, norns PSET system serves two important roles: [saving sessings](#saving-sessions), and [overriding default values](#overriding-default-values).
 
 ### saving sessions
 
+ndls saves all session data, including buffer audio & pattern data, alongside your PSETs. just head to PARAMETERS > PSET and save a new PSET. note that the first two slots should already be in use. the first is the **default** slot, always loaded when launching the app. the second slot (**last session**) is always saved to when exiting the app. load this slot if you need to access your last session, but didn't save it.
+
+**---------------------------------- BETA 0.2 NOTE --------------------------------------**
+
+any PSETs saved on a beta version may not load in full on a future version. you can always re-download an [older version](https://github.com/andr-ew/ndls/releases) of ndls to access obsolete PSETs.
+
+**----------------------------------------------------------------------------------------**
+
 ### overriding default values
 
-## additional params
+as mentioned, the **default** slot is loaded when starting the app. you can save to this slot to change the default parameter values that are loaded when you start up. this is especially useful for redefining [metaparam](#metaparams) scopes, but you can also overrite default values on global & track scoped metaparams. first, if you have any audio in your buffers (still visible in the TAPE page waveforms, even if all playback is silenced), you might want to  clear that out by going to PARAMS > EDIT scrolling down to the **pset** section and triggering **force clear all buffers**. then, right below that, there's a shortcut for **overwrite default pset**.
 
+### PSET options
+
+there are a couple more useful tweaks under the **pset** header in PARAMS > EDIT
+
+- **reset all params:** this resets all params to the "factory default" state that the app ships with. useful for getting back there after overwriting the default PSET.
+- **load last session pset:** shortcut for loading PSET slot 2
+- **autosave to default pset:** switch to 'yes' to automatically save to the default PSET upon exiting the app. this will re-load your last session when opening the app.
+
+## additional params
