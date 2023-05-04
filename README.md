@@ -235,13 +235,7 @@ you can think of each metaparam as having either **1**, **4**, or **28** true va
 
 to change a scope, hold K1 on any page & turn the encoder associated with the metaparam you'd like to edit.
 
-**----------------------------------------------------------------------------------------**
-
-**TODO: TAPE page scope capture**
-
-`![a diagram showing the scope assignment on the TAPE page. text description below.](lib/doc/ndls_SCOPE_TAPE.png)`
-
-**----------------------------------------------------------------------------------------**
+[TODO: TAPE page scope capture]
 
 note that on the TAPE page, E1 sets the scope for all rate controls (**rate**, **rate: reverse**, and **rate: octave**), E2 sets the scope for both **window** and **length**, and E3 is left over to set the scope for **loop**
 
@@ -276,14 +270,16 @@ any PSETs saved on a beta version may not load in full on a future version. you 
 
 ### overriding default values
 
-as mentioned, the **default** slot is loaded when starting the app. you can save to this slot to change the default parameter values that are loaded when you start up. this is especially useful for redefining [metaparam](#metaparams) scopes, but you can also overrite default values on global & track scoped metaparams. first, if you have any audio in your buffers (still visible in the TAPE page waveforms, even if all playback is silenced), you might want to  clear that out by going to PARAMS > EDIT scrolling down to the **pset** section and triggering **force clear all buffers**. then, right below that, there's a shortcut for **overwrite default pset**.
+as mentioned, the **default** slot is loaded when starting the app. you can save to this slot to change the default parameter values that are loaded when you start up. this is especially useful for redefining [metaparam](#metaparams) scopes, but you can also overrite default values on global & track scoped metaparams. first, if you have any audio in your buffers (still visible in the TAPE page waveforms, even if all playback is silenced), you might want to  clear that out by going to PARAMS > EDIT scrolling down to the **PSET options** header and triggering **force clear all buffers**. then, right below that, there's a shortcut for **overwrite default pset**.
 
 ### PSET options
 
-there are a couple more useful tweaks under the **pset** header in PARAMS > EDIT
+there are a couple more useful tweaks under the **PSET options** header in PARAMS > EDIT
 
 - **reset all params:** this resets all params to the "factory default" state that the app ships with. useful for getting back there after overwriting the default PSET.
 - **load last session pset:** shortcut for loading PSET slot 2
 - **autosave to default pset:** switch to 'yes' to automatically save to the default PSET upon exiting the app. this will re-load your last session when opening the app.
 
 ## additional params
+
+a few more params can be accessed exclusively in the params menu
