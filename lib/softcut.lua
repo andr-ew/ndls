@@ -288,6 +288,20 @@ do
     end
 end
 
+-- call params:delta('clear') before calling
+-- call params:set('play '..n, 1) after calling
+-- test: sc.loadsample(1, '/home/we/dust/audio/nme/STE-037 (Freeze) [2020-08-21 202417].wav.mp3.wav')
+sc.loadsample = function(buffer, path)
+    local b, f = buffer, path
+
+    if util.file_exists(f) then
+        reg.rec[b]:read(f, nil, nil, 'source')
+        sc.punch_in:was_loaded(b)
+
+        print('sc loadsample'..f)
+    end
+end
+
 sc.send = function(command, ...)
     softcut[command](...)
 end

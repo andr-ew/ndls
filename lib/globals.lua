@@ -110,8 +110,6 @@ do
         local fname = norns.state.data..name..'.data'
         local data = tab.load(fname)
 
-        print('pattern_read', fname, data)
-
         if data then
             for i,pat in ipairs(data.pattern) do
                 for k,v in pairs(pat) do
