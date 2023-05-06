@@ -24,7 +24,7 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 ## install
 
-in the maiden REPL, type: 
+in the maiden [REPL](https://monome.org/docs/norns/image/wifi_maiden-images/install-repl.png), type: 
 ```
 ;install https://github.com/andr-ew/ndls/releases/download/v0.2.0-beta/complete-source-code.zip
 ```
@@ -78,6 +78,8 @@ toggle record & playback states. these controls are interdependent. here are som
   - 3 - softcut will begin playing and overdubbing, like a delay.
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
+    
+by default, ndls loops asynchronously between tracks & independently from the global clock. see [window scopes](#window-scopes) for info on synchronous modes & [additional params](#additional-params) for clock-synced settings.
 
 ### track focus & page focus 
 [track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
@@ -235,13 +237,7 @@ you can think of each metaparam as having either **1**, **4**, or **28** true va
 
 to change a scope, hold K1 on any page & turn the encoder associated with the metaparam you'd like to edit.
 
-**----------------------------------------------------------------------------------------**
-
-**TODO: TAPE page scope capture**
-
-`![a diagram showing the scope assignment on the TAPE page. text description below.](lib/doc/ndls_SCOPE_TAPE.png)`
-
-**----------------------------------------------------------------------------------------**
+[TODO: TAPE page scope capture]
 
 note that on the TAPE page, E1 sets the scope for all rate controls (**rate**, **rate: reverse**, and **rate: octave**), E2 sets the scope for both **window** and **length**, and E3 is left over to set the scope for **loop**
 
@@ -258,7 +254,7 @@ to assist with differentiation across the 7 presets in **preset** scope, preset 
 
 ### window scopes
 
-TODO: further descriptions for preset & global behaviors
+TODO: further descriptions for preset & global behaviors. **BETA NOTE:** these modes aren't done yet.
 
 ## PSETs
 
@@ -276,14 +272,33 @@ any PSETs saved on a beta version may not load in full on a future version. you 
 
 ### overriding default values
 
-as mentioned, the **default** slot is loaded when starting the app. you can save to this slot to change the default parameter values that are loaded when you start up. this is especially useful for redefining [metaparam](#metaparams) scopes, but you can also overrite default values on global & track scoped metaparams. first, if you have any audio in your buffers (still visible in the TAPE page waveforms, even if all playback is silenced), you might want to  clear that out by going to PARAMS > EDIT scrolling down to the **pset** section and triggering **force clear all buffers**. then, right below that, there's a shortcut for **overwrite default pset**.
+as mentioned, the **default** slot is loaded when starting the app. you can save to this slot to change the default parameter values that are loaded when you start up. this is especially useful for redefining [metaparam](#metaparams) scopes, but you can also tweak default values on global & track scoped metaparams. first, if you have any audio in your buffers (still visible in the TAPE page waveforms, even if all playback is silenced), you might want to  clear that out by going to PARAMS > EDIT scrolling down to the **PSET options** header and triggering **force clear all buffers**. then, right below that, there's a shortcut for **overwrite default pset**.
 
 ### PSET options
 
-there are a couple more useful tweaks under the **pset** header in PARAMS > EDIT
+there are a couple more useful tweaks under the **PSET options** header in PARAMS > EDIT
 
 - **reset all params:** this resets all params to the "factory default" state that the app ships with. useful for getting back there after overwriting the default PSET.
 - **load last session pset:** shortcut for loading PSET slot 2
 - **autosave to default pset:** switch to 'yes' to automatically save to the default PSET upon exiting the app. this will re-load your last session when opening the app.
 
 ## additional params
+
+a few more params can be accessed exclusively in the params menu
+
+### track params
+
+- **gain:** this is a second, regular param summed with **level** to set the output level for each track. can be useful to midi map these and still adjust outputs on the track scope if you've assigned **level** to global or preset scope.
+
+### softcut options
+
+- **input routing:** set whether mono audio input comes from the left or right channel
+- **alias:** when on, disables the antialiasing filter
+- **rec transistion:** set the slew time for the record input levels. can smooth out loop points.
+
+**---------------------------------- BETA 0.2 NOTE --------------------------------------**
+
+clock-sync forthcoming
+
+**----------------------------------------------------------------------------------------**
+
