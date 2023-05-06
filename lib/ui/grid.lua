@@ -55,6 +55,63 @@ local function Preset(args)
     end
 end
 
+local function Buffer(args)
+    local clk
+    local downstate
+
+    return function(props)
+        if props.wide then
+            local input = function(n, z)
+                if z == 1 then
+                    if clk then clock.cancel(clk) end
+                    clk = clock.run(function() 
+                        clock.sleep(0.5)
+
+                        local b = n
+                        view.modal = 'buffer'
+                        view.modal_index = b
+                    end)
+                else
+                    clock.cancel(clk)
+                    view.modal = 'none'
+                end
+            end
+
+            _grid.integer{
+                x = props.x, y = props.y, size = props.size,
+                state = props.state,
+                input = input,
+            }
+        else
+            local input = function(n, z)
+                if z == 1 then
+                    if clk then clock.cancel(clk) end
+                    clk = clock.run(function() 
+                        clock.sleep(0.5)
+
+                        local b = props.state[1]
+                        view.modal = 'buffer'
+                        view.modal_index = b
+                        downstate = b
+                    end)
+                else
+                    clock.cancel(clk)
+                    if downstate then props.state[2](downstate) end
+                    downstate = nil
+                    view.modal = 'none'
+                end
+            end
+
+            _routines.grid.integerbinary{
+                x = props.x, y = props.y, size = props.size, 
+                edge = 'falling',
+                state = props.state,
+                input = input,
+            }
+        end
+    end
+end
+
 local function Voice(args)
     local n = args.voice
     local varibright = args.varibright
@@ -86,6 +143,8 @@ local function Voice(args)
     local _rev = Components.grid.togglehold()
     local _rate = Components.grid.integerglide()
 
+    local _buffer = Buffer()
+
     local _preset = Preset{ 
         voice = n, varibright = varibright, wide = wide, tall = tall,
     }
@@ -111,18 +170,12 @@ local function Voice(args)
         end
 
         if not (crops.mode == 'input' and recording) then
-            if wide then
-                _grid.integer{
-                    x = 3, y = bottom,
-                    size = tall and 6 or 4,
-                    state = { params:get('buffer '..n), set_buffer }
-                }
-            else
-                _routines.grid.integerbinary{
-                    x = 6, y = top, size = 2,
-                    state = { params:get('buffer '..n), set_buffer }
-                }
-            end
+            _buffer{
+                x = wide and 3 or 6, y = wide and bottom or top, 
+                size = wide and (tall and 6 or 4) or 2,
+                wide = wide,
+                state = { params:get('buffer '..n), set_buffer }
+            }
         end
         
         if sc.lvlmx[n].play == 1 and recorded then

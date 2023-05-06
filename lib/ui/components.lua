@@ -637,8 +637,6 @@ do
                 local n = xy_to_index(props, x, y)
 
                 if n then 
-                    props.input(n, z)
-
                     if
                         (z == 1 and props.edge == 'rising')
                         or (z == 0 and props.edge == 'falling')
@@ -649,6 +647,8 @@ do
 
                         crops.set_state(props.state, new) 
                     end
+                    
+                    props.input(n, z)
                 end
             elseif crops.mode == 'redraw' then 
                 local g = crops.handler 

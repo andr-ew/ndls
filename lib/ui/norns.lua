@@ -446,94 +446,13 @@ local function App()
         if crops.device == 'screen' and crops.mode == 'redraw' then
             freeze_patrol:ping('screen')
         end
-
+            
         do
             local n = view.track
             local b = sc.buffer[n]
             local recording = sc.punch_in[b].recording
             local recorded = sc.punch_in[b].recorded
             local tab = view.page
-
-            if tab == 1 then
-                local levels_focus = { 4, 15 }
-                local levels = { 2, 8 }
-                local level_mark_focus = 4
-                local level_mark = 2
-
-                for i = 1,4 do
-                    do
-                        local y = y[2] + 3 + ((i-1) * (5 + 4 - 1))
-
-                        do
-                            local x = e[2].x
-                            local l = k[2].x - e[2].x
-                            local spec = mparams:get_controlspec('lvl')
-
-                            _routines.screen.meter{
-                                x = x, y = y, length = l, width = 3,
-                                levels = i==view.track and { 0, 12 } or { 0, 4 },
-                                outline = true,
-                                level_mark = i==view.track and level_mark_focus or level_mark,
-                                amount = spec:unmap(sc.lvlmx[i].db),
-                                mark = spec:unmap(0)
-                            }
-                        end
-                        do
-                            local x = k[2].x
-                            local l = e[3].x - k[2].x - 3
-                            local spec = mparams:get_controlspec('old')
-
-                            _routines.screen.meter{
-                                x = x, y = y, length = l, width = 1,
-                                levels = i==view.track and levels_focus or levels,
-                                amount = util.linlin(
-                                    spec.minval, spec.maxval, 0, 1, mparams:get(i, 'old')
-                                )
-                            }
-                        end
-                        do
-                            local l = k[3].x - e[3].x
-                            local x = x[3] - l
-
-                            _routines.screen.dial{
-                                x = x, y = y, length = l, width = 1,
-                                levels = i==view.track and levels_focus or levels,
-                                amount = util.linlin(
-                                    -1, 1, 0, 1, sc.sprmx[i].pan
-                                ),
-                                mark = util.linlin(
-                                    -1, 1, 0, 1, 0
-                                )
-                            }
-                        end
-                    end
-                end
-            elseif tab == 2 then
-                _waveform{
-                    reg = reg.rec[b], samples = sc.samples[b],
-                    --st = get_start(n), en = get_end(n), 
-                    st = wparams:get('start', n), en = wparams:get('end', n),
-                    phase = sc.phase[n].rel,
-                    recording = recording,
-                    recorded = recorded,
-                    show_phase = sc.lvlmx[n].play == 1,
-                    --rec_flag = params:get('rec '..n)
-                    render = function()
-                        sc.samples:render(b)
-                    end
-                }
-            elseif tab == 3 then
-                _filtergraph{
-                    filter_type = ({ 
-                        'lowpass', 'bandpass', 'highpass', 'bypass' 
-                    })[
-                        mparams:get(n, 'type')
-                    ],
-                    freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
-                    -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
-                    resonance = mparams:get(n, 'q'),
-                }
-            end
 
             _screen.list{
                 x = x[1], y = y[4], levels = { 2, 4 }, flow = 'right',
@@ -656,7 +575,133 @@ local function App()
             end
         end
 
-        _voices[view.track]{ tab = view.page }
+        if view.modal == 'none' then
+            do
+                local n = view.track
+                local b = sc.buffer[n]
+                local recording = sc.punch_in[b].recording
+                local recorded = sc.punch_in[b].recorded
+                local tab = view.page
+
+                if tab == 1 then
+                    local levels_focus = { 4, 15 }
+                    local levels = { 2, 8 }
+                    local level_mark_focus = 4
+                    local level_mark = 2
+
+                    for i = 1,4 do
+                        do
+                            local y = y[2] + 3 + ((i-1) * (5 + 4 - 1))
+
+                            do
+                                local x = e[2].x
+                                local l = k[2].x - e[2].x
+                                local spec = mparams:get_controlspec('lvl')
+
+                                _routines.screen.meter{
+                                    x = x, y = y, length = l, width = 3,
+                                    levels = i==view.track and { 0, 12 } or { 0, 4 },
+                                    outline = true,
+                                    level_mark = i==view.track and level_mark_focus or level_mark,
+                                    amount = spec:unmap(sc.lvlmx[i].db),
+                                    mark = spec:unmap(0)
+                                }
+                            end
+                            do
+                                local x = k[2].x
+                                local l = e[3].x - k[2].x - 3
+                                local spec = mparams:get_controlspec('old')
+
+                                _routines.screen.meter{
+                                    x = x, y = y, length = l, width = 1,
+                                    levels = i==view.track and levels_focus or levels,
+                                    amount = util.linlin(
+                                        spec.minval, spec.maxval, 0, 1, mparams:get(i, 'old')
+                                    )
+                                }
+                            end
+                            do
+                                local l = k[3].x - e[3].x
+                                local x = x[3] - l
+
+                                _routines.screen.dial{
+                                    x = x, y = y, length = l, width = 1,
+                                    levels = i==view.track and levels_focus or levels,
+                                    amount = util.linlin(
+                                        -1, 1, 0, 1, sc.sprmx[i].pan
+                                    ),
+                                    mark = util.linlin(
+                                        -1, 1, 0, 1, 0
+                                    )
+                                }
+                            end
+                        end
+                    end
+                elseif tab == 2 then
+                    _waveform{
+                        reg = reg.rec[b], samples = sc.samples[b],
+                        --st = get_start(n), en = get_end(n), 
+                        st = wparams:get('start', n), en = wparams:get('end', n),
+                        phase = sc.phase[n].rel,
+                        recording = recording,
+                        recorded = recorded,
+                        show_phase = sc.lvlmx[n].play == 1,
+                        --rec_flag = params:get('rec '..n)
+                        render = function()
+                            sc.samples:render(b)
+                        end
+                    }
+                elseif tab == 3 then
+                    _filtergraph{
+                        filter_type = ({ 
+                            'lowpass', 'bandpass', 'highpass', 'bypass' 
+                        })[
+                            mparams:get(n, 'type')
+                        ],
+                        freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
+                        -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
+                        resonance = mparams:get(n, 'q'),
+                    }
+                end
+            end
+
+            _voices[view.track]{ tab = view.page }
+
+        elseif view.modal == 'buffer' then
+            local left, right = x[1] + 1, x[3] - 1
+
+            _screen.text{
+                x = 128/2, y = 64/2,
+                text = 'load buffer '..view.modal_index..'?',
+                flow = 'center', level = 8,
+            } 
+
+            _key.trigger{
+                n = 2, 
+                input = function(z) if z==1 then
+                    view.modal = 'none'
+                end end
+            }
+            _screen.text{
+                x = left, y = e[2].y,
+                text = 'no',
+            } 
+
+            _key.trigger{
+                n = 3, 
+                input = function(z) if z==1 then
+                    view.modal = 'none'
+
+                    clock.cancel(screen_clock)
+                    fileselect.enter(fileselect_dir, fileselect_callback)
+                end end
+            }
+            _screen.text{
+                x = right, y = e[3].y,
+                text = 'yes',
+                flow = 'left'
+            } 
+        end
     end
 end
 

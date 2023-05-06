@@ -1,5 +1,5 @@
 alt = false
-view = { track = 1, page = 1 }
+view = { track = 1, page = 1, modal = 'none', modal_index = 1, }
 page_names = { 'm', 't', 'f' }
 
 voices = tall and 6 or 4
@@ -182,3 +182,19 @@ freeze_patrol = {
 --         clock.sleep(1/fps.patrol)
 --     end
 -- end)
+
+fileselect = require('fileselect')
+
+fileselect_dir = _path.audio
+
+function fileselect_callback(path)
+    sc.loadsample(view.modal_index, path)
+    screen_clock = crops.connect_screen(_app.norns, fps.screen)
+    for i = 1,tracks do
+        if params:get('buffer '..i) == view.modal_index then
+            preset:reset(i)
+            params:set('play '..i, 1)
+            break
+        end
+    end
+end

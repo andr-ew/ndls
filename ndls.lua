@@ -65,7 +65,7 @@ App.norns = include 'ndls/lib/ui/norns'                  --norns UI
 
 --create, connect UI components
 
-local _app = {
+_app = {
     --grid = App.grid(not g64(), 0),
     grid = App.grid{ 
         wide = wide, tall = tall,
@@ -83,7 +83,7 @@ crops.connect_grid(_app.grid, g, fps.grid)
 crops.connect_arc(_app.arc, a, fps.arc)
 crops.connect_enc(_app.norns)
 crops.connect_key(_app.norns)
-crops.connect_screen(_app.norns, fps.screen)
+screen_clock = crops.connect_screen(_app.norns, fps.screen)
 
 --init/cleanup
 
