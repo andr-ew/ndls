@@ -64,6 +64,8 @@ function metaparam:new(args)
     m.args = args
 
     m.id = args.id
+
+    m.name = args.name or args.id
     
     m.reset_func = args.reset or metaparams.resets.default
     m.random_func = args.randomize
@@ -237,7 +239,7 @@ function metaparam:add_global_param()
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.global_id
-    args.name = self.args.id
+    args.name = self.args.name or self.args.id
     args.action = function() 
         for t = 1, tracks do
             self:bang(t) 
@@ -251,7 +253,7 @@ function metaparam:add_track_param(t)
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.track_id[t]
-    args.name = self.args.id
+    args.name = self.args.name or self.args.id
     args.action = function() self:bang(t) end
     
     params:add(args)
@@ -262,6 +264,7 @@ function metaparam:add_preset_param(t, b, p)
 
     args.id = self.preset_id[t][b][p]
     args.name = self.args.id
+    args.name = self.args.name or self.args.id
     args.action = function() self:bang(t) end
 
     params:add(args)

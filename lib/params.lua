@@ -85,7 +85,18 @@ do
         end
     }
     mparams:add{
-        id = 'rate',
+        id = 'bnd', name = 'rate',
+        type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
+        random_min_default = -1, random_max_default = 1,
+        default_scope = 'track',
+        default_reset_preset_action = 'default',
+        action = function(i, v)
+            sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
+            crops.dirty.screen = true; crops.dirty.arc = true
+        end
+    }
+    mparams:add{
+        id = 'rate', name = 'rate: octave',
         type = 'number', 
         min = -7, max = 2, default = 0, 
         random_min_default = -1, random_max_default = 1,
@@ -97,7 +108,7 @@ do
         end
     }
     mparams:add{
-        id = 'rev',
+        id = 'rev', name = 'rate: reverse',
         type = 'binary', behavior = 'toggle',
         default = 0,
         default_scope = 'track',
@@ -107,7 +118,6 @@ do
             crops.dirty.grid = true
         end
     }
-
     mparams:add{
         id = 'rate_slew', type = 'control', 
         controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
@@ -227,14 +237,6 @@ do
             end
         }
 
-        params:add{
-            name = 'bend', id = 'bnd '..i,
-            type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
-            action = function(v) 
-                sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
-                crops.dirty.screen = true; crops.dirty.arc = true
-            end
-        }
     end
 
     params:add_group('buffer & presets', (1 + buffers + 1) * tracks)
