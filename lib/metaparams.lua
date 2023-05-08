@@ -70,7 +70,7 @@ function metaparam:new(args)
     m.reset_func = args.reset or metaparams.resets.default
     m.random_func = args.randomize
     
-    m.scope_id = args.id..'_scope'
+    m.scope_id = args.scope_id or args.id..'_scope'
 
     m.global_id = args.id..'_global'
 
@@ -449,6 +449,14 @@ function metaparams:add_preset_params(t, b, p)
     for _,m in ipairs(self.list) do
         m:add_preset_param(t, b, p)
     end
+end
+        
+function metaparams:add_scope_param(id)
+    return self.lookup[id]:add_scope_param()
+end
+
+function metaparams:show_hide_params(id)
+    return self.lookup[id]:show_hide_params()
 end
 
 function metaparams:scope_params_count() return #self.list end
