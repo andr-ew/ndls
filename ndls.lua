@@ -7,57 +7,17 @@
 --
 -- endless and/or noodles
 --
--- version 0.1.0-beta @andrew
---
+-- version 0.1.2-beta-persistence @andrew
 
---external libs
+--device globals (edit for midigrid)
 
-cs = require 'controlspec'
-pattern_time = require 'pattern_time'
-UI = require 'ui'
-
-nest = include 'lib/nest/core'
-Key, Enc = include 'lib/nest/norns'
-Text = include 'lib/nest/text'
-Grid = include 'lib/nest/grid'
-Arc = include 'lib/nest/arc'
-
-multipattern = include 'lib/nest/util/pattern-tools/multipattern'
-of = include 'lib/nest/util/of'
-to = include 'lib/nest/util/to'
-PatternRecorder = include 'lib/nest/examples/grid/pattern_recorder'
-
-cartographer, Slice = include 'lib/cartographer/cartographer'
-
---globals
-
-function pattern_time:resume()
-    if self.count > 0 then
-        self.prev_time = util.time()
-        self.process(self.event[self.step])
-        self.play = 1
-        self.metro.time = self.time[self.step] * self.time_factor
-        self.metro:start()
-    end
-end
-
-pattern, mpat = {}, {}
-for i = 1,16 do
-    pattern[i] = pattern_time.new() 
-    mpat[i] = multipattern.new(pattern[i])
-end
-
-view = {}
-vertical = false
-alt = false
-norns_view = 1
-
-local g = grid.connect()
-local a = arc.connect()
+g = grid.connect()
+a = arc.connect()
 
 wide = g and g.device and g.device.cols >= 16 or false
 tall = g and g.device and g.device.rows >= 16 or false
-arc2 = not wide
+arc2 = a and a.device and string.match(a.device.name, 'arc 2')
+arc_connected = not (a.name == 'none')
 
 -- test grid64
 -- wide = false
@@ -68,104 +28,82 @@ arc2 = not wide
 -- tall = true
 -- end test
 
-varibright = wide
+varibright = true
 
-voices = tall and 6 or 4
-buffers = voices
-slices = 7
+--system libs
 
-local set_start_scoped = {}
-local set_end_scoped = {}
-for b = 1, buffers do
-    set_start_scoped[b] = {}
-    set_end_scoped[b] = {}
+cs = require 'controlspec'
+filtergraph = require 'filtergraph'
 
-    for sl = 1, slices do
-        set_start_scoped[b][sl] = multipattern.wrap_set(mpat, 'start '..b..' '..sl, function(v) 
-            reg.play[b][sl]:set_start(v, 'fraction')
-            nest.screen.make_dirty(); nest.arc.make_dirty()
-        end)
-        set_end_scoped[b][sl] = multipattern.wrap_set(mpat, 'end '..b..' '..sl, function(v) 
-            reg.play[b][sl]:set_end(v, 'fraction')
-            nest.screen.make_dirty(); nest.arc.make_dirty()
-        end)
-    end
-end
-get_set_start = function(voice)
-    local b = sc.buffer[voice]
-    local sl = sc.slice:get(voice)
-    return set_start_scoped[b][sl]
-end
-get_set_end = function(voice)
-    local b = sc.buffer[voice]
-    local sl = sc.slice:get(voice)
-    return set_end_scoped[b][sl]
-end
-get_start = function(voice, units)
-    units = units or 'fraction'
-    return reg.play:get_start(voice, units)
-end
-get_end = function(voice, units)
-    units = units or 'fraction'
-    return reg.play:get_end(voice, units)
-end
-get_len = function(voice, units)
-    units = units or 'fraction'
-    return reg.play:get_length(voice, units)
-end
+--git submodule libs
 
---internal files
+include 'lib/crops/core'                                 --crops, a UI component framework
+_grid = include 'lib/crops/routines/grid'
+_arc = include 'lib/crops/routines/arc'
+_enc = include 'lib/crops/routines/enc'
+_key = include 'lib/crops/routines/key'
+_screen = include 'lib/crops/routines/screen'
+PatternRecorder = include 'lib/crops/components/grid/pattern_recorder'
 
-sc, reg = include 'ndls/lib/softcut'               --softcut utilities
-include 'ndls/lib/params'                          --create params
-Components = include 'ndls/lib/ui/components'      --UI components
+pattern_time = include 'lib/pattern_time/pattern_time'
+multipattern = include 'lib/nest/util/pattern-tools/multipattern' --TODO: update to new version
+
+cartographer, Slice = include 'lib/cartographer/cartographer'
+
+--script files
+
+metaparams = include 'ndls/lib/metaparams'               --abstraction around params
+windowparams = include 'ndls/lib/windowparams'           --abstraction around params
+include 'ndls/lib/globals'                               --global variables
+sc, reg = include 'ndls/lib/softcut'                     --softcut utilities
+include 'ndls/lib/params'                                --create (meta)params
+Components, _routines = include 'ndls/lib/ui/components' --UI components
 App = {}
-App.grid = include 'ndls/lib/ui/grid'              --grid UI
-App.arc = include 'ndls/lib/ui/arc'                --arc UI
-App.norns = include 'ndls/lib/ui/norns'            --norns UI
+App.grid = include 'ndls/lib/ui/grid'                    --grid UI
+App.arc = include 'ndls/lib/ui/arc'                      --arc UI
+App.norns = include 'ndls/lib/ui/norns'                  --norns UI
 
---set up nest v2 UI
+--create, connect UI components
 
-local _app = {
+_app = {
     --grid = App.grid(not g64(), 0),
     grid = App.grid{ 
         wide = wide, tall = tall,
         varibright = varibright 
     },
     arc = App.arc{ 
-        map = not arc2 and { 'vol', 'cut', 'st', 'len' } or { 'st', 'len', 'vol', 'cut' }, 
+        map = not arc2 and { 'gain', 'cut', 'st', 'len' } or { 'st', 'len', 'gain', 'cut' }, 
         rotated = arc2,
         grid_wide = wide,
     },
     norns = App.norns(),
 }
 
-nest.connect_grid(_app.grid, g, 60)
-nest.connect_arc(_app.arc, a, 90)
-nest.connect_enc(_app.norns)
-nest.connect_key(_app.norns)
-nest.connect_screen(_app.norns)
+crops.connect_grid(_app.grid, g, fps.grid)
+crops.connect_arc(_app.arc, a, fps.arc)
+crops.connect_enc(_app.norns)
+crops.connect_key(_app.norns)
+screen_clock = crops.connect_screen(_app.norns, fps.screen)
+
+--init/cleanup
 
 function init()
-    sc.setup()
+    sc.init()
 
-    params:read()
-    for i = 1, voices do
-        params:set('vol '..i, 1)
-        --params:set('bnd '..i, 0)
-        params:set('cut '..i, 1)
-        params:set('type '..i, 1)
-        params:set('rec '..i, 0)
-        params:set('play '..i, 0)
-        params:set('rate '..i, 0)
-        params:set('rev '..i, 0)
-        --params:set('crossfade assign '..i, i <3 and 2 or 3)
+    if 
+        -- false and --for testing
+        util.file_exists(
+        norns.state.data..norns.state.shortname..'-'..string.format("%02d", pset_default_slot)..'.pset'
+    ) then
+        params:read(pset_default_slot)
+    else
+        params:bang()
+        params:write(pset_default_slot, 'default')
     end
-    --params:set('crossfade', 0)
-
-    params:bang()
 end
 
 function cleanup()
-    params:write()
+    params:write(pset_last_session_slot, 'last session')
+
+    if params:string('autosave pset') == 'yes' then params:write(pset_default_slot, 'default') end
 end

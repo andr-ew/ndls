@@ -1,115 +1,118 @@
+local Destinations = {}
+
+function Destinations.gain(n, x)
+    return function(props) 
+        local id = 'gain '..n
+        local xx = { 42 - 4, 42 + 16 + 3 }
+
+        _arc.control{
+            n = tonumber(arc_vertical and n or x),
+            sensitivity = 0.5, 
+            controlspec = params:lookup_param(id).controlspec,
+            state = { params:get(id), params.set, params, id },
+            levels = { 0, 4, 4 },
+            -- x = { 33, 33 },
+            x = xx,
+        }
+        if crops.mode == 'redraw' then
+            _arc.control{
+                n = tonumber(arc_vertical and n or x),
+                controlspec = params:lookup_param(id).controlspec,
+                state = { 0 },
+                levels = { 0, 0, 15 },
+                -- x = { 33, 33 },
+                x = xx,
+            }
+        end
+    end
+end
+
+function Destinations.cut(n, x)
+    local _filt = Components.arc.filter()
+
+    return function(props) 
+        if crops.mode == 'input' then
+            _arc.control{
+                n = tonumber(arc_vertical and n or x),
+                x = { 42, 24+64 }, sensitivity = 0.25, 
+                state = of_mparam(n, 'cut'),
+                controlspec = mparams:get_controlspec('cut'),
+            }
+        end
+        _filt{
+            n = tonumber(arc_vertical and n or x),
+            x = { 42, 24+64 },
+            type = mparams:get(n, 'type'),
+            cut = mparams:get(n, 'cut'),
+        }
+    end
+end
+
+function Destinations.st(n, x)
+    _st = Components.arc.st()
+
+    return function(props) 
+        local b = sc.buffer[n]
+
+        _st{
+            n = tonumber(arc_vertical and n or x),
+            x = { 33, 64+32 }, 
+            levels = { 4, 15 },
+            phase = sc.phase[n].rel,
+            show_phase = sc.lvlmx[n].play == 1,
+            sensitivity = 1/1000,
+            st = {
+                wparams:get('start', n), 
+                wparams:get_preset_setter('start', n)
+            },
+            en = { 
+                wparams:get('end', n), 
+                wparams:get_preset_setter('end', n)
+            },
+            recording = sc.punch_in[b].recording,
+            recorded = sc.punch_in[b].recorded,
+            reg = reg.rec[b],
+            rotated = props.rotated,
+        }
+    end
+end
+
+function Destinations.len(n, x)
+    _len = Components.arc.len()
+
+    return function(props) 
+        local b = sc.buffer[n]
+
+        _len{
+            n = tonumber(arc_vertical and n or x),
+            x = { 33, 64+32 }, 
+            phase = sc.phase[n].rel,
+            show_phase = sc.lvlmx[n].play == 1,
+            nudge = alt,
+            sensitivity = 1/1000,
+            level_st = alt and 15 or 4,
+            level_en = alt and 4 or 15,
+            level_ph = 4,
+            st = {
+                wparams:get('start', n), 
+                wparams:get_preset_setter('start', n)
+            },
+            en = {
+                wparams:get('end', n), 
+                wparams:get_preset_setter('end', n)
+            },
+            recording = sc.punch_in[b].recording,
+            recorded = sc.punch_in[b].recorded,
+            reg = reg.rec[b],
+            rotated = props.rotated,
+        }
+    end
+end
+
 local function App(args)
     local map = args.map
     local rotated = args.rotated
     local wide = args.grid_wide
-
-    local Destinations = {}
-
-    function Destinations.vol(n, x)
-        local _num = to.pattern(mpat, 'vol '..n, Arc.number, function() 
-            return {
-                n = tonumber(vertical and n or x),
-                sens = 0.25, max = 2.5, cycle = 1.5,
-                state = of.param('vol '..n),
-            }
-        end)
-
-        return function() _num() end
-    end
-
-    function Destinations.cut(n, x)
-        local _cut = to.pattern(mpat, 'cut '..n, Arc.control, function() 
-            return {
-                n = tonumber(vertical and n or x),
-                x = { 42, 24+64 }, sens = 0.25, 
-                redraw_enabled = false,
-                controlspec = of.controlspec('cut '..n),
-                state = of.param('cut '..n),
-            }
-        end)
-
-        local _filt = Components.arc.filter()
-
-        local _type = to.pattern(mpat, 'type '..n, Arc.option, function() 
-            return {
-                n = tonumber(vertical and n or x),
-                options = 4, sens = 1/64,
-                x = { 27, 41 }, lvl = 12,
-                --[[
-                state = {
-                    params:get('type '..n),
-                    function(v) params:set('type '..n, v//1) end
-                },
-                --]]
-                action = function(v) params:set('type '..n, v//1) end
-            }
-        end)
-
-        return function() 
-            _filt{
-                n = tonumber(vertical and n or x),
-                x = { 42, 24+64 },
-                type = params:get('type '..n),
-                cut = params:get('cut '..n),
-            }
-
-            if alt then 
-                _type()
-            else
-                _cut() 
-            end
-        end
-    end
-
-    function Destinations.st(n, x)
-        _st = Components.arc.st(mpat)
-
-        return function() 
-            local b = sc.buffer[n]
-
-            _st{
-                n = tonumber(vertical and n or x),
-                x = { 33, 64+32 }, lvl = { 4, 15 },
-                phase = sc.phase[n].rel,
-                show_phase = sc.lvlmx[n].play == 1,
-                sens = 1/1000,
-                st = { get_start(n), get_set_start(n) },
-                en = { get_end(n), get_set_end(n) },
-                recording = sc.punch_in[b].recording,
-                recorded = sc.punch_in[b].recorded,
-                reg = reg.rec[b],
-                rotated = rotated,
-                --rec_flag = params:get('rec '..n)
-            }
-        end
-    end
-
-    function Destinations.len(n, x)
-        _len = Components.arc.len(mpat)
-
-        return function() 
-            local b = sc.buffer[n]
-
-            _len{
-                n = tonumber(vertical and n or x),
-                x = { 33, 64+32 }, 
-                phase = sc.phase[n].rel,
-                show_phase = sc.lvlmx[n].play == 1,
-                nudge = alt,
-                sens = 1/1000,
-                lvl_st = alt and 15 or 4,
-                lvl_en = alt and 4 or 15,
-                lvl_ph = 4,
-                st = { get_start(n), get_set_start(n) },
-                en = { get_end(n), get_set_end(n) },
-                recording = sc.punch_in[b].recording,
-                recorded = sc.punch_in[b].recorded,
-                reg = reg.rec[b],
-                rotated = rotated,
-                --rec_flag = params:get('rec '..n)
-            }
-        end
-    end
 
     local _params = {}
     for y = 1,voices do --track
@@ -124,14 +127,14 @@ local function App(args)
     return function()
         if wide then
             for y = 1,voices do for x = 1,4 do
-                if view[y][x] > 0 then
-                    _params[y][x]()
+                if arc_view[y][x] > 0 then
+                    _params[y][x]{ rotated = rotated }
                 end
             end end
         else
-            local y = norns_view
+            local y = view.track
             for x = 1,4 do
-                _params[y][x]()
+                _params[y][x]{ rotated = rotated }
             end
         end
     end
