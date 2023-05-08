@@ -85,33 +85,47 @@ do
         end
     }
     mparams:add{
-        id = 'rate',
+        id = 'bnd', name = 'rate',
+        type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
+        random_min_default = -1, random_max_default = 1,
+        default_scope = 'track',
+        default_reset_preset_action = 'default',
+        scope_id = 'rate_scope',
+        action = function(i, v)
+            sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
+            crops.dirty.screen = true; crops.dirty.arc = true
+        end
+    }
+    mparams:add{
+        id = 'rate', name = 'rate: octave',
         type = 'number', 
         min = -7, max = 2, default = 0, 
         random_min_default = -1, random_max_default = 1,
         default_scope = 'track',
         default_reset_preset_action = 'default',
+        scope_id = 'rate_scope',
         action = function(i, v)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
             crops.dirty.grid = true
         end
     }
     mparams:add{
-        id = 'rev',
+        id = 'rev', name = 'rate: reverse',
         type = 'binary', behavior = 'toggle',
         default = 0,
         default_scope = 'track',
         default_reset_preset_action = 'default',
+        scope_id = 'rate_scope',
         action = function(i, v) 
             sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
             crops.dirty.grid = true
         end
     }
-
     mparams:add{
         id = 'rate_slew', type = 'control', 
         controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
-        default_scope = 'preset', hidden = true,
+        default_scope = 'track', hidden = true,
+        scope_id = 'rate_scope',
         action = function(i, v)
             sc.slew(i, v)
         end
@@ -164,7 +178,7 @@ do
         }
     end
 
-    params:add_group('record & play', 5 * tracks)
+    params:add_group('record & play', 4 * tracks)
     for i = 1, voices do
         params:add_separator('params_r&p_track_'..i, 'track '..i)
 
@@ -227,14 +241,6 @@ do
             end
         }
 
-        params:add{
-            name = 'bend', id = 'bnd '..i,
-            type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
-            action = function(v) 
-                sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
-                crops.dirty.screen = true; crops.dirty.arc = true
-            end
-        }
     end
 
     params:add_group('buffer & presets', (1 + buffers + 1) * tracks)
@@ -305,8 +311,45 @@ do
     params:add_separator('metaparam options')
 
     do
-        params:add_group('scopes', mparams:scope_params_count())
-        mparams:add_scope_params()
+        params:add_group('scopes', 8)
+
+        mparams:add_scope_param('lvl')
+        mparams:add_scope_param('spr')
+        mparams:add_scope_param('old')
+        mparams:add_scope_param('cut')
+        mparams:add_scope_param('q')
+        mparams:add_scope_param('type')
+        mparams:add_scope_param('loop')
+        -- mparams:add_scope_param('bnd')
+        -- mparams:add_scope_param('rate')
+        -- mparams:add_scope_param('rev')
+        -- mparams:add_scope_param('rate_slew')
+
+        local scopes = { 'global', 'track', 'preset' }
+        local sepocs = tab.invert(scopes)
+
+        params:add{
+            name = 'rate', id = 'rate_scope', type = 'option',
+            options = scopes, default = sepocs['track'],
+            action = function()
+                for t = 1, tracks do
+                    -- self:bang(t) 
+                    mparams:bang(t, 'bnd')
+                    mparams:bang(t, 'rate')
+                    mparams:bang(t, 'rev')
+                    mparams:bang(t, 'rate_slew')
+                end
+
+                -- self:show_hide_params()
+                mparams:show_hide_params('bnd')
+                mparams:show_hide_params('rate')
+                mparams:show_hide_params('rev')
+                mparams:show_hide_params('rate_slew')
+
+                _menu.rebuild_params() --questionable?
+            end,
+            allow_pmap = false,
+        }
     end
 
     do

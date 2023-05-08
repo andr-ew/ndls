@@ -81,7 +81,7 @@ local function Mparam()
         ){
             x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
             text = { 
-                [props.id] = alt and (
+                [props.name or props.id] = alt and (
                     nicknames[scope]
                 ) or options and (
                     options[mparams:get(props.voice, props.id)]
@@ -354,6 +354,7 @@ local function Voice(args)
     local _rand_lvl = Rand{ voice = n, id = 'lvl' }
     local _rand_spr = Rand{ voice = n, id = 'spr' }
 
+    local _rate = Mparam()
     local _window = Window{ voice = n }
     local _loop = Mparam()
 
@@ -363,10 +364,6 @@ local function Voice(args)
     local _rand_cut = Rand{ voice = n, id = 'cut' }
     local _rand_typ = Rand{ voice = n, id = 'type' }
 
-    local set_bnd = multipattern.wrap_set(mpat, 'bnd '..n, function(v)
-        params:set('bnd '..n, v)
-    end)
-
     return function(props)
         if props.tab == 1 then
             _old{ id = 'old', voice = n, n = 1 }
@@ -375,22 +372,11 @@ local function Voice(args)
             _rand_lvl{ n = 2 }
             _rand_spr{ n = 3 }
         elseif props.tab == 2 then
+            _rate{ id = 'bnd', name = 'rate', voice = n, n = 1 }
+
             if alt then
                 _loop{ id = 'loop', voice = n, n = 3 }
             else
-                _enc.control{
-                    n = 1, 
-                    level = { 4, 16 },
-                    state = { params:get('bnd '..n), set_bnd },
-                    controlspec = params:lookup_param('bnd '..n).controlspec,
-                }
-                --TODO: adjust list style based on scope
-                _routines.screen.list_highlight{
-                    x = e[1].x, y = e[1].y, nudge = true,
-                    text = { 
-                        rate = util.round(params:get('bnd '..n), 0.01) 
-                    },
-                }
                 _window()
             end
         elseif props.tab == 3 then
