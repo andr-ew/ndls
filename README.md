@@ -46,6 +46,8 @@ norns.script.load('/home/we/dust/code/ndls/ndls.lua')
 
 the grid is split in two halves with two blocks of [metaparams](#metaparams) mapped to four tracks of softcut. rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
 
+![grid & arc documentation image](lib/doc/ndls_128.png)
+
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
 note: x & y ranges of each component in the 128 grid layout are labelled between the square brackets [] for those unable to view the daigrams in this document. if you need adjusted labels for 64 or 256 layout please email andrewcshike@gmail.com

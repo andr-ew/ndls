@@ -8,4 +8,4 @@
 
 ![documentation image](ndls_256.png)
 
-yes, the 256 interface has 6 tracks! and double the pattern recorders! lots of keys = lots of stuff
+yes, the 256 interface has 6 tracks (!)
