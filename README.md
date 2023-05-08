@@ -23,10 +23,14 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 ## install
 
+install from the maiden catalog (not there yet)
+
+or
+
 in the maiden [REPL](https://monome.org/docs/norns/image/wifi_maiden-images/install-repl.png), type:
 
 ```
-;install https://github.com/andr-ew/ndls/releases/download/v0.2.0-beta/complete-source-code.zip
+;install https://github.com/andr-ew/ndls/releases/download/latest/complete-source-code.zip
 ```
 
 if you wish to install a different version, see the [releases](https://github.com/andr-ew/ndls/releases) tab
