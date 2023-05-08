@@ -5,9 +5,16 @@
 --  --- --- -- - ---- -- - - -- - --- -----
 -- -   --- - -- -- -- - -   -- - -- --- --
 --
--- endless and/or noodles
+-- 4-track tape looper, delay, 
+-- & sampler
 --
--- version 0.1.2-beta-persistence @andrew
+-- version 0.2.0-beta @andrew
+--
+-- required: grid 
+-- (128, 64, or midigrid)
+--
+-- documentation:
+-- github.com/andr-ew/ndls
 
 --device globals (edit for midigrid)
 
