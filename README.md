@@ -267,8 +267,6 @@ note that on the TAPE page, E1 sets the scope for all rate controls (**rate**, *
 
 **---------------------------------- BETA 0.2 NOTE --------------------------------------**
 
-- rate scopes are currently only editable under the params menu. go to EDIT > metaparam options > scopes,
-  then assign rate & rev for octave & reverse
 - window & length scopes are not yet editable at this time. they are fixed to **preset**
 
 **----------------------------------------------------------------------------------------**
