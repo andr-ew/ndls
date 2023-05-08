@@ -1,14 +1,13 @@
-
 <h1 align="center">NDLS (0.2.0-beta)</h1>
 
 ![ndls overview documentation image, labeled diagrams of the grid, norns screen, and arc. see rest of document for accesible text documentation](/lib/doc/ndls_overview.png)
-
 
 4-track, grid-based, tape looper, delay, & sampler based on softcut. modeless, gesture looping, & performance-minded. highly bendy.
 
 a spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachronsim), [anaphora](https://github.com/andr-ew/prosody#anaphora), and several unreleased precursors.
 
 currently in beta - any & all feedback is highly appreciated! feel free to create an issue here or send me an email andrewcshike@gmail.com :) (email is usually the best way to reach me). if you're running into trouble, be sure to check out the [issues](https://github.com/andr-ew/ndls/issues) section to see if your issue has already been logged ~
+
 ## hardware
 
 **required**
@@ -24,7 +23,8 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 ## install
 
-in the maiden [REPL](https://monome.org/docs/norns/image/wifi_maiden-images/install-repl.png), type: 
+in the maiden [REPL](https://monome.org/docs/norns/image/wifi_maiden-images/install-repl.png), type:
+
 ```
 ;install https://github.com/andr-ew/ndls/releases/download/v0.2.0-beta/complete-source-code.zip
 ```
@@ -33,29 +33,30 @@ if you wish to install a different version, see the [releases](https://github.co
 
 ## start
 
-recommended: luanch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu. 
+recommended: luanch the script from the norns [SELECT](https://monome.org/docs/norns/play/#select) menu.
 
 users with accesibility needs who are unable to acess the norns system menus might consider launching the script from the maiden REPL via the [browser](https://monome.org/docs/norns/maiden/#repl) or another websocket-connected [application](https://github.com/szymonkaliski/maiden-remote-repl):
+
 ```
 norns.script.load('/home/we/dust/code/ndls/ndls.lua')
 ```
 
 ## grid UI
 
-![grid & arc documentation image. a labeled diagram of the grid. text descriptions below](lib/doc/ndls_128.png)
+![grid documentation image. a labeled diagram of the grid. text descriptions below](lib/doc/ndls_128.png)
 
 the grid is split in two halves with two blocks of [metaparams](#metaparams) mapped to four tracks of softcut. rows 1-4 control tracks 1-4, rows 5-8 also control tracks 1-4.
-
-![grid & arc documentation image](lib/doc/ndls_128.png)
 
 see [here](lib/doc/alternate_grid_sizes.md) for alternate grid layouts (64, midigrid, 256)
 
 note: x & y ranges of each component in the 128 grid layout are labelled between the square brackets [] for those unable to view the daigrams in this document. if you need adjusted labels for 64 or 256 layout please email andrewcshike@gmail.com
 
-### rec & play 
+### rec & play
+
 [x: 1-2, y: 5-6]
 
 toggle record & playback states. these controls are interdependent. here are some ways to use them:
+
 - record a new loop in a blank buffer:
   - 1 - toggle the **rec** key _on_
   - 2 - play some audio into softcut from TAPE or norns' inputs
@@ -80,50 +81,61 @@ toggle record & playback states. these controls are interdependent. here are som
   - 3 - softcut will begin playing and overdubbing, like a delay.
     - delay time is set by time between key presses, as with looping. you can modify the delay time with the **len** or **rate** controls.
     - delay feeback is set by the **old** control
-    
+
 by default, ndls loops asynchronously between tracks & independently from the global clock. see [window scopes](#window-scopes) for info on synchronous modes & [additional params](#additional-params) for clock-synced settings.
 
-### track focus & page focus 
+### track focus & page focus
+
 [track focus x: 1, y: 1-4; page focus x: 3-5, y: 1]
 
-set the focus for the _norns screen & encoders_ (not grid). norns' controls are split into three pages: [**MIX**](#page-1-mix), [**TAPE**](#page-2-mix), and [**FILTER**](#page-3-filter), and are editable intependently across four tracks, focused with **track focus**. 
+set the focus for the _norns screen & encoders_ (not grid). norns' controls are split into three pages: [**MIX**](#page-1-mix), [**TAPE**](#page-2-mix), and [**FILTER**](#page-3-filter), and are editable intependently across four tracks, focused with **track focus**.
+
 - note that controls which have neither a white box nor underline are coupled to the same value across tracks, see [metaparams](#metaparams) for advanced info.
 
-### rate: reverse & octave 
+### rate: reverse & octave
+
 [reverse x: 7, y: 1-4; octave x: 8-14 ]
 
 set the record _and playback_ direction and power-of-two rate multiple (AKA octave, or time division). the rate of change (or slew) for both these controls is touch-reactive. a single key tap will jump instantly to a new value, while hold-and-release gestures increase slew time in proportion to the held duration.
-  - to glide to a new pitch with **rate: octave**:
-    - 1 - hold one finger on the lit / current value key
-    - 2 - press the key of the rate you'd like to glide to
-    - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key.
-  - to whip a 180 on **rate: reverse**:
-    - hold reverse, and release
-    - softcut will glide down to rate 0, then glide back up in the other direction, based on the amount of time you were holding down the key.
 
-### buffer 
+- to glide to a new pitch with **rate: octave**:
+  - 1 - hold one finger on the lit / current value key
+  - 2 - press the key of the rate you'd like to glide to
+  - 3 - softcut will glide to the new rate, based on the amount of time you were holding down the lit key.
+- to whip a 180 on **rate: reverse**:
+  - hold reverse, and release
+  - softcut will glide down to rate 0, then glide back up in the other direction, based on the amount of time you were holding down the key.
+
+### buffer
+
 [ x: 3-6, y: 5-8 ]
 
 select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer, for multi-octave polyphonic looping & decoupled record & play head delay systems. lots of possibilities!
+
 - idea: set two tracks to share the same buffer, and **send** one track to the other.
 
-### preset 
+### preset
+
 [ x: 3-6, y: 7-13 ]
 
 select a preset. there is 1 default preset + 6 unique, optionally randomized presets for any/all track controls. by default, only window parameters will be included in the preset. see [metaparams](#metaparams) for advanced info.
 
-### loop 
+### loop
+
 [ x: 15, y: 1-4 ]
 
 toggle looping on or off. disable for one-shot playback, triggered by the **preset** keys. turn ndls into a sampler!
 
-### send & return 
+### send & return
+
 [ send x: 14, y: 5-8; return x: 15, y: 5-8 ]
 
 these keys allow you to **send** the output of a track into an invisibe audio bus & **return** them back into the input of another track. tracks with a lit **send** key will be routed into every track with a lit **return** key.
+
 - idea: send a loop track into another track set up like a delay, for echoed loops.
 
-### pattern recorders 
+### pattern recorders
+
 [ x: 16, y 1-8 ]
 
 the rightmost column contans 8 pattern recorders, these can record & play back any combination of input on grid, norns, or arc. use them like this:
@@ -144,18 +156,23 @@ across 3 pages, all 3 norns encoders are mapped to 9 [metaparams](#metaparams) f
 ![norns MIX page documentation image. labelled image of the norns sreen. text descriptions below.](lib/doc/ndls_MIX.png)
 
 #### E1: perserve/feedback level
+
 the rate at which old material fades away. turn it up in a delay for long echo tails, or turn it down in a loop for tape decay memory loss. note that by default this is globally [scoped](#metaparams).
 
 #### E2: playback/output level
+
 this level is summed with the **gain** param in the params menu to set the actual output level.
 
 #### E3: stereo pan amount
+
 this does not set the pan value directly, but rather, each track has a unique multiple that sets the pan value relative to the **spread** value. by default, in the global scope, spread will spread out all tracks evenly in the stereo feild, but you can switch the [scope](#metaparams) to track or preset to set pans independently, there will just be some uneven scaling between tracks.
 
 #### K2: randomize level
+
 hold to reset to 0db.
 
-#### K3: randomize spread 
+#### K3: randomize spread
+
 hold to reset to center.
 
 ### page 2: TAPE
@@ -169,6 +186,7 @@ non-quantized exponential rate multiple. +1 ocave to -1 octave.
 #### E2: window position
 
 adjusts both start & end points, displayed in seconds. note that by default this is preset [scoped](#metaparams).
+
 - idea: pattern record some adjustments for pseudo-granular playback.
 
 #### E3: window length
@@ -225,7 +243,7 @@ to rotate to the **vertical** orientation, hold & release any two keys in the sa
 
 ## metaparams
 
-the majority of the values mapped to norns, grid, and arc, are **metaparams**. metaparams are a way of connecting one or more intependently-editable values to a single destination, like filter cutoff or window length. each metaparam has an assignable **scope**, which detirmines whether values are edited on a global basis (across tracks), on a per-track basis, or on a per-preset basis. 
+the majority of the values mapped to norns, grid, and arc, are **metaparams**. metaparams are a way of connecting one or more intependently-editable values to a single destination, like filter cutoff or window length. each metaparam has an assignable **scope**, which detirmines whether values are edited on a global basis (across tracks), on a per-track basis, or on a per-preset basis.
 
 the three scopes are (predictably) called **global**, **track**, and **preset**. on the norns screen, **track**-scoped metaparams are boxed-out while **preset**-scoped metaparams are underlined. by default, window+length are the only metaparams in the preset scope, while old, spread, and q start out in global scope.
 
@@ -244,15 +262,16 @@ to change a scope, hold K1 on any page & turn the encoder associated with the me
 note that on the TAPE page, E1 sets the scope for all rate controls (**rate**, **rate: reverse**, and **rate: octave**), E2 sets the scope for both **window** and **length**, and E3 is left over to set the scope for **loop**
 
 **---------------------------------- BETA 0.2 NOTE --------------------------------------**
-- rate scopes are currently only editable under the params menu. go to EDIT > metaparam options > scopes, 
-then assign rate & rev for octave & reverse
+
+- rate scopes are currently only editable under the params menu. go to EDIT > metaparam options > scopes,
+  then assign rate & rev for octave & reverse
 - window & length scopes are not yet editable at this time. they are fixed to **preset**
 
 **----------------------------------------------------------------------------------------**
 
 ### preset initialization
 
-to assist with differentiation across the 7 presets in **preset** scope, preset values can be optionally auto-randomized upon creating a new loop. this is called **preset intitalization** and there are two options, **random** (x) or **default** (d). while holding K1, preset initilizatition can be assigned using the K2 or K3 associated with the metaparam, assuming the scope has been assigned to preset. 
+to assist with differentiation across the 7 presets in **preset** scope, preset values can be optionally auto-randomized upon creating a new loop. this is called **preset intitalization** and there are two options, **random** (x) or **default** (d). while holding K1, preset initilizatition can be assigned using the K2 or K3 associated with the metaparam, assuming the scope has been assigned to preset.
 
 ### window scopes
 
@@ -274,7 +293,7 @@ any PSETs saved on a beta version may not load in full on a future version. you 
 
 ### overriding default values
 
-as mentioned, the **default** slot is loaded when starting the app. you can save to this slot to change the default parameter values that are loaded when you start up. this is especially useful for redefining [metaparam](#metaparams) scopes, but you can also tweak default values on global & track scoped metaparams. first, if you have any audio in your buffers (still visible in the TAPE page waveforms, even if all playback is silenced), you might want to  clear that out by going to PARAMS > EDIT scrolling down to the **PSET options** header and triggering **force clear all buffers**. then, right below that, there's a shortcut for **overwrite default pset**.
+as mentioned, the **default** slot is loaded when starting the app. you can save to this slot to change the default parameter values that are loaded when you start up. this is especially useful for redefining [metaparam](#metaparams) scopes, but you can also tweak default values on global & track scoped metaparams. first, if you have any audio in your buffers (still visible in the TAPE page waveforms, even if all playback is silenced), you might want to clear that out by going to PARAMS > EDIT scrolling down to the **PSET options** header and triggering **force clear all buffers**. then, right below that, there's a shortcut for **overwrite default pset**.
 
 ### PSET options
 
@@ -303,4 +322,3 @@ a few more params can be accessed exclusively in the params menu
 clock-sync forthcoming
 
 **----------------------------------------------------------------------------------------**
-
