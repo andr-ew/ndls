@@ -1,4 +1,4 @@
-<h1 align="center">NDLS (0.2.0-beta)</h1>
+<h1 align="center">NDLS</h1>
 
 ![ndls overview documentation image, labeled diagrams of the grid, norns screen, and arc. see rest of document for accesible text documentation](/lib/doc/ndls_overview.png)
 
