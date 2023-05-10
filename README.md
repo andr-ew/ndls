@@ -23,7 +23,7 @@ currently in beta - any & all feedback is highly appreciated! feel free to creat
 
 ## install
 
-install from the maiden catalog (not there yet)
+install from the maiden catalog
 
 or
 
