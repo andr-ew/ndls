@@ -39,11 +39,11 @@ function windowparams:new()
             set_end[t][b] = {}
 
             for p = 1, presets do
-                set_start[t][b][p] = multipattern.wrap_set(
+                set_start[t][b][p] = multipattern.wrap(
                     mpat, m.preset_id[t][b][p].st, 
                     function(v) params:set(m.preset_id[t][b][p].st, v) end
                 )
-                set_end[t][b][p] = multipattern.wrap_set(
+                set_end[t][b][p] = multipattern.wrap(
                     mpat, m.preset_id[t][b][p].en, 
                     function(v) params:set(m.preset_id[t][b][p].en, v) end
                 )

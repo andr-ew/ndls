@@ -9,7 +9,7 @@ local function Preset(args)
     local lo = varibright and 0 or 15
     local top, bottom = n, n + voices
 
-    local set_preset = multipattern.wrap_set(mpat, 'preset '..n, 
+    local set_preset = multipattern.wrap(mpat, 'preset '..n, 
         function(b, v)
             local id = 'preset '..n..' buffer '..b
             params:set(id, v, true) 
@@ -119,23 +119,19 @@ local function Voice(args)
     local tall = args.tall
     local top, bottom = n, n + voices
 
-    local set_rec = multipattern.wrap_set(mpat, 'rec '..n, function(v)
+    local set_rec = multipattern.wrap(mpat, 'rec '..n, function(v)
         params:set('rec '..n, v)
     end)
-    local hold_rec = function() 
-        params:delta('clear '..n, 1) 
-    end
-
-    local set_play = multipattern.wrap_set(mpat, 'play '..n, function(v)
+    local set_play = multipattern.wrap(mpat, 'play '..n, function(v)
         params:set('play '..n, v)
     end)
-    local set_buffer = multipattern.wrap_set(mpat, 'buffer '..n, function(v)
+    local set_buffer = multipattern.wrap(mpat, 'buffer '..n, function(v)
         params:set('buffer '..n, v)
     end)
-    local set_send = multipattern.wrap_set(mpat, 'send '..n, function(v)
+    local set_send = multipattern.wrap(mpat, 'send '..n, function(v)
         params:set('send '..n, v)
     end)
-    local set_ret = multipattern.wrap_set(mpat, 'return '..n, function(v)
+    local set_ret = multipattern.wrap(mpat, 'return '..n, function(v)
         params:set('return '..n, v)
     end)
 

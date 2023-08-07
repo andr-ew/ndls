@@ -86,7 +86,7 @@ function metaparam:new(args)
             ..'_track_'..t
         )
         m.track_id[t] = id
-        m.track_setter[t] = multipattern.wrap_set(
+        m.track_setter[t] = multipattern.wrap(
             mpat, id, function(v) params:set(id, v) end
         )
     end
@@ -106,7 +106,7 @@ function metaparam:new(args)
                     ..'_pre'..p
                 )
                 m.preset_id[t][b][p] = id
-                m.preset_setter[t][b][p] = multipattern.wrap_set(
+                m.preset_setter[t][b][p] = multipattern.wrap(
                     mpat, id, 
                     function(v) params:set(id, v) end
                 )

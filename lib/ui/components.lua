@@ -543,58 +543,6 @@ function Components.grid.integerglide()
     end
 end
 
-function Components.grid.buffer64(args)
-    local n = args.voice
-    local x = args.x
-    local y = args.y
-
-    local truth_tab = {
-        { 0, 0 },
-        { 1, 0 },
-        { 0, 1 },
-        { 1, 1 }
-    }
-    local def = truth_tab[sc.buffer[n]]
-    local cur = { def[1], def[2] }
-    local function set_buf()
-        local bv
-        for i,truth in ipairs(truth_tab) do
-            if cur[1] == truth[1] and cur[2] == truth[2] then
-                bv = i
-            end
-        end
-        sc.buffer:set(n, bv)
-
-        -- nest.arc.make_dirty()
-        -- nest.screen.make_dirty()
-    end
-
-    local _l = to.pattern(mpat, 'l buffer '..n, Grid.toggle, function()
-        return {
-            x = x[1], y = y,
-            state = {
-                cur[1],
-                function(v)
-                    cur[1] = v; set_buf()
-                end
-            }
-        }
-    end)
-    local _r = to.pattern(mpat, 'r buffer '..n, Grid.toggle, function()
-        return {
-            x = x[2], y = y,
-            state = {
-                cur[2],
-                function(v)
-                    cur[2] = v; set_buf()
-                end
-            }
-        }
-    end)
-
-    return function() _l(); _r() end
-end
-
 do
     local index_to_xy = _grid.util.index_to_xy
     local xy_to_index = _grid.util.xy_to_index
@@ -620,7 +568,7 @@ do
         edge = 'rising',            --input edge sensitivity. 'rising' or 'falling'.
         input = function(n, z) end, --input callback, passes last key state on any input
         levels = { 0, 15 },         --brightness levels. expects a table of 2 ints 0-15
-        size = 2,                 --total number of keys
+        size = 2,                   --total number of keys
         wrap = 16,                  --wrap to the next row/column every n keys
         flow = 'right',             --primary direction to flow: 'up', 'down', 'left', 'right'
         flow_wrap = 'down',         --direction to flow when wrapping. must be perpendicular to flow

@@ -1,6 +1,3 @@
-[submodule "lib/nest"]
-	path = lib/nest
-	url = https://github.com/andr-ew/nest
 [submodule "lib/cartographer"]
 	path = lib/cartographer
 	url = https://github.com/andr-ew/cartographer
@@ -10,3 +7,6 @@
 [submodule "lib/crops"]
 	path = lib/crops
 	url = https://github.com/andr-ew/crops
+[submodule "lib/multipattern"]
+	path = lib/multipattern
+	url = https://github.com/andr-ew/multipattern

@@ -98,7 +98,7 @@ local function Rand(args)
     local holdblink = false
     local downtime = nil
 
-    local rand = multipattern.wrap_set(
+    local rand = multipattern.wrap(
         mpat, args.id..'_'..args.voice..'_x', 
         function() 
             mparams:randomize(args.voice, args.id) 
@@ -114,7 +114,7 @@ local function Rand(args)
             end)
         end
     )
-    local def = multipattern.wrap_set(
+    local def = multipattern.wrap(
         mpat, args.id..'_'..args.voice..'_d', 
         function() 
             holdblink = true
@@ -196,7 +196,7 @@ local function Window(args)
     local holdblink_en = false
     local downtime = nil
 
-    local rand_wind = multipattern.wrap_set(
+    local rand_wind = multipattern.wrap(
         mpat, 'window'..voice..'_x', function(target) 
             wparams:randomize(voice, target) 
 
@@ -213,7 +213,7 @@ local function Window(args)
             end)
         end
     )
-    local def_wind = multipattern.wrap_set(
+    local def_wind = multipattern.wrap(
         mpat, 'window'..voice..'_d', function(target) 
             if target == 'both' or target == 'st' then holdblink_st = true end
             if target == 'both' or target == 'len' then holdblink_en = true end
