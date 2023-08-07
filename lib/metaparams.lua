@@ -79,25 +79,18 @@ function metaparam:new(args)
     --TODO: slew time data
     
     m.track_id = {}
-    m.track_setter = {}
     for t = 1,tracks do
         local id = (
             args.id
             ..'_track_'..t
         )
         m.track_id[t] = id
-        m.track_setter[t] = multipattern.wrap(
-            mpat, id, function(v) params:set(id, v) end
-        )
     end
     m.preset_id = {}
-    m.preset_setter = {}
     for t = 1,tracks do
         m.preset_id[t] = {}
-        m.preset_setter[t] = {}
         for b = 1,buffers do
             m.preset_id[t][b] = {}
-            m.preset_setter[t][b] = {}
             for p = 1, presets do
                 local id = (
                     args.id
@@ -106,10 +99,6 @@ function metaparam:new(args)
                     ..'_pre'..p
                 )
                 m.preset_id[t][b][p] = id
-                m.preset_setter[t][b][p] = multipattern.wrap(
-                    mpat, id, 
-                    function(v) params:set(id, v) end
-                )
             end
         end
     end
@@ -179,24 +168,18 @@ function metaparam:reset_presets(t, b)
     end
 end
             
-function metaparam:get_setter(track)
+function metaparam:set(track, v)
     local scope = self:get_scope()
     local b = sc.buffer[track]
     local p = preset:get(track)
 
     if scope == 'preset' then
-        --if ignore_pattern then return function(v) params:set(self.preset_id[track][b][p], v) end
-        return self.preset_setter[track][b][p] 
+        params:set(self.preset_id[track][b][p], v)
     elseif scope == 'track' then
-        --if ignore_pattern then return function(v) params:set(self.base_id[track][b], v) end
-        return self.track_setter[track]
+        params:set(self.track_id[track], v)
     elseif scope == 'global' then
-        return function(v) params:set(self.global_id, v) end
+        params:set(self.global_id, v)
     end
-end
-
-function metaparam:set(track, v)
-    self:get_setter(track)(v)
 end
 
 function metaparam:get(track, raw)
@@ -402,9 +385,6 @@ function metaparams:defaultize(track, id, buffer, preset, silent)
     return self.lookup[id]:defaultize(track, buffer, preset, silent)
 end
 
-function metaparams:get_setter(track, id)
-    return self.lookup[id]:get_setter(track)
-end
 function metaparams:set(track, id, v)
     return self.lookup[id]:set(track, v)
 end

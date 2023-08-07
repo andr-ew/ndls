@@ -44,14 +44,27 @@ end
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-view_options = {}
+set_wparam = multipattern.wrap(mpat, 'wparam', function(track, id, v) 
+    wparams:set(track, id, v)
+end)
+set_mparam = multipattern.wrap(mpat, 'mparam', function(track, id, v) 
+    mparams:set(track, id, v)
+end)
 
+function of_wparam(track, id, units, abs)
+    return { 
+        wparams:get(track, id, units, abs),
+        set_wparam, track, id,
+    }
+end
 function of_mparam(track, id)
     return { 
         mparams:get(track, id),
-        mparams:get_setter(track, id)
+        set_mparam, track, id,
     }
 end
+
+view_options = {}
 
 preset = { --[voice][buffer] = preset
     --TODO: depricate

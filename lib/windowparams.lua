@@ -10,13 +10,13 @@ function windowparams:new()
             m.preset_id[t][b] = {}
             for p = 1, presets do
                 m.preset_id[t][b][p] = {
-                    st = (
+                    ['start'] = (
                         'start'
                         ..'_t'..t
                         ..'_buf'..b
                         ..'_pre'..p
                     ),
-                    en = (
+                    ['end'] = (
                         'end'
                         ..'_t'..t
                         ..'_buf'..b
@@ -26,33 +26,6 @@ function windowparams:new()
             end
         end
     end
-
-    --TODO: wrapped base setters
-    local set_start = {}
-    local set_end = {}
-    for t = 1, tracks do
-        set_start[t] = {}
-        set_end[t] = {}
-
-        for b = 1, buffers do
-            set_start[t][b] = {}
-            set_end[t][b] = {}
-
-            for p = 1, presets do
-                set_start[t][b][p] = multipattern.wrap(
-                    mpat, m.preset_id[t][b][p].st, 
-                    function(v) params:set(m.preset_id[t][b][p].st, v) end
-                )
-                set_end[t][b][p] = multipattern.wrap(
-                    mpat, m.preset_id[t][b][p].en, 
-                    function(v) params:set(m.preset_id[t][b][p].en, v) end
-                )
-            end
-        end
-    end
-
-    m.preset_setter_start = set_start
-    m.preset_setter_end = set_end
 
     m.reset_func = windowparams.resets.random
 
@@ -64,8 +37,8 @@ function windowparams:bang(t)
     local p = sc.slice:get(t)
 
     --TODO: track scope
-    local st = params:get(self.preset_id[t][b][p].st)
-    local en = params:get(self.preset_id[t][b][p].en)
+    local st = params:get(self.preset_id[t][b][p]['start'])
+    local en = params:get(self.preset_id[t][b][p]['end'])
 
     reg.play[b][t]:expand()
     reg.play[b][t]:set_start(st, 'fraction')
@@ -84,8 +57,8 @@ function windowparams:defaultize(t, target, b, p, silent)
     local do_st = target == 'st' or target == 'both'
     local do_len = target == 'len' or target == 'both'
 
-    local id_start = self.preset_id[t][b][p].st
-    local id_end = self.preset_id[t][b][p].en
+    local id_start = self.preset_id[t][b][p]['start']
+    local id_end = self.preset_id[t][b][p]['end']
 
     do
         local silent = true
@@ -108,8 +81,8 @@ function windowparams:randomize(t, target, b, p, silent)
     local b_sl = reg.rec[b]
     --local p = reg.play[b]
 
-    local id_start = self.preset_id[t][b][p].st
-    local id_end = self.preset_id[t][b][p].en
+    local id_start = self.preset_id[t][b][p]['start']
+    local id_end = self.preset_id[t][b][p]['end']
 
     local available = b_sl:get_length()
     local last_s_f = params:get(id_start)
@@ -181,16 +154,7 @@ function windowparams:reset_presets(t, b)
     --self:bang(t) --bang happens via preset:reset()
 end
 
-function windowparams:get_preset_setter(id, track)
-    local b = sc.buffer[track]
-    local p = sc.slice:get(track)
-    if id == 'start' then
-        return self.preset_setter_start[track][b][p]
-    elseif id == 'end' then
-        return self.preset_setter_end[track][b][p]
-    end
-end
-function windowparams:get(id, track, units, abs)
+function windowparams:get(track, id, units, abs)
     units = units or 'fraction'
 
     if id == 'start' then
@@ -201,6 +165,12 @@ function windowparams:get(id, track, units, abs)
         return reg.play:get_length(track, units)
     end
 end
+function windowparams:set(track, id, v)
+    local b = sc.buffer[track]
+    local p = sc.slice:get(track)
+
+    params:set(self.preset_id[track][b][p][id], v)
+end
 
 local cs_mappabe_win = cs.def{ min = 0, max = 1, default = 0 }
 local cs_mappabe_len = cs.def{ min = -1, max = 0, default = 0 }
@@ -209,56 +179,18 @@ local cs_base_len = cs.def{ min = -1, max = 1, default = 0 }
 local cs_preset_st = cs.def{ min = 0, max = 1, default = 0 }
 local cs_preset_en = cs.def{ min = 0, max = 1, default = 1 }
 
--- function windowparams:base_params_count() return 2 * tracks * buffers end
--- function windowparams:add_base_params()
---     for t = 1, tracks do
---         for b = 1,buffers do
---             params:add {
---                 id = self.base_id[t][b].win,
---                 type = 'control', controlspec = cs_base_win,
---                 action = function() self:bang(t) end
---             }
---             params:add {
---                 id = self.base_id[t][b].len,
---                 type = 'control', controlspec = cs_base_len,
---                 action = function() self:bang(t) end
---             }
---         end
---     end
--- end
 function windowparams:preset_params_count() return 2 end
 function windowparams:add_preset_params(t, b, p)
     params:add{
-        id = self.preset_id[t][b][p].st, name = 'start',
+        id = self.preset_id[t][b][p]['start'], name = 'start',
         type = 'control', controlspec = cs_preset_st,
         action = function() self:bang(t) end
     }
     params:add{
-        id = self.preset_id[t][b][p].en, name = 'end',
+        id = self.preset_id[t][b][p]['end'], name = 'end',
         type = 'control', controlspec = cs_preset_en,
         action = function() self:bang(t) end
     }
 end
--- function windowparams:mappable_params_count() return 2 end
--- function windowparams:add_mappable_params(t)
---     params:add {
---         id = self.mappable_id[t].win, name = 'window',
---         type = 'control', controlspec = cs_mappabe_win,
---         action = function(v)
---             for b = 1,buffers do
---                 params:set(self.base_id[t][b].win, v)
---             end
---         end
---     }
---     params:add {
---         id = self.mappable_id[t].len, name = 'length',
---         type = 'control', controlspec = cs_mappabe_len,
---         action = function(v)
---             for b = 1,buffers do
---                 params:set(self.base_id[t][b].en, v)
---             end
---         end
---     }
--- end
 
 return windowparams
