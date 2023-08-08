@@ -44,12 +44,18 @@ end
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-set_wparam = multipattern.wrap(mpat, 'wparam', function(track, id, v) 
-    wparams:set(track, id, v)
-end)
-set_mparam = multipattern.wrap(mpat, 'mparam', function(track, id, v) 
-    mparams:set(track, id, v)
-end)
+set_wparam = function(track, id, v) 
+    local p_id = wparams:get_id(track, id)
+
+    multipattern.watch(mpat, p_id, v)
+    params:set(p_id, v)
+end
+set_mparam = function(track, id, v) 
+    local p_id = mparams:get_id(track, id)
+
+    multipattern.watch(mpat, p_id, v)
+    params:set(p_id, v)
+end
 
 function of_wparam(track, id, units, abs)
     return { 

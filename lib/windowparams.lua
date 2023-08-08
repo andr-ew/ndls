@@ -79,7 +79,6 @@ function windowparams:randomize(t, target, b, p, silent)
     local sl = p
 
     local b_sl = reg.rec[b]
-    --local p = reg.play[b]
 
     local id_start = self.preset_id[t][b][p]['start']
     local id_end = self.preset_id[t][b][p]['end']
@@ -108,18 +107,14 @@ function windowparams:randomize(t, target, b, p, silent)
 
     local si = true
 
-    --if do_st then p:expand() end
     if do_st then 
-        --p:set_start(st, 'seconds') 
         params:set(id_start, st_f, si)
 
         if not do_len then 
-            --p:set_length(ll) 
             params:set(id_end, st_f + last_len_f, si)
         end
     end
     if do_len then 
-        --p:set_length(len, 'seconds') 
         local sst_f = do_st and st_f or last_s_f
         params:set(id_end, sst_f + len_f, si)
     end
@@ -130,7 +125,6 @@ function windowparams:randomize(t, target, b, p, silent)
 end
 
 windowparams.resets = {
-    -- none = function() end,
     default = function(self, t, b, p)
         local silent = true
         self:defaultize(t, 'both', b, p, silent)
@@ -151,7 +145,6 @@ function windowparams:reset_presets(t, b)
     for p = 1, presets do
         self.reset_func(self, t, b, p)
     end
-    --self:bang(t) --bang happens via preset:reset()
 end
 
 function windowparams:get(track, id, units, abs)
@@ -165,6 +158,12 @@ function windowparams:get(track, id, units, abs)
         return reg.play:get_length(track, units)
     end
 end
+function windowparams:get_id(track, id)
+    local b = sc.buffer[track]
+    local p = sc.slice:get(track)
+
+    return self.preset_id[track][b][p][id]
+end
 function windowparams:set(track, id, v)
     local b = sc.buffer[track]
     local p = sc.slice:get(track)
@@ -172,25 +171,28 @@ function windowparams:set(track, id, v)
     params:set(self.preset_id[track][b][p][id], v)
 end
 
-local cs_mappabe_win = cs.def{ min = 0, max = 1, default = 0 }
-local cs_mappabe_len = cs.def{ min = -1, max = 0, default = 0 }
-local cs_base_win = cs.def{ min = -1, max = 1, default = 0 }
-local cs_base_len = cs.def{ min = -1, max = 1, default = 0 }
 local cs_preset_st = cs.def{ min = 0, max = 1, default = 0 }
 local cs_preset_en = cs.def{ min = 0, max = 1, default = 1 }
 
 function windowparams:preset_params_count() return 2 end
+function windowparams:preset_param_args(t, b, p)
+    return {
+        {
+            id = self.preset_id[t][b][p]['start'], name = 'start',
+            type = 'control', controlspec = cs_preset_st,
+            action = function() self:bang(t) end
+        },
+        {
+            id = self.preset_id[t][b][p]['end'], name = 'end',
+            type = 'control', controlspec = cs_preset_en,
+            action = function() self:bang(t) end
+        }
+    }
+end
 function windowparams:add_preset_params(t, b, p)
-    params:add{
-        id = self.preset_id[t][b][p]['start'], name = 'start',
-        type = 'control', controlspec = cs_preset_st,
-        action = function() self:bang(t) end
-    }
-    params:add{
-        id = self.preset_id[t][b][p]['end'], name = 'end',
-        type = 'control', controlspec = cs_preset_en,
-        action = function() self:bang(t) end
-    }
+    local args = self:preset_param_args(t, b, p)
+
+    for _,a in ipairs(args) do params:add(a) end
 end
 
 return windowparams

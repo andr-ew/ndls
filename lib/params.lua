@@ -136,14 +136,38 @@ do
     
     params:add_separator('metaparams')
 
+    local function add_param(args)
+        multipattern.add_process(mpat, args.id, function(v) params:set(args.id, v) end)
+
+        -- local old_action = args.action
+
+        --TODO: round value depending on args.type
+        -- local new_action = function()
+        --     old_action(params:get(args.id) + patcher.get(id))
+        -- end
+        -- patcher.add_destination(args.id, new_action)
+
+        -- args.action = function(v)
+        --     new_action()
+        -- end
+        
+        params:add(args)
+    end    
+
     params:add_group('global', mparams:global_params_count())
-    mparams:add_global_params()
+    do
+        local args = mparams:global_param_args()
+        for _,a in ipairs(args) do add_param(a) end
+    end
 
     params:add_group('track', (mparams:track_params_count() + 1) * tracks)
     for t = 1,tracks do
         params:add_separator('metaparams_track_track_'..t, 'track '..t)
+
         --TODO: wparams add track params
-        mparams:add_track_params(t)
+        
+        local args = mparams:track_param_args(t)
+        for _,a in ipairs(args) do add_param(a) end
     end
     params:add_group(
         'preset',
@@ -154,8 +178,14 @@ do
         for b = 1,buffers do
             for p = 1, presets do
                 params:add_separator('track '..t..', buffer '..b..', preset '..p)
-                wparams:add_preset_params(t, b, p)
-                mparams:add_preset_params(t, b, p)
+                do
+                    local args = wparams:preset_param_args(t, b, p)
+                    for _,a in ipairs(args) do add_param(a) end
+                end
+                do
+                    local args = mparams:preset_param_args(t, b, p)
+                    for _,a in ipairs(args) do add_param(a) end
+                end
             end
         end
     end
