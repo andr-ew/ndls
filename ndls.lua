@@ -66,7 +66,7 @@ windowparams = include 'ndls/lib/windowparams'           --abstraction around pa
 include 'ndls/lib/globals'                               --global variables
 sc, reg = include 'ndls/lib/softcut'                     --softcut utilities
 include 'ndls/lib/params'                                --create (meta)params
-Components, _routines = include 'ndls/lib/ui/components' --UI components
+Components = include 'ndls/lib/ui/components' --UI components
 App = {}
 App.grid = include 'ndls/lib/ui/grid'                    --grid UI
 App.arc = include 'ndls/lib/ui/arc'                      --arc UI
