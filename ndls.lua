@@ -53,7 +53,6 @@ _screen = include 'lib/crops/routines/screen'
 PatternRecorder = include 'lib/crops/components/grid/pattern_recorder'
 
 pattern_time = include 'lib/pattern_time/pattern_time'
-multipattern = include 'lib/multipattern/multipattern'
 
 cartographer, Slice = include 'lib/cartographer/cartographer'
 

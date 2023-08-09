@@ -93,6 +93,8 @@ local function Mparam()
     end
 end
 
+--TODO: to remove this dependency on metaparam, there needs to be a trigger param added for each preset scope param
+--  to nicely keep the bink state in component scope, we can just set the param action right here!
 local function Rand(args)
     local blink_level = 1
     local holdblink = false

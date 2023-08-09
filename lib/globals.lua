@@ -35,26 +35,39 @@ arc_view = tall and {
 --     end
 -- end
 
-pattern, mpat = {}, {}
+local function process_param(arg) 
+    local id, v, retrigger = table.unpack(arg)
+    if retrigger then
+        local silent = true
+        params:set(id, v, silent) 
+        params:lookup_param(id):bang()
+    else
+        params:set(id, v) 
+    end
+end
+
+pattern = {}
 for i = 1,16 do
     pattern[i] = pattern_time.new() 
-    mpat[i] = multipattern.new(pattern[i])
+    pattern[i].process = process_param 
+end
+
+set_param = function(id, v, retrigger)
+    local t = { id, v, retrigger }
+    process_param(t)
+    for i,pat in ipairs(patterns) do pat:watch(t) end
 end
 
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-set_wparam = function(track, id, v) 
+set_wparam = function(track, id, v)
     local p_id = wparams:get_id(track, id)
-
-    multipattern.watch(mpat, p_id, v)
-    params:set(p_id, v)
+    set_param(p_id, v)
 end
 set_mparam = function(track, id, v) 
     local p_id = mparams:get_id(track, id)
-
-    multipattern.watch(mpat, p_id, v)
-    params:set(p_id, v)
+    set_param(p_id, v)
 end
 
 function of_wparam(track, id, units, abs)

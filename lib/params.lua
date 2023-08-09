@@ -137,8 +137,6 @@ do
     params:add_separator('metaparams')
 
     local function add_param(args)
-        multipattern.add_process(mpat, args.id, function(v) params:set(args.id, v) end)
-
         -- local old_action = args.action
 
         --TODO: round value depending on args.type

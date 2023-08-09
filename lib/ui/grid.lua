@@ -9,13 +9,12 @@ local function Preset(args)
     local lo = varibright and 0 or 15
     local top, bottom = n, n + voices
 
-    local set_preset = multipattern.wrap(mpat, 'preset '..n, 
-        function(b, v)
-            local id = 'preset '..n..' buffer '..b
-            params:set(id, v, true) 
-            params:lookup_param(id):bang()
-        end
-    )
+    local set_preset = function(b, v)
+        local id = 'preset '..n..' buffer '..b
+
+        local retrigger = true
+        set_param(id, v, retrigger)
+    end
 
     return function()
         local b = sc.buffer[n]
@@ -119,22 +118,6 @@ local function Voice(args)
     local tall = args.tall
     local top, bottom = n, n + voices
 
-    local set_rec = multipattern.wrap(mpat, 'rec '..n, function(v)
-        params:set('rec '..n, v)
-    end)
-    local set_play = multipattern.wrap(mpat, 'play '..n, function(v)
-        params:set('play '..n, v)
-    end)
-    local set_buffer = multipattern.wrap(mpat, 'buffer '..n, function(v)
-        params:set('buffer '..n, v)
-    end)
-    local set_send = multipattern.wrap(mpat, 'send '..n, function(v)
-        params:set('send '..n, v)
-    end)
-    local set_ret = multipattern.wrap(mpat, 'return '..n, function(v)
-        params:set('return '..n, v)
-    end)
-
     local _phase = Components.grid.phase()
     local _rev = Components.grid.togglehold()
     local _rate = Components.grid.integerglide()
@@ -154,12 +137,12 @@ local function Voice(args)
 
         _grid.toggle{
             x = 1, y = bottom,
-            state = { params:get('rec '..n), set_rec },
+            state = { params:get('rec '..n), set_param, 'rec '..n },
         }
         if recorded or recording then
             _grid.toggle{
                 x = 2, y = bottom, levels = shaded,
-                state = { recorded and params:get('play '..n) or 0, set_play }
+                state = { recorded and params:get('play '..n) or 0, set_param, 'play '..n }
             }
         else
             _grid.fill{ x = 2, y = bottom, level = shaded[1] }
@@ -170,7 +153,7 @@ local function Voice(args)
                 x = wide and 3 or 6, y = wide and bottom or top, 
                 size = wide and (tall and 6 or 4) or 2,
                 wide = wide,
-                state = { params:get('buffer '..n), set_buffer }
+                state = { params:get('buffer '..n), set_param, 'buffer '..n }
             }
         end
         
@@ -219,13 +202,13 @@ local function Voice(args)
                 x = wide and (tall and 16 or 14) or 4, 
                 y = wide and (tall and top or bottom) or 4, 
                 levels = { 2, 15 },
-                state = { params:get('send '..n), set_send }
+                state = { params:get('send '..n), set_param, 'send '..n }
             }
             _grid.toggle{
                 x = wide and (tall and 16 or 15) or 5, 
                 y = wide and bottom or 4, 
                 levels = { 2, 15 },
-                state = { params:get('return '..n), set_ret }
+                state = { params:get('return '..n), set_param, 'return '..n }
             }
         end
 
