@@ -4,11 +4,6 @@ local Components = {
     screen = {},
 }
 
-local _routines = {
-    screen = {},
-    grid = {},
-}
-
 do
     local defaults = {
         text = {},               --list of strings to display. non-numeric keys are displayed as labels with thier values. (e.g. { cutoff = value })
@@ -27,54 +22,56 @@ do
     }
     defaults.__index = defaults
 
-    function _routines.screen.list_highlight(props)
-        if crops.device == 'screen' then
-            setmetatable(props, defaults)
+    function Components.screen.list_highlight()
+        return function(props)
+            if crops.device == 'screen' then
+                setmetatable(props, defaults)
 
-            if crops.mode == 'redraw' then
-                screen.font_face(props.font_face)
-                screen.font_size(props.font_size)
+                if crops.mode == 'redraw' then
+                    screen.font_face(props.font_face)
+                    screen.font_size(props.font_size)
 
-                local x, y, i, flow = props.x, props.y, 1, props.flow
+                    local x, y, i, flow = props.x, props.y, 1, props.flow
 
-                local function txt(v)
-                    local focus = i == props.focus
-                    local w = props.fixed_width or screen.text_extents(v)
-                    local h = props.font_size * (1 - props.font_headroom)
+                    local function txt(v)
+                        local focus = i == props.focus
+                        local w = props.fixed_width or screen.text_extents(v)
+                        local h = props.font_size * (1 - props.font_headroom)
 
-                    if focus then
-                        screen.level(props.levels[2])
-                        screen.rect(
-                            x - props.padding, 
-                            --TODO: the nudge is wierd... fix if including in common lib
-                            y - h - props.padding + (props.nudge and 0 or 1),
-                            w + props.padding*2,
-                            h + props.padding*2
-                        )
-                        screen.fill()
+                        if focus then
+                            screen.level(props.levels[2])
+                            screen.rect(
+                                x - props.padding, 
+                                --TODO: the nudge is wierd... fix if including in common lib
+                                y - h - props.padding + (props.nudge and 0 or 1),
+                                w + props.padding*2,
+                                h + props.padding*2
+                            )
+                            screen.fill()
+                        end
+                        
+                        screen.move(x, y)
+                        screen.level(focus and 0 or props.levels[1])
+
+                        if flow == 'left' then screen.text_right(v)
+                        else screen.text(v) end
+
+                        if flow == 'right' then 
+                            x = x + w + props.margin
+                        elseif flow == 'left' then 
+                            x = x - w - props.margin
+                        elseif flow == 'down' then 
+                            y = y + h + props.margin
+                        elseif flow == 'up' then 
+                            y = y - h - props.margin
+                        end
+
+                        i = i + 1
                     end
-                    
-                    screen.move(x, y)
-                    screen.level(focus and 0 or props.levels[1])
 
-                    if flow == 'left' then screen.text_right(v)
-                    else screen.text(v) end
-
-                    if flow == 'right' then 
-                        x = x + w + props.margin
-                    elseif flow == 'left' then 
-                        x = x - w - props.margin
-                    elseif flow == 'down' then 
-                        y = y + h + props.margin
-                    elseif flow == 'up' then 
-                        y = y - h - props.margin
-                    end
-
-                    i = i + 1
+                    if #props.text > 0 then for _,v in ipairs(props.text) do txt(v) end
+                    else for k,v in pairs(props.text) do txt(k); txt(v) end end
                 end
-
-                if #props.text > 0 then for _,v in ipairs(props.text) do txt(v) end
-                else for k,v in pairs(props.text) do txt(k); txt(v) end end
             end
         end
     end
@@ -98,100 +95,144 @@ do
     }
     defaults.__index = defaults
 
-    function _routines.screen.list_underline(props)
-        if crops.device == 'screen' then
-            setmetatable(props, defaults)
+    function Components.screen.list_underline()
+        return function(props)
+            if crops.device == 'screen' then
+                setmetatable(props, defaults)
 
-            if crops.mode == 'redraw' then
-                screen.font_face(props.font_face)
-                screen.font_size(props.font_size)
+                if crops.mode == 'redraw' then
+                    screen.font_face(props.font_face)
+                    screen.font_size(props.font_size)
 
-                local x, y, i, flow = props.x, props.y, 1, props.flow
+                    local x, y, i, flow = props.x, props.y, 1, props.flow
 
-                local function txt(v)
-                    local focus = i == props.focus
-                    local w = props.fixed_width or screen.text_extents(v)
-                    local h = props.font_size * (1 - props.font_headroom)
+                    local function txt(v)
+                        local focus = i == props.focus
+                        local w = props.fixed_width or screen.text_extents(v)
+                        local h = props.font_size * (1 - props.font_headroom)
 
-                    if focus then
-                        screen.level(props.levels[2])
-                        -- screen.rect(
-                        --     x - props.padding, 
-                        --     y - h - props.padding,
-                        --     (props.fixed_width or w) + props.padding*2,
-                        --     h + props.padding*2
-                        -- )
-                        screen.move(flow == 'left' and x-w or x, y + props.padding + 1)
-                        screen.line_width(1)
-                        screen.line_rel(w, 0)
-                        screen.stroke()
+                        if focus then
+                            screen.level(props.levels[2])
+                            -- screen.rect(
+                            --     x - props.padding, 
+                            --     y - h - props.padding,
+                            --     (props.fixed_width or w) + props.padding*2,
+                            --     h + props.padding*2
+                            -- )
+                            screen.move(flow == 'left' and x-w or x, y + props.padding + 1)
+                            screen.line_width(1)
+                            screen.line_rel(w, 0)
+                            screen.stroke()
+                        end
+                        
+                        screen.move(x, y)
+                        screen.level(props.levels[(i == props.focus) and 2 or 1])
+
+                        if flow == 'left' then screen.text_right(v)
+                        else screen.text(v) end
+
+                        if flow == 'right' then 
+                            x = x + w + props.margin
+                        elseif flow == 'left' then 
+                            x = x - w - props.margin
+                        elseif flow == 'down' then 
+                            y = y + h + props.margin
+                        elseif flow == 'up' then 
+                            y = y - h - props.margin
+                        end
+
+                        i = i + 1
                     end
-                    
-                    screen.move(x, y)
-                    screen.level(props.levels[(i == props.focus) and 2 or 1])
 
-                    if flow == 'left' then screen.text_right(v)
-                    else screen.text(v) end
-
-                    if flow == 'right' then 
-                        x = x + w + props.margin
-                    elseif flow == 'left' then 
-                        x = x - w - props.margin
-                    elseif flow == 'down' then 
-                        y = y + h + props.margin
-                    elseif flow == 'up' then 
-                        y = y - h - props.margin
-                    end
-
-                    i = i + 1
+                    if #props.text > 0 then for _,v in ipairs(props.text) do txt(v) end
+                    else for k,v in pairs(props.text) do txt(k); txt(v) end end
                 end
-
-                if #props.text > 0 then for _,v in ipairs(props.text) do txt(v) end
-                else for k,v in pairs(props.text) do txt(k); txt(v) end end
             end
         end
     end
 end
 
-function _routines.screen.meter(props)
-    if crops.device == 'screen' and crops.mode == 'redraw' then
-        if props.mark then
-            local len = props.length * props.mark
-            local w = props.width + 2
+function Components.screen.meter()
+    return function(props)
+        if crops.device == 'screen' and crops.mode == 'redraw' then
+            if props.mark then
+                local len = props.length * props.mark
+                local w = props.width + 2
 
-            screen.level(props.level_mark)
-            screen.line_width(1)
-
-            if props.flow == 'up' then
-                screen.move(props.x - 2 - 1, props.y - len)
-                screen.line_rel(w, 0)
-            else
-                screen.move(props.x + len, props.y - 2 - 1)
-                screen.line_rel(0, w)
-            end
-            
-            screen.stroke()
-        end
-
-        for i = 1,2 do if props.levels[i] > 0 then
-            local len = props.length * (i==1 and 1 or props.amount)
-            screen.level(props.levels[i])
-
-            if i==2 and props.outline then
+                screen.level(props.level_mark)
                 screen.line_width(1)
 
                 if props.flow == 'up' then
-                    screen.rect(
-                        props.x - props.width/2, props.y,
-                        props.width - 1, -len
-                    )
+                    screen.move(props.x - 2 - 1, props.y - len)
+                    screen.line_rel(w, 0)
                 else
-                    screen.rect(
-                        props.x, props.y - props.width/2,
-                        len, props.width - 1
-                    )
+                    screen.move(props.x + len, props.y - 2 - 1)
+                    screen.line_rel(0, w)
                 end
-            else
+                
+                screen.stroke()
+            end
+
+            for i = 1,2 do if props.levels[i] > 0 then
+                local len = props.length * (i==1 and 1 or props.amount)
+                screen.level(props.levels[i])
+
+                if i==2 and props.outline then
+                    screen.line_width(1)
+
+                    if props.flow == 'up' then
+                        screen.rect(
+                            props.x - props.width/2, props.y,
+                            props.width - 1, -len
+                        )
+                    else
+                        screen.rect(
+                            props.x, props.y - props.width/2,
+                            len, props.width - 1
+                        )
+                    end
+                else
+                    screen.move(props.x, props.y)
+                    screen.line_width(props.width or 1)
+
+                    if props.flow == 'up' then
+                        screen.line_rel(0, -len)
+                    else
+                        screen.line_rel(len, 0)
+                    end
+                end
+
+                screen.stroke()
+            end end
+        end
+    end
+end
+
+function Components.screen.dial()
+    return function(props)
+        if crops.device == 'screen' and crops.mode == 'redraw' then
+            if props.mark then
+                local prot = 2
+                local len = props.length * props.mark
+                local w = props.width + prot
+
+                screen.level(props.levels[1])
+                screen.line_width(1)
+
+                if props.flow == 'up' then
+                    screen.move(props.x - prot, props.y - len)
+                    screen.line_rel(w, 0)
+                else
+                    screen.move(props.x + len, props.y - prot)
+                    screen.line_rel(0, w)
+                end
+                
+                screen.stroke()
+            end
+            do
+                local len = props.length
+
+                screen.level(props.levels[1])
                 screen.move(props.x, props.y)
                 screen.line_width(props.width or 1)
 
@@ -200,65 +241,27 @@ function _routines.screen.meter(props)
                 else
                     screen.line_rel(len, 0)
                 end
+
+                screen.stroke()
             end
+            do
+                local prot = 4
+                local len = props.length * props.amount
+                local w = props.width + prot
 
-            screen.stroke()
-        end end
-    end
-end
+                screen.level(props.levels[2])
+                screen.line_width(1)
 
-function _routines.screen.dial(props)
-    if crops.device == 'screen' and crops.mode == 'redraw' then
-        if props.mark then
-            local prot = 2
-            local len = props.length * props.mark
-            local w = props.width + prot
-
-            screen.level(props.levels[1])
-            screen.line_width(1)
-
-            if props.flow == 'up' then
-                screen.move(props.x - prot, props.y - len)
-                screen.line_rel(w, 0)
-            else
-                screen.move(props.x + len, props.y - prot)
-                screen.line_rel(0, w)
+                if props.flow == 'up' then
+                    screen.move(props.x - prot + 1, props.y - len)
+                    screen.line_rel(w, 0)
+                else
+                    screen.move(props.x + len, props.y - prot + 1)
+                    screen.line_rel(0, w)
+                end
+                
+                screen.stroke()
             end
-            
-            screen.stroke()
-        end
-        do
-            local len = props.length
-
-            screen.level(props.levels[1])
-            screen.move(props.x, props.y)
-            screen.line_width(props.width or 1)
-
-            if props.flow == 'up' then
-                screen.line_rel(0, -len)
-            else
-                screen.line_rel(len, 0)
-            end
-
-            screen.stroke()
-        end
-        do
-            local prot = 4
-            local len = props.length * props.amount
-            local w = props.width + prot
-
-            screen.level(props.levels[2])
-            screen.line_width(1)
-
-            if props.flow == 'up' then
-                screen.move(props.x - prot + 1, props.y - len)
-                screen.line_rel(w, 0)
-            else
-                screen.move(props.x + len, props.y - prot + 1)
-                screen.line_rel(0, w)
-            end
-            
-            screen.stroke()
         end
     end
 end
@@ -285,10 +288,12 @@ function Components.screen.recglyph()
         end
     end)
 
+    local _glyph = Screen.glyph()
+
     return function(props)
         blinking = props.recording
     
-        _screen.glyph{
+        _glyph{
             x = props.x, y = props.y,
             glyph = props.recorded and props.play==1 and [[
                 . # # # .
@@ -490,6 +495,8 @@ end
 function Components.grid.togglehold()
     local downtime = nil
 
+    _toggle = Grid.toggle()
+
     return function(props)
         props.edge = 'falling'
         props.input = function(z)
@@ -506,7 +513,7 @@ function Components.grid.togglehold()
             end
         end
 
-        _grid.toggle(props)
+        _toggle(props)
     end
 end
 
@@ -514,10 +521,12 @@ function Components.grid.integerglide()
     local downtime = nil
     local held = false
 
+    local _integer = Grid.integer()
+
     return function(props)
         if crops.mode == 'input' and crops.device == 'grid' then 
             local x, y, z = table.unpack(crops.args) 
-            local n = _grid.util.xy_to_index(props, x, y)
+            local n = Grid.util.xy_to_index(props, x, y)
 
             if n then 
                 local old = crops.get_state(props.state)
@@ -538,14 +547,14 @@ function Components.grid.integerglide()
                 end
             end
         elseif crops.mode == 'redraw' then
-            _grid.integer(props)
+            _integer(props)
         end
     end
 end
 
 do
-    local index_to_xy = _grid.util.index_to_xy
-    local xy_to_index = _grid.util.xy_to_index
+    local index_to_xy = Grid.util.index_to_xy
+    local xy_to_index = Grid.util.xy_to_index
 
     local function binary_get(data, bit) --get bit
         return (data >> (bit-1)) & 1
@@ -576,39 +585,41 @@ do
     }
     defaults.__index = defaults
 
-    function _routines.grid.integerbinary(props)
-        if crops.device == 'grid' then
-            setmetatable(props, defaults) 
+    function Components.grid.integerbinary()
+        return function(props)
+            if crops.device == 'grid' then
+                setmetatable(props, defaults) 
 
-            if crops.mode == 'input' then 
-                local x, y, z = table.unpack(crops.args) 
-                local n = xy_to_index(props, x, y)
+                if crops.mode == 'input' then 
+                    local x, y, z = table.unpack(crops.args) 
+                    local n = xy_to_index(props, x, y)
 
-                if n then 
-                    if
-                        (z == 1 and props.edge == 'rising')
-                        or (z == 0 and props.edge == 'falling')
-                    then
-                        local old = crops.get_state(props.state) - 1
+                    if n then 
+                        if
+                            (z == 1 and props.edge == 'rising')
+                            or (z == 0 and props.edge == 'falling')
+                        then
+                            local old = crops.get_state(props.state) - 1
 
-                        local new = binary_toggle(old, n) + 1
+                            local new = binary_toggle(old, n) + 1
 
-                        crops.set_state(props.state, new) 
+                            crops.set_state(props.state, new) 
+                        end
+                        
+                        props.input(n, z)
                     end
-                    
-                    props.input(n, z)
-                end
-            elseif crops.mode == 'redraw' then 
-                local g = crops.handler 
+                elseif crops.mode == 'redraw' then 
+                    local g = crops.handler 
 
-                for i = 1, props.size do
-                    local v = crops.get_state(props.state) - 1
+                    for i = 1, props.size do
+                        local v = crops.get_state(props.state) - 1
 
-                    local vbit = binary_get(v, i)
-                    local lvl = props.levels[vbit + 1] 
+                        local vbit = binary_get(v, i)
+                        local lvl = props.levels[vbit + 1] 
 
-                    local x, y = index_to_xy(props, i)
-                    if lvl>0 then g:led(x, y, lvl) end
+                        local x, y = index_to_xy(props, i)
+                        if lvl>0 then g:led(x, y, lvl) end
+                    end
                 end
             end
         end
@@ -757,4 +768,4 @@ function Components.arc.len()
     end
 end
 
-return Components, _routines
+return Components
