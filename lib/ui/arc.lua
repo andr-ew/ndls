@@ -62,12 +62,12 @@ function Destinations.st(n, x)
             show_phase = sc.lvlmx[n].play == 1,
             sensitivity = 1/1000,
             st = {
-                wparams:get('start', n), 
-                wparams:get_preset_setter('start', n)
+                wparams:get(n, 'start'), 
+                function(v) set_wparam(n, 'start', v) end
             },
             en = { 
-                wparams:get('end', n), 
-                wparams:get_preset_setter('end', n)
+                wparams:get(n, 'end'), 
+                function(v) set_wparam(n, 'end', v) end
             },
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,
@@ -94,12 +94,12 @@ function Destinations.len(n, x)
             level_en = alt and 4 or 15,
             level_ph = 4,
             st = {
-                wparams:get('start', n), 
-                wparams:get_preset_setter('start', n)
+                wparams:get(n, 'start'), 
+                function(v) set_wparam(n, 'start', v) end
             },
-            en = {
-                wparams:get('end', n), 
-                wparams:get_preset_setter('end', n)
+            en = { 
+                wparams:get(n, 'end'), 
+                function(v) set_wparam(n, 'end', v) end
             },
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,

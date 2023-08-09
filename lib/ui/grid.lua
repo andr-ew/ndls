@@ -189,7 +189,7 @@ local function Voice(args)
             state = of_mparam(n, 'rev'),
             hold_time = 0,
             hold_action = function(t)
-                mparams:set(
+                set_mparam(
                     n, 'rate_slew', 
                     (t < 0.2) and 0.025 or t * (1.3 + (math.random() * 0.5))
                 )
@@ -201,10 +201,10 @@ local function Voice(args)
                 x = rate_x, y = wide and top or bottom, size = rate_size,
                 state = { 
                     mparams:get(n, 'rate') + off, 
-                    function(v) mparams:set(n, 'rate', v - off) end 
+                    function(v) set_mparam(n, 'rate', v - off) end 
                 },
                 hold_action = function(t) 
-                    mparams:set(n, 'rate_slew', t * (1.3 + (math.random() * 0.5))) 
+                    set_mparam(n, 'rate_slew', t * (1.3 + (math.random() * 0.5))) 
                 end,
             }
         end

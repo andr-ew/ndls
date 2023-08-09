@@ -288,23 +288,14 @@ local function Window(args)
         if sc.punch_in[sc.buffer[voice]].recorded then
             if crops.device == 'enc' and crops.mode == 'input' then
                 local n, d = table.unpack(crops.args)
-
-                local st = { 
-                    wparams:get('start', voice), 
-                    wparams:get_preset_setter('start', voice)
-                }
-                local en = { 
-                    wparams:get('end', voice), 
-                    wparams:get_preset_setter('end', voice)
-                }
                
                 if n == 2 then
-                    st[2](st[1] + d * sens)
-                    en[2](en[1] + d * sens)
+                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens)
+                    set_wparam(voice, 'end', wparams:get(voice, 'end') + d*sens)
 
                     crops.dirty.screen = true
                 elseif n == 3 then
-                    en[2](en[1] + d * sens)
+                    set_wparam(voice, 'end', wparams:get(voice, 'end') + d*sens)
 
                     crops.dirty.screen = true
                 end
@@ -314,13 +305,13 @@ local function Window(args)
             _routines.screen.list_underline{
                 x = e[2].x, y = e[2].y,
                 text = { 
-                    win = util.round(wparams:get('start', voice, 'seconds'), 0.01)
+                    win = util.round(wparams:get(voice, 'start' ,'seconds'), 0.01)
                 },
             }
             _routines.screen.list_underline{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    len = util.round(wparams:get('length', voice, 'seconds'), 0.01)
+                    len = util.round(wparams:get(voice, 'length', 'seconds'), 0.01)
                 },
             }
 
@@ -626,8 +617,7 @@ local function App()
                 elseif tab == 2 then
                     _waveform{
                         reg = reg.rec[b], samples = sc.samples[b],
-                        --st = get_start(n), en = get_end(n), 
-                        st = wparams:get('start', n), en = wparams:get('end', n),
+                        st = wparams:get(n, 'start'), en = wparams:get(n, 'end'),
                         phase = sc.phase[n].rel,
                         recording = recording,
                         recorded = recorded,
