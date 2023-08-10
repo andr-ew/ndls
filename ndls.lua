@@ -1,9 +1,10 @@
 -- ndls
 --
--- -- - -- --- -  ---- -- - ---  -- - - ---
--- -- - --- - --- - -- - --- - - - - - ---
---  --- --- -- - ---- -- - - -- - --- -----
--- -   --- - -- -- -- - -   -- - -- --- --
+-- . . . . @ @ . . . @ @ . . . . 
+-- . . . @ . . @ . @ . . @ . . . 
+-- . . . @ . . @ . @ . . @ . . . 
+-- . . . . @ @ . . . @ @ . . . . 
+-- . . . . . . @ @ @  . . . . . . 
 --
 -- 4-track tape looper, delay, 
 -- & sampler
@@ -54,9 +55,9 @@ Screen = include 'lib/crops/components/screen'
 pattern_time = include 'lib/pattern_time_extended/pattern_time_extended'
 
 Produce = {}
-Produce.grid = include 'lib/produce/grid'
+Produce.grid = include 'lib/produce/grid'                --some extra UI components
 
-cartographer = include 'lib/cartographer/cartographer'
+cartographer = include 'lib/cartographer/cartographer'   --a buffer management library
 
 --script files
 
@@ -65,7 +66,7 @@ windowparams = include 'ndls/lib/windowparams'           --abstraction around pa
 include 'ndls/lib/globals'                               --global variables
 sc, reg = include 'ndls/lib/softcut'                     --softcut utilities
 include 'ndls/lib/params'                                --create (meta)params
-Components = include 'ndls/lib/ui/components' --UI components
+Components = include 'ndls/lib/ui/components'            --ndls's custom UI components
 App = {}
 App.grid = include 'ndls/lib/ui/grid'                    --grid UI
 App.arc = include 'ndls/lib/ui/arc'                      --arc UI
