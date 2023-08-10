@@ -52,7 +52,6 @@ Key = include 'lib/crops/components/key'
 Screen = include 'lib/crops/components/screen'
 
 pattern_time = include 'lib/pattern_time_extended/pattern_time_extended'
-multipattern = include 'lib/multipattern/multipattern'
 
 Produce = {}
 Produce.grid = include 'lib/produce/grid'
