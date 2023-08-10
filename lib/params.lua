@@ -137,8 +137,6 @@ do
     params:add_separator('metaparams')
 
     local function add_param(args)
-        multipattern.add_process(mpat, args.id, function(v) params:set(args.id, v) end)
-
         -- local old_action = args.action
 
         --TODO: round value depending on args.type
@@ -383,7 +381,10 @@ do
     end
 
     do
-        params:add_group('randomization', 2 + mparams:random_range_params_count())
+        params:add_group(
+            'randomization', 
+            2 + mparams:random_range_params_count() + ((#mparams.list + 6) * voices * 2)
+        )
 
         params:add{
             id = 'len min', name = 'len min', type = 'control', 
@@ -397,8 +398,36 @@ do
         }
 
         mparams:add_random_range_params()
-    end
 
+        
+        for i = 1, voices do
+            params:add_separator('params_randomization_track_'..i, 'track '..i)
+
+
+            for _,target in ipairs{ 'st', 'len', 'both' } do
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'randomize '..target, id = 'randomize '..target..' '..i,
+                }
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'defaultize '..target, id = 'defaultize '..target..' '..i,
+                }
+            end
+            for _,m in ipairs(mparams.list) do 
+                local id = m.id
+
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'randomize '..id, id = 'randomize '..id..' '..i,
+                }
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'defaultize '..id, id = 'defaultize '..id..' '..i,
+                }
+            end
+        end
+    end
     do
         params:add_group(
             'initial preset values', 

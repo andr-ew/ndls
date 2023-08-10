@@ -4,9 +4,6 @@
 [submodule "lib/crops"]
 	path = lib/crops
 	url = https://github.com/andr-ew/crops
-[submodule "lib/multipattern"]
-	path = lib/multipattern
-	url = https://github.com/andr-ew/multipattern
 [submodule "lib/pattern_time_extended"]
 	path = lib/pattern_time_extended
 	url = https://github.com/andr-ew/pattern_time_extended
