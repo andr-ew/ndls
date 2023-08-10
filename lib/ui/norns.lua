@@ -323,12 +323,11 @@ local function Window(args)
                 local n, d = table.unpack(crops.args)
                
                 if n == 2 then
-                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens)
-                    set_wparam(voice, 'end', wparams:get(voice, 'end') + d*sens)
+                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 elseif n == 3 then
-                    set_wparam(voice, 'end', wparams:get(voice, 'end') + d*sens)
+                    set_wparam(voice, 'length', wparams:get(voice, 'length') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 end
@@ -337,13 +336,13 @@ local function Window(args)
             _st{
                 x = e[2].x, y = e[2].y,
                 text = { 
-                    win = util.round(wparams:get(voice, 'start' ,'seconds'), 0.01)
+                    win = util.round(reg.play:get_start(voice, 'seconds'), 0.01)
                 },
             }
             _len{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    len = util.round(wparams:get(voice, 'length', 'seconds'), 0.01)
+                    len = util.round(reg.play:get_length(voice, 'seconds'), 0.01)
                 },
             }
 
@@ -636,7 +635,7 @@ local function App()
                             do
                                 local x = e[2].x
                                 local l = k[2].x - e[2].x
-                                local spec = mparams:get_controlspec('lvl')
+                                local spec = params:lookup_param('gain 1').controlspec
 
                                 _level{
                                     x = x, y = y, length = l, width = 3,
@@ -680,7 +679,8 @@ local function App()
                 elseif tab == 2 then
                     _waveform{
                         reg = reg.rec[b], samples = sc.samples[b],
-                        st = wparams:get(n, 'start'), en = wparams:get(n, 'end'),
+                        st = reg.play:get_start(n, 'fraction'), 
+                        en = reg.play:get_end(n, 'fraction'),
                         phase = sc.phase[n].rel,
                         recording = recording,
                         recorded = recorded,
@@ -691,15 +691,22 @@ local function App()
                         end
                     }
                 elseif tab == 3 then
+                    local cut_spec = mparams:get_controlspec('cut')
+                    local q_spec = mparams:get_controlspec('q')
+
                     _filtergraph{
                         filter_type = ({ 
                             'lowpass', 'bandpass', 'highpass', 'bypass' 
                         })[
                             mparams:get(n, 'type')
                         ],
-                        freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
+                        freq = util.linexp(
+                            cut_spec.minval, cut_spec.maxval, 
+                            20, 20000, 
+                            mparams:get(n, 'cut')
+                        ),
                         -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
-                        resonance = mparams:get(n, 'q'),
+                        resonance = q_spec:unmap(mparams:get(n, 'q')),
                     }
                 end
             end

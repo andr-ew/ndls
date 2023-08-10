@@ -48,6 +48,7 @@ function Destinations.cut(n, x)
             x = { 42, 24+64 },
             type = mparams:get(n, 'type'),
             cut = mparams:get(n, 'cut'),
+            controlspec = mparams:get_controlspec('cut'),
         }
     end
 end
@@ -64,18 +65,19 @@ function Destinations.st(n, x)
             levels = { 4, 15 },
             phase = sc.phase[n].rel,
             show_phase = sc.lvlmx[n].play == 1,
-            sensitivity = 1/1000,
+            sensitivity = 1/1000 * wparams.range,
             st = {
                 wparams:get(n, 'start'), 
                 function(v) set_wparam(n, 'start', v) end
             },
-            en = { 
-                wparams:get(n, 'end'), 
-                function(v) set_wparam(n, 'end', v) end
+            len = { 
+                wparams:get(n, 'length'), 
+                function(v) set_wparam(n, 'length', v) end
             },
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,
-            reg = reg.rec[b],
+            reg = reg,
+            voice = n,
             rotated = props.rotated,
         }
     end
@@ -93,7 +95,7 @@ function Destinations.len(n, x)
             phase = sc.phase[n].rel,
             show_phase = sc.lvlmx[n].play == 1,
             nudge = alt,
-            sensitivity = 1/1000,
+            sensitivity = 1/1000 * wparams.range,
             level_st = alt and 15 or 4,
             level_en = alt and 4 or 15,
             level_ph = 4,
@@ -101,13 +103,14 @@ function Destinations.len(n, x)
                 wparams:get(n, 'start'), 
                 function(v) set_wparam(n, 'start', v) end
             },
-            en = { 
-                wparams:get(n, 'end'), 
-                function(v) set_wparam(n, 'end', v) end
+            len = { 
+                wparams:get(n, 'length'), 
+                function(v) set_wparam(n, 'length', v) end
             },
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,
-            reg = reg.rec[b],
+            reg = reg,
+            voice = n,
             rotated = props.rotated,
         }
     end
