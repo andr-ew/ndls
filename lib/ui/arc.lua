@@ -1,11 +1,14 @@
 local Destinations = {}
 
 function Destinations.gain(n, x)
+    local _gain = Arc.control()
+    local _fill = Arc.control()
+
     return function(props) 
         local id = 'gain '..n
         local xx = { 42 - 4, 42 + 16 + 3 }
 
-        _arc.control{
+        _gain{
             n = tonumber(arc_vertical and n or x),
             sensitivity = 0.5, 
             controlspec = params:lookup_param(id).controlspec,
@@ -15,7 +18,7 @@ function Destinations.gain(n, x)
             x = xx,
         }
         if crops.mode == 'redraw' then
-            _arc.control{
+            _fill{
                 n = tonumber(arc_vertical and n or x),
                 controlspec = params:lookup_param(id).controlspec,
                 state = { 0 },
@@ -29,10 +32,11 @@ end
 
 function Destinations.cut(n, x)
     local _filt = Components.arc.filter()
+    local _cutoff = Arc.control()
 
     return function(props) 
         if crops.mode == 'input' then
-            _arc.control{
+            _cutoff{
                 n = tonumber(arc_vertical and n or x),
                 x = { 42, 24+64 }, sensitivity = 0.25, 
                 state = of_mparam(n, 'cut'),
