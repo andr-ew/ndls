@@ -7,6 +7,3 @@
 [submodule "lib/crops"]
 	path = lib/crops
 	url = https://github.com/andr-ew/crops
-[submodule "lib/multipattern"]
-	path = lib/multipattern
-	url = https://github.com/andr-ew/multipattern

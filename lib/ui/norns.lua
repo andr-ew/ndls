@@ -100,47 +100,44 @@ local function Rand(args)
     local holdblink = false
     local downtime = nil
 
-    local rand = multipattern.wrap(
-        mpat, args.id..'_'..args.voice..'_x', 
-        function() 
-            mparams:randomize(args.voice, args.id) 
+    local rand_id = 'randomize '..args.id..' '..args.voice
+    local def_id = 'defaultize '..args.id..' '..args.voice
 
-            clock.run(function() 
-                blink_level = 2
-                crops.dirty.screen = true
+    params:set_action(rand_id, function() 
+        mparams:randomize(args.voice, args.id) 
 
-                clock.sleep(0.2)
+        clock.run(function() 
+            blink_level = 2
+            crops.dirty.screen = true
 
-                blink_level = 1
-                crops.dirty.screen = true
-            end)
-        end
-    )
-    local def = multipattern.wrap(
-        mpat, args.id..'_'..args.voice..'_d', 
-        function() 
-            holdblink = true
+            clock.sleep(0.2)
+
+            blink_level = 1
+            crops.dirty.screen = true
+        end)
+    end)
+    params:set_action(def_id, function() 
+        holdblink = true
+        blink_level = 1
+        crops.dirty.screen = true
+
+        clock.run(function() 
+            clock.sleep(0.1)
+            blink_level = 2
+            crops.dirty.screen = true
+
+            mparams:defaultize(args.voice, args.id) 
+
+            clock.sleep(0.2)
             blink_level = 1
             crops.dirty.screen = true
 
-            clock.run(function() 
-                clock.sleep(0.1)
-                blink_level = 2
-                crops.dirty.screen = true
+            clock.sleep(0.4)
+            holdblink = false
+            crops.dirty.screen = true
+        end)
+    end)
 
-                mparams:defaultize(args.voice, args.id) 
-
-                clock.sleep(0.2)
-                blink_level = 1
-                crops.dirty.screen = true
-
-                clock.sleep(0.4)
-                holdblink = false
-                crops.dirty.screen = true
-            end)
-        end
-    )
-    
     local nicknames = {
         default = 'd',
         random = 'x',
@@ -150,7 +147,6 @@ local function Rand(args)
         if alt then
             if mparams:get_scope(args.id) == 'preset' then
                 local reset_id = args.id..'_reset'
-
                 _key.integer{
                     n_next = props.n, max = #params:lookup_param(reset_id).options,
                     state = {
@@ -167,13 +163,17 @@ local function Rand(args)
         else
             if crops.device == 'key' and crops.mode == 'input' then
                 local n, z = table.unpack(crops.args) 
+                local retrigger = true
 
                 if n == props.n then
                     if z==1 then
                         downtime = util.time()
                     elseif z==0 then
-                        if downtime and ((util.time() - downtime) > 0.5) then def()
-                        else rand() end
+                        if downtime and ((util.time() - downtime) > 0.5) then 
+                            set_param(def_id, 0, retrigger)
+                        else 
+                            set_param(rand_id, 0, retrigger)
+                        end
                         
                         downtime = nil
                     end
@@ -191,6 +191,7 @@ end
 
 local function Window(args)
     local voice = args.voice
+    local i = voice
 
     local blink_level_st = 1
     local blink_level_en = 1
@@ -198,8 +199,8 @@ local function Window(args)
     local holdblink_en = false
     local downtime = nil
 
-    local rand_wind = multipattern.wrap(
-        mpat, 'window'..voice..'_x', function(target) 
+    for _,target in ipairs{ 'st', 'len', 'both' } do
+        params:set_action('randomize '..target..' '..i, function() 
             wparams:randomize(voice, target) 
 
             clock.run(function() 
@@ -213,10 +214,8 @@ local function Window(args)
                 blink_level_en = 1
                 crops.dirty.screen = true
             end)
-        end
-    )
-    local def_wind = multipattern.wrap(
-        mpat, 'window'..voice..'_d', function(target) 
+        end)
+        params:set_action('defaultize '..target..' '..i, function() 
             if target == 'both' or target == 'st' then holdblink_st = true end
             if target == 'both' or target == 'len' then holdblink_en = true end
             blink_level_st = 1
@@ -241,12 +240,13 @@ local function Window(args)
                 holdblink_en = false
                 crops.dirty.screen = true
             end)
-        end
-    )
-
+        end)
+    end
 
     local rand_wind_held = {}
     local function set_rand_wind_held(v)
+        local retrigger = true
+
         local old_st, old_en = rand_wind_held[1] or 0, rand_wind_held[2] or 0
         local new_st, new_en = v[1], v[2]
 
@@ -266,17 +266,26 @@ local function Window(args)
             downtime = util.time()
         elseif not both_last_high then
             if st_falling then 
-                if downtime and ((util.time() - downtime) > 0.5) then def_wind('st')
-                else rand_wind('st') end
+                if downtime and ((util.time() - downtime) > 0.5) then 
+                    set_param('defaultize '..'st'..' '..i, 0, retrigger)
+                else 
+                    set_param('randomize '..'st'..' '..i, 0, retrigger)
+                end
                 downtime = nil
             elseif en_falling then 
-                if downtime and ((util.time() - downtime) > 0.5) then def_wind('len')
-                else rand_wind('len') end
+                if downtime and ((util.time() - downtime) > 0.5) then 
+                    set_param('defaultize '..'len'..' '..i, 0, retrigger)
+                else 
+                    set_param('randomize '..'len'..' '..i, 0, retrigger)
+                end
                 downtime = nil
             end
         elseif both_falling then
-            if downtime and ((util.time() - downtime) > 0.5) then def_wind('both')
-            else rand_wind('both') end
+            if downtime and ((util.time() - downtime) > 0.5) then 
+                set_param('defaultize '..'both'..' '..i, 0, retrigger)
+            else 
+                set_param('randomize '..'both'..' '..i, 0, retrigger)
+            end
             
             downtime = nil
         end

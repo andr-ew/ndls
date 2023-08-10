@@ -55,7 +55,7 @@ end
 set_param = function(id, v, retrigger)
     local t = { id, v, retrigger }
     process_param(t)
-    for i,pat in ipairs(patterns) do pat:watch(t) end
+    for i,pat in ipairs(pattern) do pat:watch(t) end
 end
 
 wparams = windowparams:new()
