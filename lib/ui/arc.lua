@@ -48,6 +48,7 @@ function Destinations.cut(n, x)
             x = { 42, 24+64 },
             type = mparams:get(n, 'type'),
             cut = mparams:get(n, 'cut'),
+            controlspec = mparams:get_controlspec('cut'),
         }
     end
 end

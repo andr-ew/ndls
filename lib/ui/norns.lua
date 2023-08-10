@@ -636,7 +636,7 @@ local function App()
                             do
                                 local x = e[2].x
                                 local l = k[2].x - e[2].x
-                                local spec = mparams:get_controlspec('lvl')
+                                local spec = params:lookup_param('gain 1').controlspec
 
                                 _level{
                                     x = x, y = y, length = l, width = 3,
@@ -691,15 +691,22 @@ local function App()
                         end
                     }
                 elseif tab == 3 then
+                    local cut_spec = mparams:get_controlspec('cut')
+                    local q_spec = mparams:get_controlspec('q')
+
                     _filtergraph{
                         filter_type = ({ 
                             'lowpass', 'bandpass', 'highpass', 'bypass' 
                         })[
                             mparams:get(n, 'type')
                         ],
-                        freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
+                        freq = util.linexp(
+                            cut_spec.minval, cut_spec.maxval, 
+                            20, 20000, 
+                            mparams:get(n, 'cut')
+                        ),
                         -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
-                        resonance = mparams:get(n, 'q'),
+                        resonance = q_spec:unmap(mparams:get(n, 'q')),
                     }
                 end
             end

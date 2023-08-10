@@ -1,14 +1,39 @@
+local function volt_cutoff(volt)
+    return util.linexp(0, 7, 20, 20000, volt)
+end
+-- local function cutoff_volt(cut)
+--     return util.explin(20, 20000, 0, 7, cut)
+-- end
+local function volt_q(volt, inverse)
+    return util.linexp(0, 1, 0.01, 1.5, (inverse and (5 - volt) or volt) / 5)
+end
+
+local function ampdb(amp) return math.log(amp, 10) * 20.0 end
+local function dbamp(db) return 10.0^(db*0.05) end
+
+local function volt_amp(volt, db0val)
+    local minval = -math.huge
+    local maxval = 0
+    local range = dbamp(maxval) - dbamp(minval)
+
+    local scaled = volt/db0val
+    local db = ampdb(scaled * scaled * range + dbamp(minval))
+    local amp = dbamp(db)
+
+    return amp
+end
+
 -- add metaparams
 do
     mparams:add{
         id = 'lvl',
         type = 'control', 
-        controlspec = cs.new(-math.huge, 6, 'db', nil, 0, 'dB'),
-        random_min_default = -24, random_max_default = 6,
+        controlspec = cs.def{ min = 0, max = 5, default = 4, units = 'v' },
+        random_min_default = 0, random_max_default = 5,
         default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            sc.lvlmx[i].lvl = util.dbamp(v); sc.lvlmx:update(i)
+            sc.lvlmx[i].lvl = volt_amp(v, 4); sc.lvlmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
@@ -16,47 +41,47 @@ do
         id = 'spr',
         type = 'control', 
         controlspec = cs.def{ 
-            min = -4, max = 4, default = 0.0, quantum = 1/100/4,
+            min = -5, max = 5, default = 0.0, quantum = 1/100/5, units = 'v',
         },
         default_scope = 'global',
         default_reset_preset_action = 'random',
-        random_min_default = -2, random_max_default = 2,
+        random_min_default = -5/2, random_max_default = 5/2,
         action = function(i, v)
-            sc.sprmx[i].spr = v; sc.sprmx:update(i)
+            sc.sprmx[i].spr = (v/5)*4; sc.sprmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
         id = 'old',
         type = 'control', 
-        controlspec = cs.def{ default = 0.8, max = 1 },
-        random_min_default = 0.5, random_max_default = 1,
+        controlspec = cs.def{ min = 0, max = 5, default = 4, units = 'v' },
+        random_min_default = 5/2, random_max_default = 5,
         default_scope = 'global',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            sc.oldmx[i].old = v; sc.oldmx:update(i)
+            sc.oldmx[i].old = volt_amp(v, 5); sc.oldmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
         id = 'cut', type = 'control', 
-        controlspec = cs.def{ min = 0, max = 1, default = 1, quantum = 1/100/2, step = 0 },
-        random_min_default = 0.5, random_max_default = 1,
+        controlspec = cs.def{ min = 0, max = 7, default = 7, units = 'v' },
+        random_min_default = 7/2, random_max_default = 7,
         default_scope = 'track',
         default_reset_preset_action = 'random',
         action = function(i, v)
-            softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
+            softcut.post_filter_fc(i, util.linexp(0, 1, 20, 22000, v/7))
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
         id = 'q', type = 'control', 
-        controlspec = cs.def{ min = 0, max = 1, default = 0.4 },
-        random_min_default = -0.3, random_max_default = 0.3,
+        controlspec = cs.def{ min = 0, max = 5, default = 0, units = 'v' },
+        random_min_default = 0, random_max_default = 4,
         default_scope = 'global',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
+            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, (5 - v)/5))
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
@@ -86,7 +111,10 @@ do
     }
     mparams:add{
         id = 'bnd', name = 'rate',
-        type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
+        type = 'control', controlspec = cs.def{ 
+            min = -10, max = 10, default = 0,
+            quantum = 1/100/10,
+        },
         random_min_default = -1, random_max_default = 1,
         default_scope = 'track',
         default_reset_preset_action = 'default',

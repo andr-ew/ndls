@@ -630,7 +630,7 @@ function Components.arc.filter()
     return function(props)
         if crops.device == 'arc' and crops.mode == 'redraw' then
             local a = crops.handler
-            local v = props.cut
+            local v = props.controlspec:unmap(props.cut)
             local vv = math.floor(v*(props.x[2] - props.x[1])) + props.x[1]
             local t = props.type
 
