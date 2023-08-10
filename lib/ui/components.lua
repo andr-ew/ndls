@@ -677,9 +677,8 @@ function Components.arc.st()
                     
                     --local st, en = props.state[1].st, props.state[1].en
                     local st = props.st[1]
-                    local en = props.en[1]
+                    local len = props.len[1]
                     props.st[2](props.st[1] + d * props.sensitivity * 2)
-                    props.en[2](props.en[1] + d * props.sensitivity * 2)
 
                     -- nest.arc.make_dirty()
                 end
@@ -690,7 +689,7 @@ function Components.arc.st()
                     if recording then
                         local st = props.x[1]
                         local en = props.x[1] - 1 + math.ceil(
-                            reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
+                            reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                         )
                         for x = st,en do
                             a:led(props.n, (x - 1) % 64 + 1 - off, props.levels[1])
@@ -698,10 +697,10 @@ function Components.arc.st()
                     end
                 else
                     local st = props.x[1] + math.ceil(
-                        props.st[1]*(props.x[2] - props.x[1] + 2)
+                        reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                     )
                     local en = props.x[1] - 1 + math.ceil(
-                        props.en[1]*(props.x[2] - props.x[1] + 2)
+                        reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                     )
                     local ph = props.x[1] + util.round(
                         props.phase * (props.x[2] - props.x[1])
@@ -729,8 +728,8 @@ function Components.arc.len()
                 local n, d = table.unpack(crops.args)
                 
                 if n == props.n then
-                    local en = props.en[1]
-                    props.en[2](props.en[1] + d * props.sensitivity * 2)
+                    local len = props.len[1]
+                    props.len[2](props.len[1] + d * props.sensitivity * 2)
 
                     -- nest.arc.make_dirty()
                 end
@@ -741,17 +740,17 @@ function Components.arc.len()
                     if recording then
                         local st = props.x[1]
                         local en = props.x[1] - 1 + math.ceil(
-                            reg:get_end('fraction')*(props.x[2] - props.x[1] + 2)
+                            reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                         )
                         a:led(props.n, (st - 1) % 64 + 1 - off, props.level_st)
                         a:led(props.n, (en - 1) % 64 + 1 - off, props.level_st)
                     end
                 else
                     local st = props.x[1] + math.ceil(
-                        props.st[1]*(props.x[2] - props.x[1] + 2)
+                        reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                     )
                     local en = props.x[1] - 1 + math.ceil(
-                        props.en[1]*(props.x[2] - props.x[1] + 2)
+                        reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                     )
                     local ph = props.x[1] + util.round(
                         props.phase * (props.x[2] - props.x[1])

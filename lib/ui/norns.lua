@@ -323,12 +323,11 @@ local function Window(args)
                 local n, d = table.unpack(crops.args)
                
                 if n == 2 then
-                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens)
-                    set_wparam(voice, 'end', wparams:get(voice, 'end') + d*sens)
+                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 elseif n == 3 then
-                    set_wparam(voice, 'end', wparams:get(voice, 'end') + d*sens)
+                    set_wparam(voice, 'length', wparams:get(voice, 'length') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 end
@@ -337,13 +336,13 @@ local function Window(args)
             _st{
                 x = e[2].x, y = e[2].y,
                 text = { 
-                    win = util.round(wparams:get(voice, 'start' ,'seconds'), 0.01)
+                    win = util.round(reg.play:get_start(voice, 'seconds'), 0.01)
                 },
             }
             _len{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    len = util.round(wparams:get(voice, 'length', 'seconds'), 0.01)
+                    len = util.round(reg.play:get_length(voice, 'seconds'), 0.01)
                 },
             }
 
@@ -680,7 +679,8 @@ local function App()
                 elseif tab == 2 then
                     _waveform{
                         reg = reg.rec[b], samples = sc.samples[b],
-                        st = wparams:get(n, 'start'), en = wparams:get(n, 'end'),
+                        st = reg.play:get_start(n, 'fraction'), 
+                        en = reg.play:get_end(n, 'fraction'),
                         phase = sc.phase[n].rel,
                         recording = recording,
                         recorded = recorded,

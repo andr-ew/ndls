@@ -320,8 +320,8 @@ end
 sc.trigger = function(n)
     -- local st = get_start(n, 'seconds', 'absolute')
     -- local en = get_end(n, 'seconds', 'absolute')
-    local st = wparams:get(n, 'start', 'seconds', 'absolute')
-    local en = wparams:get(n, 'end', 'seconds', 'absolute')
+    local st = reg.play:get_start(n, 'seconds', 'absolute')
+    local en = reg.play:get_end(n, 'seconds', 'absolute')
     sc.send('position', n, sc.ratemx[n].rate > 0 and st or en)
 end
 

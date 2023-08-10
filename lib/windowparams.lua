@@ -1,5 +1,9 @@
 local windowparams = {}
 
+local min_v = 0
+local max_v = 5
+local range_v = max_v - min_v
+
 function windowparams:new()
     local m = setmetatable({}, { __index = self })
 
@@ -16,8 +20,8 @@ function windowparams:new()
                         ..'_buf'..b
                         ..'_pre'..p
                     ),
-                    ['end'] = (
-                        'end'
+                    ['length'] = (
+                        'length'
                         ..'_t'..t
                         ..'_buf'..b
                         ..'_pre'..p
@@ -29,6 +33,10 @@ function windowparams:new()
 
     m.reset_func = windowparams.resets.random
 
+    m.min = min_v
+    m.max = max_v
+    m.range = range_v
+
     return m
 end
 
@@ -37,12 +45,12 @@ function windowparams:bang(t)
     local p = sc.slice:get(t)
 
     --TODO: track scope
-    local st = params:get(self.preset_id[t][b][p]['start'])
-    local en = params:get(self.preset_id[t][b][p]['end'])
+    local st = params:get(self.preset_id[t][b][p]['start'])/range_v
+    local len = params:get(self.preset_id[t][b][p]['length'])/range_v
 
     reg.play[b][t]:expand()
     reg.play[b][t]:set_start(st, 'fraction')
-    reg.play[b][t]:set_end(en, 'fraction')
+    reg.play[b][t]:set_length(len, 'fraction')
 
     crops.dirty.screen = true; crops.dirty.arc = true
 end
@@ -58,12 +66,12 @@ function windowparams:defaultize(t, target, b, p, silent)
     local do_len = target == 'len' or target == 'both'
 
     local id_start = self.preset_id[t][b][p]['start']
-    local id_end = self.preset_id[t][b][p]['end']
+    local id_len = self.preset_id[t][b][p]['length']
 
     do
         local silent = true
-        if do_st then params:set(id_start, 0, silent) end
-        if do_len then params:set(id_end, 1, silent) end
+        if do_st then params:set(id_start, min_v, silent) end
+        if do_len then params:set(id_len, max_v, silent) end
     end
     
     if not silent then
@@ -81,12 +89,11 @@ function windowparams:randomize(t, target, b, p, silent)
     local b_sl = reg.rec[b]
 
     local id_start = self.preset_id[t][b][p]['start']
-    local id_end = self.preset_id[t][b][p]['end']
+    local id_len = self.preset_id[t][b][p]['length']
 
     local available = b_sl:get_length()
     local last_s_f = params:get(id_start)
-    local last_e_f = params:get(id_end)
-    local last_len_f = last_e_f - last_s_f
+    local last_len_f = params:get(id_len) 
     local ll = b_sl:fraction_to_seconds(last_len_f)
 
     local do_st = target == 'st' or target == 'both'
@@ -108,15 +115,10 @@ function windowparams:randomize(t, target, b, p, silent)
     local si = true
 
     if do_st then 
-        params:set(id_start, st_f, si)
-
-        if not do_len then 
-            params:set(id_end, st_f + last_len_f, si)
-        end
+        params:set(id_start, st_f * range_v, si)
     end
     if do_len then 
-        local sst_f = do_st and st_f or last_s_f
-        params:set(id_end, sst_f + len_f, si)
+        params:set(id_len, len_f * range_v, si)
     end
 
     if not silent then
@@ -147,16 +149,11 @@ function windowparams:reset_presets(t, b)
     end
 end
 
-function windowparams:get(track, id, units, abs)
-    units = units or 'fraction'
-
-    if id == 'start' then
-        return reg.play:get_start(track, units, abs)
-    elseif id == 'end' then
-        return reg.play:get_end(track, units, abs)
-    elseif id == 'length' then
-        return reg.play:get_length(track, units)
-    end
+function windowparams:get(track, id)
+    local b = sc.buffer[track]
+    local p = sc.slice:get(track)
+        
+    return params:get(self.preset_id[track][b][p][id], v)
 end
 function windowparams:get_id(track, id)
     local b = sc.buffer[track]
@@ -171,20 +168,20 @@ function windowparams:set(track, id, v)
     params:set(self.preset_id[track][b][p][id], v)
 end
 
-local cs_preset_st = cs.def{ min = 0, max = 1, default = 0 }
-local cs_preset_en = cs.def{ min = 0, max = 1, default = 1 }
+local cs_preset_st = cs.def{ min = min_v, max = max_v, default = min_v, units = 'v' }
+local cs_preset_len = cs.def{ min = min_v, max = max_v, default = max_v, units = 'v' }
 
 function windowparams:preset_params_count() return 2 end
 function windowparams:preset_param_args(t, b, p)
     return {
         {
-            id = self.preset_id[t][b][p]['start'], name = 'start',
+            id = self.preset_id[t][b][p].start, name = 'start',
             type = 'control', controlspec = cs_preset_st,
             action = function() self:bang(t) end
         },
         {
-            id = self.preset_id[t][b][p]['end'], name = 'end',
-            type = 'control', controlspec = cs_preset_en,
+            id = self.preset_id[t][b][p].length, name = 'length',
+            type = 'control', controlspec = cs_preset_len,
             action = function() self:bang(t) end
         }
     }
