@@ -10,3 +10,6 @@
 [submodule "lib/produce"]
 	path = lib/produce
 	url = https://github.com/andr-ew/produce
+[submodule "lib/patcher"]
+	path = lib/patcher
+	url = https://github.com/andr-ew/patcher
