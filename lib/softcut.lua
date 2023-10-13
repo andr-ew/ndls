@@ -22,7 +22,6 @@ sc = {
             s[n].last = v
         end
     },
-    --TODO: stereofy
     inmx = {
         {},
         route = 'left',
@@ -38,7 +37,6 @@ sc = {
     },
     sendmx = {
         { vol = 1, old = 1, send = 0, ret = 1 },
-        --TODO: stereofy
         update = function(s)
             for dst = 1, voices do
                 for src = 1,voices do if src ~= dst then
@@ -142,7 +140,6 @@ sc.io = {
 
 --softcut buffer regions
 local reg = {}
---TODO: stereofy
 reg.blank = cartographer.divide(cartographer.buffer[1], buffers)
 reg.rec = cartographer.subloop(reg.blank)
 reg.play = cartographer.subloop(reg.rec, voices)
@@ -198,13 +195,11 @@ sc.init = function()
     -- end)
     -- softcut.poll_start_phase()
 
-    --TODO: stereofy (map softcut voice index to track index)
     softcut.event_position(function(i, ph)
         if i <= voices then
             sc.phase:set(i, ph)
         end
     end)
-    --TODO: stereofy (map softcut voice index to track index)
     clock.run(function() while true do for i = 1,4 do
         softcut.query_position(i)
         clock.sleep(1/90/2) -- 2x fps of arc
@@ -325,8 +320,6 @@ sc.trigger = function(n)
     sc.send('position', n, sc.ratemx[n].rate > 0 and st or en)
 end
 
-
---FIXME: punch-in with rate < 0 results in blank buffer
 --TODO: manual initialization (via "end" controls)
 --FIXME: intital recording at very low rates (?)
 sc.punch_in = { -- [buf] = {}
@@ -435,7 +428,6 @@ local function update_assignment(n)
     local b = sc.buffer[n]
     local sl = reg.play[b][n]
 
-    --TODO: stereofy
     cartographer.assign(sl, n)
     
     sc.punch_in:update_play(b)
@@ -486,7 +478,6 @@ sc.samples = { -- [buffer] = { samples }
             end)
         end
 
-        --TODO: stereofy
         softcut.event_render(function(...)
             for i,e in ipairs(events) do e(...) end
             crops.dirty.screen = true

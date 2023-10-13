@@ -409,9 +409,17 @@ do
     end
 
     do
+        local wparam_random_range_params_count = 2
+        local wparam_random_targets = { 'st', 'len', 'both' }
+
         params:add_group(
             'randomization', 
-            2 + mparams:random_range_params_count() + ((#mparams.list + 6) * voices * 2)
+            wparam_random_range_params_count
+            + mparams:random_range_params_count() 
+            + ((
+                (#mparams.list + #wparam_random_targets) * 2 --times two for defautize + randomize
+                + 1 --also count the track separator
+            ) * voices)
         )
 
         params:add{
@@ -432,7 +440,7 @@ do
             params:add_separator('params_randomization_track_'..i, 'track '..i)
 
 
-            for _,target in ipairs{ 'st', 'len', 'both' } do
+            for _,target in ipairs(wparam_random_targets) do
                 params:add{
                     type = 'binary', behavior = 'trigger', 
                     name = 'randomize '..target, id = 'randomize '..target..' '..i,
