@@ -417,6 +417,7 @@ function Components.screen.filtergraph(args)
     end
 end
 
+--TODO: refactor to use states more correctly
 function Components.grid.arc_focus()
     local held = {}
 
