@@ -238,25 +238,46 @@ do
     for i = 1, voices do
         params:add_separator('params_r&p_track_'..i, 'track '..i)
 
+        local function action_post_record(n)
+            local buf = sc.buffer[n]
+
+            preset:reset(n)
+
+            --clamp to minimum buffer size
+            if reg.rec[buf]:get_length('seconds') < params:get('min buffer size') then
+                local frac = (
+                    reg.rec[buf]:get_length('seconds') 
+                    / params:get('min buffer size')
+                )
+                local silent = true
+
+                reg.rec[buf]:set_length(
+                    params:get('min buffer size'), 'seconds', silent
+                )
+                params:set(wparams:get_id(n, 'length'), frac * windowparams.range_v, silent)
+            end
+        end
+
         params:add{
             name = 'rec', id = 'rec '..i,
             type = 'binary', behavior = 'toggle', 
             action = function(v)
                 local n = i
-                local z = sc.buffer[n]
+                local buf = sc.buffer[n]
 
                 sc.oldmx[n].rec = v; sc.oldmx:update(n)
 
-                if not sc.punch_in[z].recorded then
-                    sc.punch_in:set(z, v)
+                if not sc.punch_in[buf].recorded then
+                    sc.punch_in:set(buf, v)
 
-                    if v==0 and sc.punch_in[z].recorded then 
-                        preset:reset(n)
+                    if v==0 and sc.punch_in[buf].recorded then 
                         params:set('play '..i, 1) 
+
+                        action_post_record(n)
                     end
                 elseif sc.lvlmx[n].play == 0 and v == 1 then
-                    sc.punch_in:clear(z)
-                    sc.punch_in:set(z, 1)
+                    sc.punch_in:clear(buf)
+                    sc.punch_in:set(buf, 1)
                 end
 
 
@@ -270,10 +291,11 @@ do
             action = function(v)
                 local n = i
 
-                local z = sc.buffer[n]
-                if v==1 and sc.punch_in[z].recording then
-                    sc.punch_in:set(z, 0)
-                    preset:reset(n)
+                local buf = sc.buffer[n]
+                if v==1 and sc.punch_in[buf].recording then
+                    sc.punch_in:set(buf, 0)
+
+                    action_post_record(n)
                 end
 
                 sc.lvlmx[n].play = v; sc.lvlmx:update(n)
@@ -517,7 +539,21 @@ do
 
     params:add{
         type = 'control', id = 'rec transition',
-        controlspec = cs.def{ default = 1, min = 0, max = 5 },
+        controlspec = cs.def{ default = 1, min = 0, max = 5, units = 's' },
+        allow_pmap = false,
+        action = function(v)
+            for i = 1, voices do
+                softcut.recpre_slew_time(i, v)
+            end
+        end
+    }
+    
+    params:add{
+        type = 'control', id = 'min buffer size',
+        controlspec = cs.def{ 
+            default = 5, min = 0, max = 70, units = 's',
+            quantum = 1/70,
+        },
         allow_pmap = false,
         action = function(v)
             for i = 1, voices do

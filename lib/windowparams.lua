@@ -4,6 +4,10 @@ local min_v = 0
 local max_v = 5
 local range_v = max_v - min_v
 
+windowparams.min_v = min_v
+windowparams.max_v = max_v
+windowparams.range_v = range_v
+
 function windowparams:new()
     local m = setmetatable({}, { __index = self })
 

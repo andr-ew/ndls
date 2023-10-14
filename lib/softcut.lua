@@ -323,7 +323,6 @@ end
 --TODO: manual initialization (via "end" controls)
 --FIXME: intital recording at very low rates (?)
 sc.punch_in = { -- [buf] = {}
-    min_size = 0.5,
     { 
         recording = false, recorded = false, manual = false, play = 0, t = 0,
     },
@@ -339,8 +338,7 @@ sc.punch_in = { -- [buf] = {}
             sc.ratemx:update(n)
         end end
     end,
-    set = function(s, z, v)
-        local buf = z
+    set = function(s, buf, v)
 
         if not s[buf].recorded then
             if v == 1 then
@@ -353,7 +351,6 @@ sc.punch_in = { -- [buf] = {}
                 s[buf].play = 1; s:update_play(buf)
             
                 reg.rec[buf]:punch_out()
-                --TODO: if len < min_size then len = min_size
 
                 s[buf].recorded = true
                 s[buf].recording = false
@@ -370,15 +367,13 @@ sc.punch_in = { -- [buf] = {}
         local b = sc.buffer[track]
         return s[b].recording
     end,
-    get = function(s, z)
-        return s[z].recording and 1 or 0
+    get = function(s, buf)
+        return s[buf].recording and 1 or 0
     end,
     --NOTE: set these when calling manual:
     -- params:set('rec '..n, 1)
     -- params:set('play '..n, 1)
-    manual = function(s, z)
-        local buf = z
-
+    manual = function(s, buf)
         if not s[buf].recorded and not s[buf].recording then
             reg.rec[buf]:set_length(s.min_size)
             
@@ -387,9 +382,7 @@ sc.punch_in = { -- [buf] = {}
             s[buf].recording = false; s:update_recording(buf)
         end
     end,
-    clear = function(s, z)
-        local buf = z
-
+    clear = function(s, buf)
         s[buf].play = 0; s:update_play(buf)
         reg.blank[buf]:clear()
         reg.rec[buf]:position(0)
