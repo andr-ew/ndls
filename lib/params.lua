@@ -591,8 +591,12 @@ do
         id = 'force clear all buffers', type = 'binary', behavior = 'trigger',
         action = function()
             for i = 1, voices do
-                params:delta('clear '..i)
+                params:set('rec '..i, 0) 
             end
+            for b = 1, buffers do
+                sc.punch_in:clear(b)
+            end
+            sc.reset_slices()
         end
     }
     params:add{

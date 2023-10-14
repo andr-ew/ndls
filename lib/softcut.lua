@@ -7,6 +7,8 @@ local sc
 local function ampdb(amp) return math.log10(amp) * 20.0 end
 local function dbamp(db) return math.pow(10.0, db*0.05) end
 
+local buf_time = 16777216 / 48000 --exact time from the sofctcut source
+
 sc = {
     phase = {
         { rel = 0, abs = 0, delta = 0, last = 0 },
@@ -127,22 +129,16 @@ for k,o in pairs(sc) do
     end
 end
     
---for use with eventual stereo features
-sc.io = {
-    [1] = 'stereo', [2] = 'stereo', [3] = 'mono', [4] = 'mono',
-    voices = {
-        [1] = { 1, 2 },
-        [2] = { 3, 4 },
-        [3] = { 5 },
-        [4] = { 6 },
-    }
-}
-
 --softcut buffer regions
 local reg = {}
-reg.blank = cartographer.divide(cartographer.buffer[1], buffers)
-reg.rec = cartographer.subloop(reg.blank)
-reg.play = cartographer.subloop(reg.rec, voices)
+
+sc.reset_slices = function()
+    reg.blank = cartographer.divide(cartographer.buffer, buffers)
+    reg.rec = cartographer.subloop(reg.blank)
+    reg.play = cartographer.subloop(reg.rec, voices)
+end
+sc.reset_slices()
+
 
 for b = 1, buffers do
     --adjust punch_in time quantum based on rate
@@ -241,29 +237,30 @@ do
         local name = 'pset-'..string.format("%02d", slot)
         local dir = _path.audio..'ndls/'..name..'/'
 
-        local loaded = {}
+        local files_to_load = {}
 
         for b = 1,buffers do
-            local f = dir..pfx..b..ext
-            local f2 = dir..pfx..b
+            files_to_load[b] = { buf = b, file_length = 0 }
 
+            local f = dir..pfx..b..ext
             if util.file_exists(f) then
-                reg.rec[b]:read(f, nil, nil, 'source')
-                loaded[b] = true
-                sc.punch_in:was_loaded(b)
-                print('sc read '..f)
-            elseif util.file_exists(f2) then            --backwards compatibility for no ext
-                reg.rec[b]:read(f2, nil, nil, 'source')
-                loaded[b] = true
-                sc.punch_in:was_loaded(b)
-                print('sc read '..f2)
+                local ch, samples, rate = audio.file_info(f)
+                if samples then files_to_load[b].file_length = (samples/rate) end
             end
         end
+        table.sort(files_to_load, function(a, b) 
+            return a.file_length > b.file_length
+        end)
+
+        local did_load = {}
+        for _,to_load in ipairs(files_to_load) do
+            local b = to_load.buf
+            did_load[b] = sc.loadsample(b, dir..pfx..b..ext)
+        end
         for i = 1, voices do
-            if not loaded[sc.buffer[i]] then
+            if not did_load[sc.buffer[i]] then
                 params:set('rec '..i, 0)
             end
-
             for b = 1, buffers do
                 preset:update(i, b)
             end
@@ -283,18 +280,67 @@ do
     end
 end
 
+--sometimes a lookup table is easier than an algorithm :)
+local adjacent_slice_info = { -- [my_idx] = {}
+    { adj_idx = 2, my_edge = 'end', adj_edge = 'start', direction = 1 },
+    { adj_idx = 1, my_edge = 'start', adj_edge = 'end', direction = -1 },
+    { adj_idx = 4, my_edge = 'end', adj_edge = 'start', direction = 1 },
+    { adj_idx = 3, my_edge = 'start', adj_edge = 'end', direction = -1 },
+}
+
 -- call params:delta('clear') before calling
 -- call params:set('play '..n, 1) after calling
---
--- test: sc.loadsample(1, '/home/we/dust/audio/nme/STE-037 (Freeze) [2020-08-21 202417].wav.mp3.wav')
 sc.loadsample = function(buffer, path)
     local b, f = buffer, path
 
+
     if util.file_exists(f) then
+        --expand blank slice if possible & needed
+        --TODO: make this work for 256 grids
+        if not tall then
+            local ch, samples, rate = audio.file_info(f)
+            local silent = true
+            if samples then
+                local file_len = (samples/rate)
+                if file_len > buf_time then file_len = buf_time end
+
+                local my_idx = b
+                local my_slice = reg.blank[my_idx]
+                local my_len = my_slice:get_length('seconds')
+
+                local info = adjacent_slice_info[my_idx]
+
+                local adj_idx = info.adj_idx
+                local adj_slice = reg.blank[adj_idx]
+                local adj_is_recorded = sc.punch_in[adj_idx].recorded
+
+                if (file_len > my_len) and (not adj_is_recorded) then
+                    local len_diff = file_len - my_len
+
+                    my_slice['delta_'..info.my_edge](
+                        my_slice, len_diff * info.direction, 'seconds'
+                    )
+                    my_slice:expand_children(silent)
+                    adj_slice['delta_'..info.adj_edge](
+                        adj_slice, len_diff * info.direction, 'seconds'
+                    )
+
+                    print(
+                        'buffer '..b..': expanded slice to '..file_len..'s'
+                    )
+                end
+            else
+                print("ndls: couldn't load file info for "..file.." ...may truncate")
+            end
+        end
+
+        --read sample into slice
         reg.rec[b]:read(f, nil, nil, 'source')
         sc.punch_in:was_loaded(b)
 
-        print('sc loadsample'..f)
+        print('buffer '..b..': loaded sample '..f)
+
+        return true
     end
 end
 
