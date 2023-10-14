@@ -75,7 +75,7 @@ function windowparams:defaultize(t, target, b, p, silent)
     do
         local silent = true
         if do_st then params:set(id_start, min_v, silent) end
-        if do_len then params:set(id_len, max_v, silent) end
+        if do_len then params:set(id_len, range_v, silent) end
     end
     
     if not silent then

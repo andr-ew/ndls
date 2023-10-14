@@ -87,10 +87,10 @@ view_options = {}
 
 preset = { --[voice][buffer] = preset
     --TODO: depricate
-    set = function(s, n, b, v)
+    set = function(s, n, b, v, silent)
         local id = 'preset '..n..' buffer '..b
         params:set(id, v, true) 
-        params:lookup_param(id):bang()
+        if not silent then params:lookup_param(id):bang() end
     end,
     update = function(s, n, b)
         if b == sc.buffer[n] then
@@ -99,7 +99,7 @@ preset = { --[voice][buffer] = preset
             sc.trigger(n)
         end
     end,
-    reset = function(s, n)
+    reset = function(s, n, silent)
         local b = sc.buffer[n]
 
         for i = 1, voices do
@@ -107,7 +107,11 @@ preset = { --[voice][buffer] = preset
             wparams:reset_presets(i, b)
         end
 
-        s:set(n, b, 1)
+        s:set(n, b, 1, silent)
+    end,
+    bang = function(s, n, b)
+        local id = 'preset '..n..' buffer '..b
+        params:lookup_param(id):bang()
     end,
     get = function(s, n)
         local b = sc.buffer[n]

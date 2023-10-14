@@ -238,24 +238,28 @@ do
     for i = 1, voices do
         params:add_separator('params_r&p_track_'..i, 'track '..i)
 
-        local function action_post_record(n)
+        local function action_post_record()
+            local n = i
             local buf = sc.buffer[n]
+            local silent = true
 
-            preset:reset(n)
+            local should_clamp = reg.rec[buf]:get_length('seconds') < params:get('min buffer size')
+            local frac = (
+                reg.rec[buf]:get_length('seconds') 
+                / params:get('min buffer size')
+            )
 
-            --clamp to minimum buffer size
-            if reg.rec[buf]:get_length('seconds') < params:get('min buffer size') then
-                local frac = (
-                    reg.rec[buf]:get_length('seconds') 
-                    / params:get('min buffer size')
-                )
-                local silent = true
+            if should_clamp then
+                reg.rec[buf]:set_length(params:get('min buffer size'), 'seconds', silent)
+            end
+            
+            preset:reset(n, silent)
 
-                reg.rec[buf]:set_length(
-                    params:get('min buffer size'), 'seconds', silent
-                )
+            if should_clamp then
                 params:set(wparams:get_id(n, 'length'), frac * windowparams.range_v, silent)
             end
+            
+            preset:bang(n, buf)
         end
 
         params:add{
@@ -273,7 +277,7 @@ do
                     if v==0 and sc.punch_in[buf].recorded then 
                         params:set('play '..i, 1) 
 
-                        action_post_record(n)
+                        action_post_record()
                     end
                 elseif sc.lvlmx[n].play == 0 and v == 1 then
                     sc.punch_in:clear(buf)
@@ -286,7 +290,7 @@ do
             end
         }
         params:add {
-            id = 'play '..i,
+            name = 'play', id = 'play '..i,
             type = 'binary', behavior = 'toggle', 
             action = function(v)
                 local n = i
@@ -295,7 +299,7 @@ do
                 if v==1 and sc.punch_in[buf].recording then
                     sc.punch_in:set(buf, 0)
 
-                    action_post_record(n)
+                    action_post_record()
                 end
 
                 sc.lvlmx[n].play = v; sc.lvlmx:update(n)
