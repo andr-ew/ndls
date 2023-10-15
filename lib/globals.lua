@@ -219,8 +219,6 @@ freeze_patrol = {
 --     end
 -- end)
 
-fileselect = require('fileselect')
-
 fileselect_dir = _path.audio
 
 function fileselect_callback(path)

@@ -418,6 +418,55 @@ local function Voice(args)
     end
 end
 
+local Modal = {}
+
+function Modal.buffer()
+    local _question = Screen.text()
+    local _no = {
+        key = Key.trigger(),
+        screen = Screen.text(),
+    }
+    local _yes = {
+        key = Key.trigger(),
+        screen = Screen.text(),
+    }
+
+    return function(props)
+        local left, right = x[1] + 1, x[3] - 1
+
+        _question{
+            x = 128/2, y = y[2] + 5, --y = 64/2,
+            text = 'load buffer '..view.modal_index..'?',
+            flow = 'center', level = 8,
+        } 
+
+        _no.key{
+            n = 2, 
+            input = function(z) if z==1 then
+                view.modal = 'none'
+            end end
+        }
+        _no.screen{
+            x = left, y = e[2].y,
+            text = 'no',
+        } 
+        _yes.key{
+            n = 3, 
+            input = function(z) if z==1 then
+                view.modal = 'none'
+
+                clock.cancel(screen_clock)
+                fileselect.enter(fileselect_dir, fileselect_callback)
+            end end
+        }
+        _yes.screen{
+            x = right, y = e[3].y,
+            text = 'yes',
+            flow = 'left'
+        } 
+    end
+end
+
 local function App()
     local _alt = Key.momentary()
 
@@ -462,19 +511,7 @@ local function App()
     local _old = Components.screen.meter()
     local _spread = Components.screen.dial()
 
-    local _modal = {
-        buffer = {
-            question = Screen.text(),
-            no = {
-                key = Key.trigger(),
-                screen = Screen.text(),
-            },
-            yes = {
-                key = Key.trigger(),
-                screen = Screen.text(),
-            },
-        },
-    }
+    local _modal = { buffer = Modal.buffer() }
 
     return function()
         _alt{
@@ -720,41 +757,8 @@ local function App()
 
             _voices[view.track]{ tab = view.page }
 
-        elseif view.modal == 'buffer' then
-            --TODO: this should be its own component (Modal.buffer)
-
-            local left, right = x[1] + 1, x[3] - 1
-
-            _modal.buffer.question{
-                x = 128/2, y = 64/2,
-                text = 'load buffer '..view.modal_index..'?',
-                flow = 'center', level = 8,
-            } 
-
-            _modal.buffer.no.key{
-                n = 2, 
-                input = function(z) if z==1 then
-                    view.modal = 'none'
-                end end
-            }
-            _modal.buffer.no.screen{
-                x = left, y = e[2].y,
-                text = 'no',
-            } 
-            _modal.buffer.yes.key{
-                n = 3, 
-                input = function(z) if z==1 then
-                    view.modal = 'none'
-
-                    clock.cancel(screen_clock)
-                    fileselect.enter(fileselect_dir, fileselect_callback)
-                end end
-            }
-            _modal.buffer.yes.screen{
-                x = right, y = e[3].y,
-                text = 'yes',
-                flow = 'left'
-            } 
+        elseif _modal[view.modal] then
+            _modal[view.modal]()
         end
     end
 end

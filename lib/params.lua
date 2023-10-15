@@ -255,9 +255,14 @@ do
             
             preset:reset(n, silent)
 
-            if should_clamp then
-                params:set(wparams:get_id(n, 'length'), frac * windowparams.range_v, silent)
-            end
+            if should_clamp then for track = 1,tracks do
+                local p = 1
+                params:set(
+                    wparams.preset_id[track][buf][p]['length'], 
+                    frac * windowparams.range_v,
+                    silent
+                )
+            end end
             
             preset:bang(n, buf)
         end

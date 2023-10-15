@@ -42,6 +42,7 @@ varibright = true
 
 cs = require 'controlspec'
 filtergraph = require 'filtergraph'
+fileselect = require 'fileselect'
 
 --git submodule libs
 
