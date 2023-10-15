@@ -222,13 +222,23 @@ freeze_patrol = {
 fileselect_dir = _path.audio
 
 function fileselect_callback(path)
-    sc.loadsample(view.modal_index, path)
+    local n = view.modal_index
+    local b = sc.buffer[n]
+
+    sc.loadsample(b, path)
     screen_clock = crops.connect_screen(_app.norns, fps.screen)
     for i = 1,tracks do
-        if params:get('buffer '..i) == view.modal_index then
+        if params:get('buffer '..i) == b then
             preset:reset(i)
             params:set('play '..i, 1)
             break
         end
     end
+end
+
+function textentry_callback(name)
+    local n = view.modal_index
+
+    sc.exportsample(n, name)
+    screen_clock = crops.connect_screen(_app.norns, fps.screen)
 end

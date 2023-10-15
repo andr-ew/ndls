@@ -288,11 +288,19 @@ local adjacent_slice_info = { -- [my_idx] = {}
     { adj_idx = 3, my_edge = 'start', adj_edge = 'end', direction = -1 },
 }
 
+sc.buffer_is_expandable = function(buffer)
+    local my_idx = buffer
+    local info = adjacent_slice_info[my_idx]
+    local adj_idx = info.adj_idx
+    local adj_is_recorded = sc.punch_in[adj_idx].recorded
+
+    return (not tall) and (not adj_is_recorded)
+end
+
 -- call params:delta('clear') before calling
 -- call params:set('play '..n, 1) after calling
 sc.loadsample = function(buffer, path)
     local b, f = buffer, path
-
 
     if util.file_exists(f) then
         --expand blank slice if possible & needed
@@ -344,6 +352,20 @@ sc.loadsample = function(buffer, path)
     end
 end
 
+sc.exportsample = function(track, name)
+    if sc.punch_in:is_recorded(track) then
+        local dir = _path.audio..'ndls/export_'..os.date('%d-%b-%Y')..'/'
+        if not util.file_exists(dir) then
+            util.make_dir(dir)
+        end
+
+        local f = dir..name..'.wav'
+
+        reg.play:write(track, f)
+        print('track '..track..': exported sample '..f)
+    end
+end
+
 sc.send = function(command, ...)
     softcut[command](...)
 end
@@ -366,11 +388,10 @@ sc.trigger = function(n)
     sc.send('position', n, sc.ratemx[n].rate > 0 and st or en)
 end
 
---TODO: manual initialization (via "end" controls)
 --FIXME: intital recording at very low rates (?)
 sc.punch_in = { -- [buf] = {}
     { 
-        recording = false, recorded = false, manual = false, play = 0, t = 0,
+        recording = false, recorded = false, play = 0, t = 0,
     },
     update_play = function(s, z)
         for n,v in ipairs(sc.buffer) do if v == z then
@@ -390,7 +411,6 @@ sc.punch_in = { -- [buf] = {}
             if v == 1 then
                 reg.rec[buf]:punch_in()
 
-                s[buf].manual = false
                 s[buf].recording = true
 
             elseif s[buf].recording then
@@ -416,18 +436,6 @@ sc.punch_in = { -- [buf] = {}
     get = function(s, buf)
         return s[buf].recording and 1 or 0
     end,
-    --NOTE: set these when calling manual:
-    -- params:set('rec '..n, 1)
-    -- params:set('play '..n, 1)
-    manual = function(s, buf)
-        if not s[buf].recorded and not s[buf].recording then
-            reg.rec[buf]:set_length(s.min_size)
-            
-            s[buf].manual = true
-            s[buf].recorded = true
-            s[buf].recording = false; s:update_recording(buf)
-        end
-    end,
     clear = function(s, buf)
         s[buf].play = 0; s:update_play(buf)
         reg.blank[buf]:clear()
@@ -437,19 +445,12 @@ sc.punch_in = { -- [buf] = {}
 
         s[buf].recorded = false
         s[buf].recording = false; s:update_recording(buf)
-        s[buf].manual = false
-        --s:untap(pair)
 
-        --reg.rec[buf]:set_length(1, 'fraction')
         reg.rec[buf]:expand(1, 'fraction')
-
-        --reg.play[buf]:set_length(0)
-        --reg.zoom[buf]:set_length(0)
     end,
     was_loaded = function(s, b)
         s[b].recorded = true
         s[b].recording = false; s:update_recording(b)
-        s[b].manual = false
         
         s[b].play = 1; s:update_play(b)
     end
@@ -527,5 +528,7 @@ sc.samples = { -- [buffer] = { samples }
         end
     end
 } 
+
+sc.buf_time = buf_time
 
 return sc, reg

@@ -37,6 +37,9 @@ local function secs_to_mins_secs(secs)
     local mins, secs_div_60 = math.modf(secs/60)
     return string.format('%d:%.2d', mins, util.round(secs_div_60 * 60))
 end
+local function format_time(secs)
+    return (secs > 60) and secs_to_mins_secs(secs) or util.round(secs, 0.01)
+end
 
 local function Mparam()
     local nicknames = {
@@ -336,22 +339,18 @@ local function Window(args)
                 end
             end
 
-            do
-                local st = reg.play:get_start(voice, 'seconds')
-                _st{
-                    x = e[2].x, y = e[2].y,
-                    text = { 
-                        st = (st > 60) and secs_to_mins_secs(st) or util.round(st, 0.01)
-                    },
-                }
-                local len = reg.play:get_length(voice, 'seconds')
-                _len{
-                    x = e[3].x, y = e[3].y,
-                    text = { 
-                        len = (len > 60) and secs_to_mins_secs(len) or util.round(len, 0.01)
-                    },
-                }
-            end
+            _st{
+                x = e[2].x, y = e[2].y,
+                text = { 
+                    st = format_time(reg.play:get_start(voice, 'seconds'))
+                },
+            }
+            _len{
+                x = e[3].x, y = e[3].y,
+                text = { 
+                    len = format_time(reg.play:get_length(voice, 'seconds'))
+                },
+            }
 
             _actions{
                 n = { 2, 3 },
@@ -421,47 +420,84 @@ end
 local Modal = {}
 
 function Modal.buffer()
-    local _question = Screen.text()
-    local _no = {
+    local _header = Screen.text()
+    local _length = Screen.text()
+    local _free_space = Screen.text()
+    local _max_free_space = Screen.text()
+
+    local _export = {
         key = Key.trigger(),
         screen = Screen.text(),
     }
-    local _yes = {
+    local _import = {
         key = Key.trigger(),
         screen = Screen.text(),
     }
 
     return function(props)
         local left, right = x[1] + 1, x[3] - 1
+        local n = view.modal_index
+        local buf = sc.buffer[n]
 
-        _question{
-            x = 128/2, y = y[2] + 5, --y = 64/2,
-            text = 'load buffer '..view.modal_index..'?',
-            flow = 'center', level = 8,
-        } 
+        do
+            local yy = y[2] + 5
+            local x, flow, level = left, 'right', 8
+            _header{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'BUFFER '..buf,
+            } 
+            yy = yy + 8
 
-        _no.key{
+            _length{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = sc.punch_in[buf].recorded and (
+                    'length: '..format_time(reg.play:get_length(n, 'seconds'))
+                ) or 'empty'
+            } 
+            yy = yy + 8
+            local free_space = format_time(reg.blank[buf]:get_length('seconds'))
+            _free_space{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'free space: '..free_space
+            } 
+            yy = yy + 8
+            _max_free_space{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'max free space: '..(
+                    sc.buffer_is_expandable(buf) and format_time(sc.buf_time) or free_space
+                )
+            } 
+        end
+
+        _export.key{
             n = 2, 
-            input = function(z) if z==1 then
+            input = function(z) if z==0 then
                 view.modal = 'none'
+
+                clock.cancel(screen_clock)
+                textentry.enter(textentry_callback, nil, 'file name')
             end end
         }
-        _no.screen{
+        _export.screen{
             x = left, y = e[2].y,
-            text = 'no',
+            text = 'export',
         } 
-        _yes.key{
+        _import.key{
             n = 3, 
-            input = function(z) if z==1 then
+            input = function(z) if z==0 then
                 view.modal = 'none'
 
                 clock.cancel(screen_clock)
                 fileselect.enter(fileselect_dir, fileselect_callback)
             end end
         }
-        _yes.screen{
+        _import.screen{
             x = right, y = e[3].y,
-            text = 'yes',
+            text = 'import',
             flow = 'left'
         } 
     end
