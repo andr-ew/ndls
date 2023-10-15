@@ -33,6 +33,11 @@ local k = {
     { x = x[2.5], y = y[1] }
 }
 
+local function secs_to_mins_secs(secs) 
+    local mins, secs_div_60 = math.modf(secs/60)
+    return string.format('%d:%.2d', mins, util.round(secs_div_60 * 60))
+end
+
 local function Mparam()
     local nicknames = {
         global = 'glob',
@@ -98,8 +103,6 @@ local function Mparam()
     end
 end
 
---TODO: to remove this dependency on metaparam, there needs to be a trigger param added for each preset scope param
---  to nicely keep the bink state in component scope, we can just set the param action right here!
 local function Rand(args)
     local blink_level = 1
     local holdblink = false
@@ -333,18 +336,22 @@ local function Window(args)
                 end
             end
 
-            _st{
-                x = e[2].x, y = e[2].y,
-                text = { 
-                    win = util.round(reg.play:get_start(voice, 'seconds'), 0.01)
-                },
-            }
-            _len{
-                x = e[3].x, y = e[3].y,
-                text = { 
-                    len = util.round(reg.play:get_length(voice, 'seconds'), 0.01)
-                },
-            }
+            do
+                local st = reg.play:get_start(voice, 'seconds')
+                _st{
+                    x = e[2].x, y = e[2].y,
+                    text = { 
+                        st = (st > 60) and secs_to_mins_secs(st) or util.round(st, 0.01)
+                    },
+                }
+                local len = reg.play:get_length(voice, 'seconds')
+                _len{
+                    x = e[3].x, y = e[3].y,
+                    text = { 
+                        len = (len > 60) and secs_to_mins_secs(len) or util.round(len, 0.01)
+                    },
+                }
+            end
 
             _actions{
                 n = { 2, 3 },
