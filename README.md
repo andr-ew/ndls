@@ -327,4 +327,30 @@ clock-sync forthcoming
 
 ## buffers
 
-on the grid, hold a buffer key in any track to access the **buffer screen** for that buffer. 
+on the grid, hold a buffer key in any track to access the **buffer screen** for that buffer. the buffer screen displays some useful information about the buffer, and allows you to **export** and **import** audio with K2 & K3.
+
+### length
+
+either displays the current playback window of the held buffer & track, or shows "empty", if the buffer is empty
+
+### free space
+
+this is the amount of free space currently allocated to the buffer. by default, it's 2m 55s on 128 & 64 grids, and 1m 57s for 256 grids.
+
+### max free space
+
+in some circumstances, samples up to 5m 50s can be loaded into a buffer. if this is the case, **max free space** will display "5:50". 
+
+to accomplish this, ndls will reallocate softcut's total buffer space of 11m 40s between adjacent buffers. so, if a sample is longer than 2m 55s is loaded into buffer one, the remaining free space will be taken from buffer 2. this only works if buffer 2 is **empty**, i.e. no loops or samples have been loaded/recorded to it.
+
+currently buffer allocation is only supported for 128 & 64 grids – on 256 free space is fixed to 1m 57s for every buffer.
+
+if you'd like to get buffer allocation back to its default state, use the **force clear all buffers** param.
+
+### export
+
+tap K2 on the buffer screen to export the current loop window of the buffer/track to disk. useful for trimming a recording & re-importing it back to ndls.
+
+### import
+
+load a sample into the buffer. see [max free space](#max-free-space) for sample length limitations.
