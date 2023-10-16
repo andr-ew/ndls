@@ -370,10 +370,10 @@ do
             action = function(v) 
                 sc.sendmx[i].send = v; sc.sendmx:update() 
 
-                if v > 0 and params:get('return '..i) > 0 then
-                    sc.sendmx[i].ret = 0; sc.sendmx:update() 
-                    params:set('return '..i, 0, true)
-                end
+                -- if v > 0 and params:get('return '..i) > 0 then
+                --     sc.sendmx[i].ret = 0; sc.sendmx:update() 
+                --     params:set('return '..i, 0, true)
+                -- end
                 crops.dirty.grid = true
             end
         }
@@ -383,10 +383,10 @@ do
             action = function(v) 
                 sc.sendmx[i].ret = v; sc.sendmx:update()
 
-                if v > 0 and params:get('send '..i) > 0 then
-                    sc.sendmx[i].send = 0; sc.sendmx:update() 
-                    params:set('send '..i, 0, true)
-                end
+                -- if v > 0 and params:get('send '..i) > 0 then
+                --     sc.sendmx[i].send = 0; sc.sendmx:update() 
+                --     params:set('send '..i, 0, true)
+                -- end
                 crops.dirty.grid = true
             end
         }
