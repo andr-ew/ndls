@@ -238,25 +238,55 @@ do
     for i = 1, voices do
         params:add_separator('params_r&p_track_'..i, 'track '..i)
 
+        local function action_post_record()
+            local n = i
+            local buf = sc.buffer[n]
+            local silent = true
+
+            local should_clamp = reg.rec[buf]:get_length('seconds') < params:get('min buffer size')
+            local frac = (
+                reg.rec[buf]:get_length('seconds') 
+                / params:get('min buffer size')
+            )
+
+            if should_clamp then
+                reg.rec[buf]:set_length(params:get('min buffer size'), 'seconds', silent)
+            end
+            
+            preset:reset(n, silent)
+
+            if should_clamp then for track = 1,tracks do
+                local p = 1
+                params:set(
+                    wparams.preset_id[track][buf][p]['length'], 
+                    frac * windowparams.range_v,
+                    silent
+                )
+            end end
+            
+            preset:bang(n, buf)
+        end
+
         params:add{
             name = 'rec', id = 'rec '..i,
             type = 'binary', behavior = 'toggle', 
             action = function(v)
                 local n = i
-                local z = sc.buffer[n]
+                local buf = sc.buffer[n]
 
                 sc.oldmx[n].rec = v; sc.oldmx:update(n)
 
-                if not sc.punch_in[z].recorded then
-                    sc.punch_in:set(z, v)
+                if not sc.punch_in[buf].recorded then
+                    sc.punch_in:set(buf, v)
 
-                    if v==0 and sc.punch_in[z].recorded then 
-                        preset:reset(n)
+                    if v==0 and sc.punch_in[buf].recorded then 
                         params:set('play '..i, 1) 
+
+                        action_post_record()
                     end
                 elseif sc.lvlmx[n].play == 0 and v == 1 then
-                    sc.punch_in:clear(z)
-                    sc.punch_in:set(z, 1)
+                    sc.punch_in:clear(buf)
+                    sc.punch_in:set(buf, 1)
                 end
 
 
@@ -265,15 +295,16 @@ do
             end
         }
         params:add {
-            id = 'play '..i,
+            name = 'play', id = 'play '..i,
             type = 'binary', behavior = 'toggle', 
             action = function(v)
                 local n = i
 
-                local z = sc.buffer[n]
-                if v==1 and sc.punch_in[z].recording then
-                    sc.punch_in:set(z, 0)
-                    preset:reset(n)
+                local buf = sc.buffer[n]
+                if v==1 and sc.punch_in[buf].recording then
+                    sc.punch_in:set(buf, 0)
+
+                    action_post_record()
                 end
 
                 sc.lvlmx[n].play = v; sc.lvlmx:update(n)
@@ -339,10 +370,10 @@ do
             action = function(v) 
                 sc.sendmx[i].send = v; sc.sendmx:update() 
 
-                if v > 0 and params:get('return '..i) > 0 then
-                    sc.sendmx[i].ret = 0; sc.sendmx:update() 
-                    params:set('return '..i, 0, true)
-                end
+                -- if v > 0 and params:get('return '..i) > 0 then
+                --     sc.sendmx[i].ret = 0; sc.sendmx:update() 
+                --     params:set('return '..i, 0, true)
+                -- end
                 crops.dirty.grid = true
             end
         }
@@ -352,10 +383,10 @@ do
             action = function(v) 
                 sc.sendmx[i].ret = v; sc.sendmx:update()
 
-                if v > 0 and params:get('send '..i) > 0 then
-                    sc.sendmx[i].send = 0; sc.sendmx:update() 
-                    params:set('send '..i, 0, true)
-                end
+                -- if v > 0 and params:get('send '..i) > 0 then
+                --     sc.sendmx[i].send = 0; sc.sendmx:update() 
+                --     params:set('send '..i, 0, true)
+                -- end
                 crops.dirty.grid = true
             end
         }
@@ -495,14 +526,19 @@ do
 
     --TODO: input routing per-voice 🧠
     local ir_op = { 'left', 'right' }
-    params:add{
-        type = 'option', id = 'input routing', options = ir_op,
-        action = function(v)
-            sc.inmx.route = ir_op[v]
-            for i = 1,voices do sc.inmx:update(i) end
-        end,
-        allow_pmap = false,
-    }
+
+    params:add_group('input routing', voices)
+    for i = 1,voices do 
+        params:add{
+            type = 'option', id = 'input_routing_'..i, name = 'track '..i,
+            options = ir_op,
+            action = function(v)
+                sc.inmx.route = ir_op[v]
+                sc.inmx:update(i)
+            end,
+            allow_pmap = false,
+        }
+    end
 
     params:add{
         id = 'alias',
@@ -517,7 +553,21 @@ do
 
     params:add{
         type = 'control', id = 'rec transition',
-        controlspec = cs.def{ default = 1, min = 0, max = 5 },
+        controlspec = cs.def{ default = 0.01, min = 0, max = 5, units = 's' },
+        allow_pmap = false,
+        action = function(v)
+            for i = 1, voices do
+                softcut.recpre_slew_time(i, v)
+            end
+        end
+    }
+    
+    params:add{
+        type = 'control', id = 'min buffer size',
+        controlspec = cs.def{ 
+            default = 5, min = 0, max = 70, units = 's',
+            quantum = 1/70,
+        },
         allow_pmap = false,
         action = function(v)
             for i = 1, voices do
@@ -551,8 +601,12 @@ do
         id = 'force clear all buffers', type = 'binary', behavior = 'trigger',
         action = function()
             for i = 1, voices do
-                params:delta('clear '..i)
+                params:set('rec '..i, 0) 
             end
+            for b = 1, buffers do
+                sc.punch_in:clear(b)
+            end
+            sc.reset_slices()
         end
     }
     params:add{

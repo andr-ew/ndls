@@ -33,6 +33,14 @@ local k = {
     { x = x[2.5], y = y[1] }
 }
 
+local function secs_to_mins_secs(secs) 
+    local mins, secs_div_60 = math.modf(secs/60)
+    return string.format('%d:%.2d', mins, util.round(secs_div_60 * 60))
+end
+local function format_time(secs)
+    return (secs > 60) and secs_to_mins_secs(secs) or util.round(secs, 0.01)
+end
+
 local function Mparam()
     local nicknames = {
         global = 'glob',
@@ -98,8 +106,6 @@ local function Mparam()
     end
 end
 
---TODO: to remove this dependency on metaparam, there needs to be a trigger param added for each preset scope param
---  to nicely keep the bink state in component scope, we can just set the param action right here!
 local function Rand(args)
     local blink_level = 1
     local holdblink = false
@@ -336,13 +342,13 @@ local function Window(args)
             _st{
                 x = e[2].x, y = e[2].y,
                 text = { 
-                    win = util.round(reg.play:get_start(voice, 'seconds'), 0.01)
+                    st = format_time(reg.play:get_start(voice, 'seconds'))
                 },
             }
             _len{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    len = util.round(reg.play:get_length(voice, 'seconds'), 0.01)
+                    len = format_time(reg.play:get_length(voice, 'seconds'))
                 },
             }
 
@@ -411,6 +417,92 @@ local function Voice(args)
     end
 end
 
+local Modal = {}
+
+function Modal.buffer()
+    local _header = Screen.text()
+    local _length = Screen.text()
+    local _free_space = Screen.text()
+    local _max_free_space = Screen.text()
+
+    local _export = {
+        key = Key.trigger(),
+        screen = Screen.text(),
+    }
+    local _import = {
+        key = Key.trigger(),
+        screen = Screen.text(),
+    }
+
+    return function(props)
+        local left, right = x[1] + 1, x[3] - 1
+        local n = view.modal_index
+        local buf = sc.buffer[n]
+
+        do
+            local yy = y[2] + 5
+            local x, flow, level = left, 'right', 8
+            _header{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'BUFFER '..buf,
+            } 
+            yy = yy + 8
+
+            _length{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = sc.punch_in[buf].recorded and (
+                    'length: '..format_time(reg.play:get_length(n, 'seconds'))
+                ) or 'empty'
+            } 
+            yy = yy + 8
+            local free_space = format_time(reg.blank[buf]:get_length('seconds'))
+            _free_space{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'free space: '..free_space
+            } 
+            yy = yy + 8
+            _max_free_space{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'max free space: '..(
+                    sc.buffer_is_expandable(buf) and format_time(sc.buf_time) or free_space
+                )
+            } 
+        end
+
+        _export.key{
+            n = 2, 
+            input = function(z) if z==0 then
+                view.modal = 'none'
+
+                clock.cancel(screen_clock)
+                textentry.enter(textentry_callback, nil, 'file name')
+            end end
+        }
+        _export.screen{
+            x = left, y = e[2].y,
+            text = 'export',
+        } 
+        _import.key{
+            n = 3, 
+            input = function(z) if z==0 then
+                view.modal = 'none'
+
+                clock.cancel(screen_clock)
+                fileselect.enter(fileselect_dir, fileselect_callback)
+            end end
+        }
+        _import.screen{
+            x = right, y = e[3].y,
+            text = 'import',
+            flow = 'left'
+        } 
+    end
+end
+
 local function App()
     local _alt = Key.momentary()
 
@@ -455,19 +547,7 @@ local function App()
     local _old = Components.screen.meter()
     local _spread = Components.screen.dial()
 
-    local _modal = {
-        buffer = {
-            question = Screen.text(),
-            no = {
-                key = Key.trigger(),
-                screen = Screen.text(),
-            },
-            yes = {
-                key = Key.trigger(),
-                screen = Screen.text(),
-            },
-        },
-    }
+    local _modal = { buffer = Modal.buffer() }
 
     return function()
         _alt{
@@ -713,41 +793,8 @@ local function App()
 
             _voices[view.track]{ tab = view.page }
 
-        elseif view.modal == 'buffer' then
-            --TODO: this should be its own component (Modal.buffer)
-
-            local left, right = x[1] + 1, x[3] - 1
-
-            _modal.buffer.question{
-                x = 128/2, y = 64/2,
-                text = 'load buffer '..view.modal_index..'?',
-                flow = 'center', level = 8,
-            } 
-
-            _modal.buffer.no.key{
-                n = 2, 
-                input = function(z) if z==1 then
-                    view.modal = 'none'
-                end end
-            }
-            _modal.buffer.no.screen{
-                x = left, y = e[2].y,
-                text = 'no',
-            } 
-            _modal.buffer.yes.key{
-                n = 3, 
-                input = function(z) if z==1 then
-                    view.modal = 'none'
-
-                    clock.cancel(screen_clock)
-                    fileselect.enter(fileselect_dir, fileselect_callback)
-                end end
-            }
-            _modal.buffer.yes.screen{
-                x = right, y = e[3].y,
-                text = 'yes',
-                flow = 'left'
-            } 
+        elseif _modal[view.modal] then
+            _modal[view.modal]()
         end
     end
 end
