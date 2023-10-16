@@ -9,7 +9,7 @@
 -- 4-track tape looper, delay, 
 -- & sampler
 --
--- version 0.3.0-beta @andrew
+-- version 0.3.0 @andrew
 --
 -- required: grid 
 -- (128, 64, or midigrid)

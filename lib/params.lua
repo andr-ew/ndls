@@ -526,14 +526,19 @@ do
 
     --TODO: input routing per-voice 🧠
     local ir_op = { 'left', 'right' }
-    params:add{
-        type = 'option', id = 'input routing', options = ir_op,
-        action = function(v)
-            sc.inmx.route = ir_op[v]
-            for i = 1,voices do sc.inmx:update(i) end
-        end,
-        allow_pmap = false,
-    }
+
+    params:add_group('input routing', voices)
+    for i = 1,voices do 
+        params:add{
+            type = 'option', id = 'input_routing_'..i, name = 'track '..i,
+            options = ir_op,
+            action = function(v)
+                sc.inmx.route = ir_op[v]
+                sc.inmx:update(i)
+            end,
+            allow_pmap = false,
+        }
+    end
 
     params:add{
         id = 'alias',
