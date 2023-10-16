@@ -116,14 +116,7 @@ set the record _and playback_ direction and power-of-two rate multiple (AKA octa
 
 select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer, for multi-octave polyphonic looping & decoupled record & play head delay systems. lots of possibilities!
 
-#### sample loading
-
-to load a sample file into a buffer, hold one of the four buffer keys on any track and press K3 when the modal pops up. this will enter the fileselect screen on norns & you can select a file with the keys & encoders.
-
-users with accesibility needs: visual feedback neccesary for file browsing. you can alernatively load a sample by running a line of code like this in the [REPL](https://monome.org/docs/norns/maiden/#repl)
-```
-sc.loadsample(buffer_number, '/home/we/dust/audio/path/to/file.wav')
-```
+hold a buffer key in any track to access the [buffer](#buffers) screen
 
 ### preset
 
@@ -331,3 +324,7 @@ a few more params can be accessed exclusively in the params menu
 clock-sync forthcoming
 
 **----------------------------------------------------------------------------------------**
+
+## buffers
+
+on the grid, hold a buffer key in any track to access the **buffer screen** for that buffer. 
