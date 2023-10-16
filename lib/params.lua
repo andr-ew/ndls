@@ -548,7 +548,7 @@ do
 
     params:add{
         type = 'control', id = 'rec transition',
-        controlspec = cs.def{ default = 1, min = 0, max = 5, units = 's' },
+        controlspec = cs.def{ default = 0.01, min = 0, max = 5, units = 's' },
         allow_pmap = false,
         action = function(v)
             for i = 1, voices do
