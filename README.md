@@ -327,7 +327,7 @@ clock-sync forthcoming
 
 ## buffers
 
-on the grid, hold a buffer key in any track to access the **buffer screen** for that buffer. the buffer screen displays some useful information about the buffer, and allows you to **export** and **import** audio with K2 & K3.
+on the grid, hold a buffer key in any track to access the **buffer screen**. this displays some useful information about the held buffer, and allows you to **export** and **import** audio with K2 & K3.
 
 ### length
 
