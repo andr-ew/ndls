@@ -33,15 +33,28 @@ local k = {
     { x = x[2.5], y = y[1] }
 }
 
-local function Mparam()
-    local remainder_mparam = 0.0
-    local remainer_scope = 0.0
+local function secs_to_mins_secs(secs) 
+    local mins, secs_div_60 = math.modf(secs/60)
+    return string.format('%d:%.2d', mins, util.round(secs_div_60 * 60))
+end
+local function format_time(secs)
+    return (secs > 60) and secs_to_mins_secs(secs) or util.round(secs, 0.01)
+end
 
+local function Mparam()
     local nicknames = {
         global = 'glob',
         track = 'trk',
         preset = 'prst'
     }
+
+    local _scope = Enc.integer()
+    local _option = Enc.integer()
+    local _control = Enc.control()
+
+    local _list_global = Screen.list()
+    local _list_track = Components.screen.list_highlight()
+    local _list_preset = Components.screen.list_underline()
 
     return function(props)
         local options = mparams:get_options(props.id)
@@ -49,7 +62,7 @@ local function Mparam()
         if alt then
             local scope_id = mparams.lookup[props.id].scope_id
 
-            _enc.integer{
+            _scope{
                 n = props.n, 
                 max = #params:lookup_param(scope_id).options,
                 state = {
@@ -59,14 +72,14 @@ local function Mparam()
                 state_remainder = { remainder_scope, function(v) remainder_scope = v end }
             }
         elseif options then
-            _enc.integer{
+            _option{
                 n = props.n, 
                 max = #options,
                 state = of_mparam(props.voice, props.id),
                 state_remainder = { remainder_mparam, function(v) remainder_mparam = v end }
             }
         else
-            _enc.control{
+            _control{
                 n = props.n, 
                 state = of_mparam(props.voice, props.id),
                 controlspec = mparams:get_controlspec(props.id),
@@ -75,9 +88,9 @@ local function Mparam()
 
         local scope = mparams:get_scope(props.id); --wild -- the semicolin is needed here !
         (
-            scope=='global' and _screen.list 
-            or scope=='track' and _routines.screen.list_highlight
-            or scope=='preset' and _routines.screen.list_underline
+            scope=='global' and _list_global
+            or scope=='track' and _list_track
+            or scope=='preset' and _list_preset
         ){
             x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
             text = { 
@@ -98,65 +111,68 @@ local function Rand(args)
     local holdblink = false
     local downtime = nil
 
-    local rand = multipattern.wrap_set(
-        mpat, args.id..'_'..args.voice..'_x', 
-        function() 
-            mparams:randomize(args.voice, args.id) 
+    local rand_id = 'randomize '..args.id..' '..args.voice
+    local def_id = 'defaultize '..args.id..' '..args.voice
 
-            clock.run(function() 
-                blink_level = 2
-                crops.dirty.screen = true
+    params:set_action(rand_id, function() 
+        mparams:randomize(args.voice, args.id) 
 
-                clock.sleep(0.2)
+        clock.run(function() 
+            blink_level = 2
+            crops.dirty.screen = true
 
-                blink_level = 1
-                crops.dirty.screen = true
-            end)
-        end
-    )
-    local def = multipattern.wrap_set(
-        mpat, args.id..'_'..args.voice..'_d', 
-        function() 
-            holdblink = true
+            clock.sleep(0.2)
+
+            blink_level = 1
+            crops.dirty.screen = true
+        end)
+    end)
+    params:set_action(def_id, function() 
+        holdblink = true
+        blink_level = 1
+        crops.dirty.screen = true
+
+        clock.run(function() 
+            clock.sleep(0.1)
+            blink_level = 2
+            crops.dirty.screen = true
+
+            mparams:defaultize(args.voice, args.id) 
+
+            clock.sleep(0.2)
             blink_level = 1
             crops.dirty.screen = true
 
-            clock.run(function() 
-                clock.sleep(0.1)
-                blink_level = 2
-                crops.dirty.screen = true
+            clock.sleep(0.4)
+            holdblink = false
+            crops.dirty.screen = true
+        end)
+    end)
 
-                mparams:defaultize(args.voice, args.id) 
-
-                clock.sleep(0.2)
-                blink_level = 1
-                crops.dirty.screen = true
-
-                clock.sleep(0.4)
-                holdblink = false
-                crops.dirty.screen = true
-            end)
-        end
-    )
-    
     local nicknames = {
         default = 'd',
         random = 'x',
     }
 
+    local _reset_action = {
+        key = Key.integer(),
+        screen = Screen.text(),
+    }
+
+    local _action = Screen.text()
+
     return function(props)
         if alt then
             if mparams:get_scope(args.id) == 'preset' then
                 local reset_id = args.id..'_reset'
-
-                _key.integer{
+                _reset_action.key{
                     n_next = props.n, max = #params:lookup_param(reset_id).options,
                     state = {
                         params:get(reset_id),
                         params.set, params, reset_id,
                     },
                 }
-                _screen.text{
+                _reset_action.screen{
                     x = k[props.n].x, y = k[props.n].y,
                     text = nicknames[params:string(reset_id)],
                     level = 15,
@@ -165,20 +181,24 @@ local function Rand(args)
         else
             if crops.device == 'key' and crops.mode == 'input' then
                 local n, z = table.unpack(crops.args) 
+                local retrigger = true
 
                 if n == props.n then
                     if z==1 then
                         downtime = util.time()
                     elseif z==0 then
-                        if downtime and ((util.time() - downtime) > 0.5) then def()
-                        else rand() end
+                        if downtime and ((util.time() - downtime) > 0.5) then 
+                            set_param(def_id, 0, retrigger)
+                        else 
+                            set_param(rand_id, 0, retrigger)
+                        end
                         
                         downtime = nil
                     end
                 end
             end
 
-            _screen.text{
+            _action{
                 x = k[props.n].x, y = k[props.n].y,
                 text = holdblink and 'd' or 'x',
                 level = ({ 4, 15 })[blink_level],
@@ -189,6 +209,7 @@ end
 
 local function Window(args)
     local voice = args.voice
+    local i = voice
 
     local blink_level_st = 1
     local blink_level_en = 1
@@ -196,8 +217,8 @@ local function Window(args)
     local holdblink_en = false
     local downtime = nil
 
-    local rand_wind = multipattern.wrap_set(
-        mpat, 'window'..voice..'_x', function(target) 
+    for _,target in ipairs{ 'st', 'len', 'both' } do
+        params:set_action('randomize '..target..' '..i, function() 
             wparams:randomize(voice, target) 
 
             clock.run(function() 
@@ -211,10 +232,8 @@ local function Window(args)
                 blink_level_en = 1
                 crops.dirty.screen = true
             end)
-        end
-    )
-    local def_wind = multipattern.wrap_set(
-        mpat, 'window'..voice..'_d', function(target) 
+        end)
+        params:set_action('defaultize '..target..' '..i, function() 
             if target == 'both' or target == 'st' then holdblink_st = true end
             if target == 'both' or target == 'len' then holdblink_en = true end
             blink_level_st = 1
@@ -239,12 +258,13 @@ local function Window(args)
                 holdblink_en = false
                 crops.dirty.screen = true
             end)
-        end
-    )
-
+        end)
+    end
 
     local rand_wind_held = {}
     local function set_rand_wind_held(v)
+        local retrigger = true
+
         local old_st, old_en = rand_wind_held[1] or 0, rand_wind_held[2] or 0
         local new_st, new_en = v[1], v[2]
 
@@ -264,17 +284,26 @@ local function Window(args)
             downtime = util.time()
         elseif not both_last_high then
             if st_falling then 
-                if downtime and ((util.time() - downtime) > 0.5) then def_wind('st')
-                else rand_wind('st') end
+                if downtime and ((util.time() - downtime) > 0.5) then 
+                    set_param('defaultize '..'st'..' '..i, 0, retrigger)
+                else 
+                    set_param('randomize '..'st'..' '..i, 0, retrigger)
+                end
                 downtime = nil
             elseif en_falling then 
-                if downtime and ((util.time() - downtime) > 0.5) then def_wind('len')
-                else rand_wind('len') end
+                if downtime and ((util.time() - downtime) > 0.5) then 
+                    set_param('defaultize '..'len'..' '..i, 0, retrigger)
+                else 
+                    set_param('randomize '..'len'..' '..i, 0, retrigger)
+                end
                 downtime = nil
             end
         elseif both_falling then
-            if downtime and ((util.time() - downtime) > 0.5) then def_wind('both')
-            else rand_wind('both') end
+            if downtime and ((util.time() - downtime) > 0.5) then 
+                set_param('defaultize '..'both'..' '..i, 0, retrigger)
+            else 
+                set_param('randomize '..'both'..' '..i, 0, retrigger)
+            end
             
             downtime = nil
         end
@@ -282,61 +311,60 @@ local function Window(args)
         rand_wind_held = v
     end
 
+    --TODO: adjust list style based on scope
+    local _st = Components.screen.list_underline()
+    local _len = Components.screen.list_underline()
+
+    local _actions = Key.momentaries()
+    local _action = {
+        st = { screen = Screen.text() },
+        len = { screen = Screen.text() },
+    }
+
     return function(props)
         local sens = 0.01
         
         if sc.punch_in[sc.buffer[voice]].recorded then
             if crops.device == 'enc' and crops.mode == 'input' then
                 local n, d = table.unpack(crops.args)
-
-                local st = { 
-                    wparams:get('start', voice), 
-                    wparams:get_preset_setter('start', voice)
-                }
-                local en = { 
-                    wparams:get('end', voice), 
-                    wparams:get_preset_setter('end', voice)
-                }
                
                 if n == 2 then
-                    st[2](st[1] + d * sens)
-                    en[2](en[1] + d * sens)
+                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 elseif n == 3 then
-                    en[2](en[1] + d * sens)
+                    set_wparam(voice, 'length', wparams:get(voice, 'length') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 end
             end
 
-            --TODO: adjust list style based on scope
-            _routines.screen.list_underline{
+            _st{
                 x = e[2].x, y = e[2].y,
                 text = { 
-                    win = util.round(wparams:get('start', voice, 'seconds'), 0.01)
+                    st = format_time(reg.play:get_start(voice, 'seconds'))
                 },
             }
-            _routines.screen.list_underline{
+            _len{
                 x = e[3].x, y = e[3].y,
                 text = { 
-                    len = util.round(wparams:get('length', voice, 'seconds'), 0.01)
+                    len = format_time(reg.play:get_length(voice, 'seconds'))
                 },
             }
 
-            _key.momentaries{
+            _actions{
                 n = { 2, 3 },
                 state = { 
                     rand_wind_held, 
                     set_rand_wind_held,
                 }
             }
-            _screen.text{
+            _action.st.screen{
                 text =  holdblink_st and 'd' or 'x',
                 y = k[2].y, x = k[2].x,
                 level = ({ 4, 15 })[blink_level_st],
             }
-            _screen.text{
+            _action.len.screen{
                 text =  holdblink_en and 'd' or 'x',
                 y = k[3].y, x = k[3].x,
                 level = ({ 4, 15 })[blink_level_en],
@@ -389,7 +417,95 @@ local function Voice(args)
     end
 end
 
+local Modal = {}
+
+function Modal.buffer()
+    local _header = Screen.text()
+    local _length = Screen.text()
+    local _free_space = Screen.text()
+    local _max_free_space = Screen.text()
+
+    local _export = {
+        key = Key.trigger(),
+        screen = Screen.text(),
+    }
+    local _import = {
+        key = Key.trigger(),
+        screen = Screen.text(),
+    }
+
+    return function(props)
+        local left, right = x[1] + 1, x[3] - 1
+        local n = view.modal_index
+        local buf = sc.buffer[n]
+
+        do
+            local yy = y[2] + 5
+            local x, flow, level = left, 'right', 8
+            _header{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'BUFFER '..buf,
+            } 
+            yy = yy + 8
+
+            _length{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = sc.punch_in[buf].recorded and (
+                    'length: '..format_time(reg.play:get_length(n, 'seconds'))
+                ) or 'empty'
+            } 
+            yy = yy + 8
+            local free_space = format_time(reg.blank[buf]:get_length('seconds'))
+            _free_space{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'free space: '..free_space
+            } 
+            yy = yy + 8
+            _max_free_space{
+                x = x, y = yy, --y = 64/2,
+                flow = flow, level = level,
+                text = 'max free space: '..(
+                    sc.buffer_is_expandable(buf) and format_time(sc.buf_time) or free_space
+                )
+            } 
+        end
+
+        _export.key{
+            n = 2, 
+            input = function(z) if z==0 then
+                view.modal = 'none'
+
+                clock.cancel(screen_clock)
+                textentry.enter(textentry_callback, nil, 'file name')
+            end end
+        }
+        _export.screen{
+            x = left, y = e[2].y,
+            text = 'export',
+        } 
+        _import.key{
+            n = 3, 
+            input = function(z) if z==0 then
+                view.modal = 'none'
+
+                clock.cancel(screen_clock)
+                fileselect.enter(fileselect_dir, fileselect_callback)
+            end end
+        }
+        _import.screen{
+            x = right, y = e[3].y,
+            text = 'import',
+            flow = 'left'
+        } 
+    end
+end
+
 local function App()
+    local _alt = Key.momentary()
+
     local _waveform, _filtergraph
     do
         local left, right = x[1] + 1, x[3] - 1
@@ -416,8 +532,25 @@ local function App()
         _voices[i] = Voice{ n = i }
     end
 
+    local _buffer = Screen.list()
+    local _preset = Components.screen.list_underline()
+    local _page = Screen.glyph()
+    local _track = Components.screen.list_highlight()
+
+    local _send_ret = {}
+    for i = 1,tracks do _send_ret[i] = Screen.glyph() end
+
+    local _play = Screen.glyph()
+    local _loop = Screen.glyph()
+
+    local _level = Components.screen.meter()
+    local _old = Components.screen.meter()
+    local _spread = Components.screen.dial()
+
+    local _modal = { buffer = Modal.buffer() }
+
     return function()
-        _key.momentary{
+        _alt{
             n = 1,
             state = {
                 alt and 1 or 0,
@@ -440,13 +573,13 @@ local function App()
             local recorded = sc.punch_in[b].recorded
             local tab = view.page
 
-            _screen.list{
+            _buffer{
                 x = x[1], y = y[4], levels = { 2, 4 }, flow = 'right',
                 focus = params:get('buffer '..n), margin = 2,
                 text = tall and { 1, 2, 3, 4, 5, 6 } or { 1, 2, 3, 4 },
             }
             if recorded then
-                _routines.screen.list_underline{
+                _preset{
                     x = x[3], y = y[4], levels = { 2, 4 }, flow = 'left', margin = 2,
                     focus = (wide and 7 or 9) - (sc.phase[n].delta==0 and -1 or preset:get(n)) + 1, 
                     text = wide and { 
@@ -461,7 +594,7 @@ local function App()
             end
         end
 
-        _screen.glyph{
+        _page{
             x = x[3] - 1, y = e[4].y, align = 'right',
             glyph = [[
                 . # . . # . . . . @ @ . . . @ @ . . . % % % % . .
@@ -477,7 +610,7 @@ local function App()
                 ['%'] = view.page==3 and 10 or 4,
             }
         }
-        _routines.screen.list_highlight{
+        _track{
             x = x[0], y = y[2] + 5, flow = 'down', margin = 3, levels = { 4, 10 },
             text = track_names, focus = view.track, fixed_width = 4, nudge = true,
         }
@@ -485,7 +618,7 @@ local function App()
         do
             local y = y[2]
             for i = 1,tracks do
-                _screen.glyph{
+                _send_ret[i]{
                     x = 128 - 12, y = y,
                     glyph = [[
                         . # # # # . . @ . . . .
@@ -522,7 +655,7 @@ local function App()
                 }
             end
             if recorded then
-                _screen.glyph{
+                _play{
                     x = x[0] + 5 + 3, y = y[4] - 4,
                     levels = { ['.'] = 0, ['#'] = 6 },
                     glyph = play>0 and [[
@@ -541,7 +674,7 @@ local function App()
                 }
 
                 local loop = sc.loopmx[n].loop
-                _screen.glyph{
+                _loop{
                     x = 128 - 12, y = e[4].y - 5,
                     levels = { ['.'] = 0, ['#'] = 4 },
                     glyph = loop>0 and [[
@@ -582,9 +715,9 @@ local function App()
                             do
                                 local x = e[2].x
                                 local l = k[2].x - e[2].x
-                                local spec = mparams:get_controlspec('lvl')
+                                local spec = params:lookup_param('gain 1').controlspec
 
-                                _routines.screen.meter{
+                                _level{
                                     x = x, y = y, length = l, width = 3,
                                     levels = i==view.track and { 0, 12 } or { 0, 4 },
                                     outline = true,
@@ -598,7 +731,7 @@ local function App()
                                 local l = e[3].x - k[2].x - 3
                                 local spec = mparams:get_controlspec('old')
 
-                                _routines.screen.meter{
+                                _old{
                                     x = x, y = y, length = l, width = 1,
                                     levels = i==view.track and levels_focus or levels,
                                     amount = util.linlin(
@@ -610,7 +743,7 @@ local function App()
                                 local l = k[3].x - e[3].x
                                 local x = x[3] - l
 
-                                _routines.screen.dial{
+                                _spread{
                                     x = x, y = y, length = l, width = 1,
                                     levels = i==view.track and levels_focus or levels,
                                     amount = util.linlin(
@@ -626,8 +759,8 @@ local function App()
                 elseif tab == 2 then
                     _waveform{
                         reg = reg.rec[b], samples = sc.samples[b],
-                        --st = get_start(n), en = get_end(n), 
-                        st = wparams:get('start', n), en = wparams:get('end', n),
+                        st = reg.play:get_start(n, 'fraction'), 
+                        en = reg.play:get_end(n, 'fraction'),
                         phase = sc.phase[n].rel,
                         recording = recording,
                         recorded = recorded,
@@ -638,55 +771,30 @@ local function App()
                         end
                     }
                 elseif tab == 3 then
+                    local cut_spec = mparams:get_controlspec('cut')
+                    local q_spec = mparams:get_controlspec('q')
+
                     _filtergraph{
                         filter_type = ({ 
                             'lowpass', 'bandpass', 'highpass', 'bypass' 
                         })[
                             mparams:get(n, 'type')
                         ],
-                        freq = util.linexp(0, 1, 20, 20000, mparams:get(n, 'cut')),
+                        freq = util.linexp(
+                            cut_spec.minval, cut_spec.maxval, 
+                            20, 20000, 
+                            mparams:get(n, 'cut')
+                        ),
                         -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
-                        resonance = mparams:get(n, 'q'),
+                        resonance = q_spec:unmap(mparams:get(n, 'q')),
                     }
                 end
             end
 
             _voices[view.track]{ tab = view.page }
 
-        elseif view.modal == 'buffer' then
-            local left, right = x[1] + 1, x[3] - 1
-
-            _screen.text{
-                x = 128/2, y = 64/2,
-                text = 'load buffer '..view.modal_index..'?',
-                flow = 'center', level = 8,
-            } 
-
-            _key.trigger{
-                n = 2, 
-                input = function(z) if z==1 then
-                    view.modal = 'none'
-                end end
-            }
-            _screen.text{
-                x = left, y = e[2].y,
-                text = 'no',
-            } 
-
-            _key.trigger{
-                n = 3, 
-                input = function(z) if z==1 then
-                    view.modal = 'none'
-
-                    clock.cancel(screen_clock)
-                    fileselect.enter(fileselect_dir, fileselect_callback)
-                end end
-            }
-            _screen.text{
-                x = right, y = e[3].y,
-                text = 'yes',
-                flow = 'left'
-            } 
+        elseif _modal[view.modal] then
+            _modal[view.modal]()
         end
     end
 end

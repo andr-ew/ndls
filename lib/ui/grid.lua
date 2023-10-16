@@ -9,13 +9,19 @@ local function Preset(args)
     local lo = varibright and 0 or 15
     local top, bottom = n, n + voices
 
-    local set_preset = multipattern.wrap_set(mpat, 'preset '..n, 
-        function(b, v)
-            local id = 'preset '..n..' buffer '..b
-            params:set(id, v, true) 
-            params:lookup_param(id):bang()
-        end
-    )
+    local set_preset = function(b, v)
+        local id = 'preset '..n..' buffer '..b
+
+        local retrigger = true
+        set_param(id, v, retrigger)
+    end
+
+    local _fills = Grid.fills()
+    local _fill1 = Grid.fill()
+    local _fill2 = Grid.fill()
+    local _fill3 = Grid.fill()
+
+    local _preset = Grid.integer()
 
     return function()
         local b = sc.buffer[n]
@@ -23,15 +29,15 @@ local function Preset(args)
         local sl = preset[n][b]
         
         if wide then
-            _grid.fill{ x = wide and (tall and 9 or 7) or 5, y = bottom, level = 8 }
-            _grid.fill{ x = wide and ((tall and 9 or 7) + 3) or (5 + 2), y = bottom, level = 4 }
-            _grid.fill{ x = wide and ((tall and 9 or 7) + 3 + 3) or -1, y = bottom, level = 4 }
+            _fill1{ x = wide and (tall and 9 or 7) or 5, y = bottom, level = 8 }
+            _fill2{ x = wide and ((tall and 9 or 7) + 3) or (5 + 2), y = bottom, level = 4 }
+            _fill3{ x = wide and ((tall and 9 or 7) + 3 + 3) or -1, y = bottom, level = 4 }
             
             if recd then 
-                _grid.integer{
+                _preset{
                     x = (tall and 9 or 7),
                     y = bottom,
-                    size = wide and 7 or 4,
+                    size = 7,
                     levels = { lo, sc.phase[n].delta==0 and lo or hi },
                     state = { sl, set_preset, b }
                 }
@@ -40,12 +46,12 @@ local function Preset(args)
             local x, y, wrap, size = 3, 1, 3, 9
 
             if varibright then 
-                _grid.fills{ x = x, y = y, wrap = wrap, size = size, level = 4 } 
-                _grid.fill{ x = x, y = y, lvl = 6 }
+                _fills{ x = x, y = y, wrap = wrap, size = size, level = 4 } 
+                _fill1{ x = x, y = y, lvl = 6 }
             end
             
             if recd then 
-                _grid.integer{
+                _preset{
                     x = x, y = y, wrap = wrap, size = size,
                     levels = { lo, sc.phase[n].delta==0 and lo or hi },
                     state = { sl, set_preset, b }
@@ -59,8 +65,10 @@ local function Buffer(args)
     local clk
     local downstate
 
-    return function(props)
-        if props.wide then
+    if args.wide then
+        local _buf = Grid.integer()
+
+        return function(props)
             local input = function(n, z)
                 if z == 1 then
                     if clk then clock.cancel(clk) end
@@ -69,7 +77,9 @@ local function Buffer(args)
 
                         local b = n
                         view.modal = 'buffer'
-                        view.modal_index = b
+                        view.modal_index = props.voice
+                        crops.dirty.screen = true
+                        crops.dirty.grid = true
                     end)
                 else
                     clock.cancel(clk)
@@ -77,12 +87,20 @@ local function Buffer(args)
                 end
             end
 
-            _grid.integer{
+            _buf{
                 x = props.x, y = props.y, size = props.size,
+                levels = { 
+                    0, 
+                    (view.modal == 'buffer' and view.modal_index == props.voice) and 4 or 15 
+                },
                 state = props.state,
                 input = input,
             }
-        else
+        end
+    else
+        local _buf = Components.grid.integerbinary()
+
+        return function(props)
             local input = function(n, z)
                 if z == 1 then
                     if clk then clock.cancel(clk) end
@@ -91,7 +109,9 @@ local function Buffer(args)
 
                         local b = props.state[1]
                         view.modal = 'buffer'
-                        view.modal_index = b
+                        view.modal_index = props.voice
+                        crops.dirty.screen = true
+                        crops.dirty.grid = true
                         downstate = b
                     end)
                 else
@@ -102,8 +122,12 @@ local function Buffer(args)
                 end
             end
 
-            _routines.grid.integerbinary{
+            _buf{
                 x = props.x, y = props.y, size = props.size, 
+                levels = { 
+                    0, 
+                    (view.modal == 'buffer' and view.modal_index == props.voice) and 4 or 15 
+                },
                 edge = 'falling',
                 state = props.state,
                 input = input,
@@ -119,31 +143,16 @@ local function Voice(args)
     local tall = args.tall
     local top, bottom = n, n + voices
 
-    local set_rec = multipattern.wrap_set(mpat, 'rec '..n, function(v)
-        params:set('rec '..n, v)
-    end)
-    local hold_rec = function() 
-        params:delta('clear '..n, 1) 
-    end
-
-    local set_play = multipattern.wrap_set(mpat, 'play '..n, function(v)
-        params:set('play '..n, v)
-    end)
-    local set_buffer = multipattern.wrap_set(mpat, 'buffer '..n, function(v)
-        params:set('buffer '..n, v)
-    end)
-    local set_send = multipattern.wrap_set(mpat, 'send '..n, function(v)
-        params:set('send '..n, v)
-    end)
-    local set_ret = multipattern.wrap_set(mpat, 'return '..n, function(v)
-        params:set('return '..n, v)
-    end)
-
+    local _rec = Grid.toggle()
+    local _play = Grid.toggle()
+    local _not_playing = Grid.fill()
+    local _buffer = Buffer{ wide = wide }
     local _phase = Components.grid.phase()
     local _rev = Components.grid.togglehold()
     local _rate = Components.grid.integerglide()
-
-    local _buffer = Buffer()
+    local _loop = Grid.toggle()
+    local _send = Grid.toggle()
+    local _ret = Grid.toggle()
 
     local _preset = Preset{ 
         voice = n, varibright = varibright, wide = wide, tall = tall,
@@ -156,17 +165,17 @@ local function Voice(args)
         local recorded = sc.punch_in[b].recorded
         local recording = sc.punch_in[b].recording
 
-        _grid.toggle{
+        _rec{
             x = 1, y = bottom,
-            state = { params:get('rec '..n), set_rec },
+            state = { params:get('rec '..n), set_param, 'rec '..n },
         }
         if recorded or recording then
-            _grid.toggle{
+            _play{
                 x = 2, y = bottom, levels = shaded,
-                state = { recorded and params:get('play '..n) or 0, set_play }
+                state = { recorded and params:get('play '..n) or 0, set_param, 'play '..n }
             }
         else
-            _grid.fill{ x = 2, y = bottom, level = shaded[1] }
+            _not_playing{ x = 2, y = bottom, level = shaded[1] }
         end
 
         if not (crops.mode == 'input' and recording) then
@@ -174,7 +183,8 @@ local function Voice(args)
                 x = wide and 3 or 6, y = wide and bottom or top, 
                 size = wide and (tall and 6 or 4) or 2,
                 wide = wide,
-                state = { params:get('buffer '..n), set_buffer }
+                voice = n,
+                state = { params:get('buffer '..n), set_param, 'buffer '..n }
             }
         end
         
@@ -193,7 +203,7 @@ local function Voice(args)
             state = of_mparam(n, 'rev'),
             hold_time = 0,
             hold_action = function(t)
-                mparams:set(
+                set_mparam(
                     n, 'rate_slew', 
                     (t < 0.2) and 0.025 or t * (1.3 + (math.random() * 0.5))
                 )
@@ -205,31 +215,31 @@ local function Voice(args)
                 x = rate_x, y = wide and top or bottom, size = rate_size,
                 state = { 
                     mparams:get(n, 'rate') + off, 
-                    function(v) mparams:set(n, 'rate', v - off) end 
+                    function(v) set_mparam(n, 'rate', v - off) end 
                 },
                 hold_action = function(t) 
-                    mparams:set(n, 'rate_slew', t * (1.3 + (math.random() * 0.5))) 
+                    set_mparam(n, 'rate_slew', t * (1.3 + (math.random() * 0.5))) 
                 end,
             }
         end
         if recorded then
-            _grid.toggle{
+            _loop{
                 x = wide and 15 or 8, y = top, levels = shaded,
                 state = of_mparam(n, 'loop'),
             }
         end
         if wide or view.track == n then
-            _grid.toggle{
+            _send{
                 x = wide and (tall and 16 or 14) or 4, 
                 y = wide and (tall and top or bottom) or 4, 
                 levels = { 2, 15 },
-                state = { params:get('send '..n), set_send }
+                state = { params:get('send '..n), set_param, 'send '..n }
             }
-            _grid.toggle{
+            _ret{
                 x = wide and (tall and 16 or 15) or 5, 
                 y = wide and bottom or 4, 
                 levels = { 2, 15 },
-                state = { params:get('return '..n), set_ret }
+                state = { params:get('return '..n), set_param, 'return '..n }
             }
         end
 
@@ -245,6 +255,13 @@ local function App(args)
     local low_shade = varibright and { 2, 8 } or { 0, 15 }
     local mid_shade = varibright and { 4, 8 } or { 0, 15 }
 
+    local small_page_focus = arc_connected or (not wide)
+
+    local _track_focus = Grid.integer()
+    local _page_focus = small_page_focus and Grid.momentary() or Grid.integer()
+
+    local _arc_focus = wide and arc_connected and Components.grid.arc_focus()
+
     local _voices = {}
     for i = 1, voices do
         _voices[i] = Voice{
@@ -255,15 +272,13 @@ local function App(args)
     -- local _patrec = PatternRecorder()
 
     local _patrecs = {}
-    for i = 1,16 do _patrecs[i] = PatternRecorder() end
-
-    local _arc_focus = wide and arc_connected and Components.grid.arc_focus()
+    for i = 1,16 do _patrecs[i] = Produce.grid.pattern_recorder() end
 
     local next_page = 0
     local prev_page = 0
 
     return function()
-        _grid.integer{
+        _track_focus{
             x = 1, y = 1, size = voices, flow = 'down',
             levels = low_shade,
             state = { 
@@ -289,20 +304,8 @@ local function App(args)
                     crops.dirty.grid = true
                 end
             }
-            -- _grid.momentary{
-            --     x = 2, y = 3, levels = mid_shade,
-            --     state = { prev_page, function(v) 
-            --         prev_page = v
-            --         crops.dirty.grid = true
-
-            --         if v>0 then
-            --             view.page = util.wrap(view.page - 1, 1, #page_names)
-            --             crops.dirty.screen = true
-            --         end
-            --     end }
-            -- }
         elseif wide then
-            _grid.integer{
+            _page_focus{
                 y = 1, 
                 x = _arc_focus and 2 or 3, 
                 flow = _arc_focus and 'down' or 'right',
@@ -320,8 +323,8 @@ local function App(args)
             }
         end
             
-        if arc_connected or (not wide) then
-            _grid.momentary{
+        if small_page_focus then
+            _page_focus{
                 x = 2, y = 1, levels = mid_shade,
                 state = { next_page, function(v) 
                     next_page = v

@@ -1,14 +1,39 @@
+local function volt_cutoff(volt)
+    return util.linexp(0, 7, 20, 20000, volt)
+end
+-- local function cutoff_volt(cut)
+--     return util.explin(20, 20000, 0, 7, cut)
+-- end
+local function volt_q(volt, inverse)
+    return util.linexp(0, 1, 0.01, 1.5, (inverse and (5 - volt) or volt) / 5)
+end
+
+local function ampdb(amp) return math.log(amp, 10) * 20.0 end
+local function dbamp(db) return 10.0^(db*0.05) end
+
+local function volt_amp(volt, db0val)
+    local minval = -math.huge
+    local maxval = 0
+    local range = dbamp(maxval) - dbamp(minval)
+
+    local scaled = volt/db0val
+    local db = ampdb(scaled * scaled * range + dbamp(minval))
+    local amp = dbamp(db)
+
+    return amp
+end
+
 -- add metaparams
 do
     mparams:add{
         id = 'lvl',
         type = 'control', 
-        controlspec = cs.new(-math.huge, 6, 'db', nil, 0, 'dB'),
-        random_min_default = -24, random_max_default = 6,
+        controlspec = cs.def{ min = 0, max = 5, default = 4, units = 'v' },
+        random_min_default = 0, random_max_default = 5,
         default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            sc.lvlmx[i].lvl = util.dbamp(v); sc.lvlmx:update(i)
+            sc.lvlmx[i].lvl = volt_amp(v, 4); sc.lvlmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
@@ -16,47 +41,47 @@ do
         id = 'spr',
         type = 'control', 
         controlspec = cs.def{ 
-            min = -4, max = 4, default = 0.0, quantum = 1/100/4,
+            min = -5, max = 5, default = 0.0, quantum = 1/100/5, units = 'v',
         },
         default_scope = 'global',
         default_reset_preset_action = 'random',
-        random_min_default = -2, random_max_default = 2,
+        random_min_default = -5/2, random_max_default = 5/2,
         action = function(i, v)
-            sc.sprmx[i].spr = v; sc.sprmx:update(i)
+            sc.sprmx[i].spr = (v/5)*4; sc.sprmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
         id = 'old',
         type = 'control', 
-        controlspec = cs.def{ default = 0.8, max = 1 },
-        random_min_default = 0.5, random_max_default = 1,
+        controlspec = cs.def{ min = 0, max = 5, default = 4, units = 'v' },
+        random_min_default = 5/2, random_max_default = 5,
         default_scope = 'global',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            sc.oldmx[i].old = v; sc.oldmx:update(i)
+            sc.oldmx[i].old = volt_amp(v, 5); sc.oldmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
         id = 'cut', type = 'control', 
-        controlspec = cs.def{ min = 0, max = 1, default = 1, quantum = 1/100/2, step = 0 },
-        random_min_default = 0.5, random_max_default = 1,
+        controlspec = cs.def{ min = 0, max = 7, default = 7, units = 'v' },
+        random_min_default = 7/2, random_max_default = 7,
         default_scope = 'track',
         default_reset_preset_action = 'random',
         action = function(i, v)
-            softcut.post_filter_fc(i, util.linexp(0, 1, 20, 20000, v))
+            softcut.post_filter_fc(i, util.linexp(0, 1, 20, 22000, v/7))
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
     mparams:add{
         id = 'q', type = 'control', 
-        controlspec = cs.def{ min = 0, max = 1, default = 0.4 },
-        random_min_default = -0.3, random_max_default = 0.3,
+        controlspec = cs.def{ min = 0, max = 5, default = 0, units = 'v' },
+        random_min_default = 0, random_max_default = 4,
         default_scope = 'global',
         default_reset_preset_action = 'default',
         action = function(i, v)
-            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, 1 - v))
+            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, (5 - v)/5))
             crops.dirty.screen = true; crops.dirty.arc = true
         end
     }
@@ -86,7 +111,10 @@ do
     }
     mparams:add{
         id = 'bnd', name = 'rate',
-        type = 'control', controlspec = cs.def{ min = -1, max = 1, default = 0 },
+        type = 'control', controlspec = cs.def{ 
+            min = -10, max = 10, default = 0,
+            quantum = 1/100/10,
+        },
         random_min_default = -1, random_max_default = 1,
         default_scope = 'track',
         default_reset_preset_action = 'default',
@@ -136,14 +164,36 @@ do
     
     params:add_separator('metaparams')
 
+    local function add_param(args)
+        -- local old_action = args.action
+
+        --TODO: round value depending on args.type
+        -- local new_action = function()
+        --     old_action(params:get(args.id) + patcher.get(id))
+        -- end
+        -- patcher.add_destination(args.id, new_action)
+
+        -- args.action = function(v)
+        --     new_action()
+        -- end
+        
+        params:add(args)
+    end    
+
     params:add_group('global', mparams:global_params_count())
-    mparams:add_global_params()
+    do
+        local args = mparams:global_param_args()
+        for _,a in ipairs(args) do add_param(a) end
+    end
 
     params:add_group('track', (mparams:track_params_count() + 1) * tracks)
     for t = 1,tracks do
         params:add_separator('metaparams_track_track_'..t, 'track '..t)
+
         --TODO: wparams add track params
-        mparams:add_track_params(t)
+        
+        local args = mparams:track_param_args(t)
+        for _,a in ipairs(args) do add_param(a) end
     end
     params:add_group(
         'preset',
@@ -154,8 +204,14 @@ do
         for b = 1,buffers do
             for p = 1, presets do
                 params:add_separator('track '..t..', buffer '..b..', preset '..p)
-                wparams:add_preset_params(t, b, p)
-                mparams:add_preset_params(t, b, p)
+                do
+                    local args = wparams:preset_param_args(t, b, p)
+                    for _,a in ipairs(args) do add_param(a) end
+                end
+                do
+                    local args = mparams:preset_param_args(t, b, p)
+                    for _,a in ipairs(args) do add_param(a) end
+                end
             end
         end
     end
@@ -182,25 +238,55 @@ do
     for i = 1, voices do
         params:add_separator('params_r&p_track_'..i, 'track '..i)
 
+        local function action_post_record()
+            local n = i
+            local buf = sc.buffer[n]
+            local silent = true
+
+            local should_clamp = reg.rec[buf]:get_length('seconds') < params:get('min buffer size')
+            local frac = (
+                reg.rec[buf]:get_length('seconds') 
+                / params:get('min buffer size')
+            )
+
+            if should_clamp then
+                reg.rec[buf]:set_length(params:get('min buffer size'), 'seconds', silent)
+            end
+            
+            preset:reset(n, silent)
+
+            if should_clamp then for track = 1,tracks do
+                local p = 1
+                params:set(
+                    wparams.preset_id[track][buf][p]['length'], 
+                    frac * windowparams.range_v,
+                    silent
+                )
+            end end
+            
+            preset:bang(n, buf)
+        end
+
         params:add{
             name = 'rec', id = 'rec '..i,
             type = 'binary', behavior = 'toggle', 
             action = function(v)
                 local n = i
-                local z = sc.buffer[n]
+                local buf = sc.buffer[n]
 
                 sc.oldmx[n].rec = v; sc.oldmx:update(n)
 
-                if not sc.punch_in[z].recorded then
-                    sc.punch_in:set(z, v)
+                if not sc.punch_in[buf].recorded then
+                    sc.punch_in:set(buf, v)
 
-                    if v==0 and sc.punch_in[z].recorded then 
-                        preset:reset(n)
+                    if v==0 and sc.punch_in[buf].recorded then 
                         params:set('play '..i, 1) 
+
+                        action_post_record()
                     end
                 elseif sc.lvlmx[n].play == 0 and v == 1 then
-                    sc.punch_in:clear(z)
-                    sc.punch_in:set(z, 1)
+                    sc.punch_in:clear(buf)
+                    sc.punch_in:set(buf, 1)
                 end
 
 
@@ -209,15 +295,16 @@ do
             end
         }
         params:add {
-            id = 'play '..i,
+            name = 'play', id = 'play '..i,
             type = 'binary', behavior = 'toggle', 
             action = function(v)
                 local n = i
 
-                local z = sc.buffer[n]
-                if v==1 and sc.punch_in[z].recording then
-                    sc.punch_in:set(z, 0)
-                    preset:reset(n)
+                local buf = sc.buffer[n]
+                if v==1 and sc.punch_in[buf].recording then
+                    sc.punch_in:set(buf, 0)
+
+                    action_post_record()
                 end
 
                 sc.lvlmx[n].play = v; sc.lvlmx:update(n)
@@ -283,10 +370,10 @@ do
             action = function(v) 
                 sc.sendmx[i].send = v; sc.sendmx:update() 
 
-                if v > 0 and params:get('return '..i) > 0 then
-                    sc.sendmx[i].ret = 0; sc.sendmx:update() 
-                    params:set('return '..i, 0, true)
-                end
+                -- if v > 0 and params:get('return '..i) > 0 then
+                --     sc.sendmx[i].ret = 0; sc.sendmx:update() 
+                --     params:set('return '..i, 0, true)
+                -- end
                 crops.dirty.grid = true
             end
         }
@@ -296,10 +383,10 @@ do
             action = function(v) 
                 sc.sendmx[i].ret = v; sc.sendmx:update()
 
-                if v > 0 and params:get('send '..i) > 0 then
-                    sc.sendmx[i].send = 0; sc.sendmx:update() 
-                    params:set('send '..i, 0, true)
-                end
+                -- if v > 0 and params:get('send '..i) > 0 then
+                --     sc.sendmx[i].send = 0; sc.sendmx:update() 
+                --     params:set('send '..i, 0, true)
+                -- end
                 crops.dirty.grid = true
             end
         }
@@ -353,7 +440,18 @@ do
     end
 
     do
-        params:add_group('randomization', 2 + mparams:random_range_params_count())
+        local wparam_random_range_params_count = 2
+        local wparam_random_targets = { 'st', 'len', 'both' }
+
+        params:add_group(
+            'randomization', 
+            wparam_random_range_params_count
+            + mparams:random_range_params_count() 
+            + ((
+                (#mparams.list + #wparam_random_targets) * 2 --times two for defautize + randomize
+                + 1 --also count the track separator
+            ) * voices)
+        )
 
         params:add{
             id = 'len min', name = 'len min', type = 'control', 
@@ -367,8 +465,36 @@ do
         }
 
         mparams:add_random_range_params()
-    end
 
+        
+        for i = 1, voices do
+            params:add_separator('params_randomization_track_'..i, 'track '..i)
+
+
+            for _,target in ipairs(wparam_random_targets) do
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'randomize '..target, id = 'randomize '..target..' '..i,
+                }
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'defaultize '..target, id = 'defaultize '..target..' '..i,
+                }
+            end
+            for _,m in ipairs(mparams.list) do 
+                local id = m.id
+
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'randomize '..id, id = 'randomize '..id..' '..i,
+                }
+                params:add{
+                    type = 'binary', behavior = 'trigger', 
+                    name = 'defaultize '..id, id = 'defaultize '..id..' '..i,
+                }
+            end
+        end
+    end
     do
         params:add_group(
             'initial preset values', 
@@ -400,14 +526,19 @@ do
 
     --TODO: input routing per-voice 🧠
     local ir_op = { 'left', 'right' }
-    params:add{
-        type = 'option', id = 'input routing', options = ir_op,
-        action = function(v)
-            sc.inmx.route = ir_op[v]
-            for i = 1,voices do sc.inmx:update(i) end
-        end,
-        allow_pmap = false,
-    }
+
+    params:add_group('input routing', voices)
+    for i = 1,voices do 
+        params:add{
+            type = 'option', id = 'input_routing_'..i, name = 'track '..i,
+            options = ir_op,
+            action = function(v)
+                sc.inmx.route = ir_op[v]
+                sc.inmx:update(i)
+            end,
+            allow_pmap = false,
+        }
+    end
 
     params:add{
         id = 'alias',
@@ -422,7 +553,21 @@ do
 
     params:add{
         type = 'control', id = 'rec transition',
-        controlspec = cs.def{ default = 1, min = 0, max = 5 },
+        controlspec = cs.def{ default = 0.01, min = 0, max = 5, units = 's' },
+        allow_pmap = false,
+        action = function(v)
+            for i = 1, voices do
+                softcut.recpre_slew_time(i, v)
+            end
+        end
+    }
+    
+    params:add{
+        type = 'control', id = 'min buffer size',
+        controlspec = cs.def{ 
+            default = 5, min = 0, max = 70, units = 's',
+            quantum = 1/70,
+        },
         allow_pmap = false,
         action = function(v)
             for i = 1, voices do
@@ -456,8 +601,12 @@ do
         id = 'force clear all buffers', type = 'binary', behavior = 'trigger',
         action = function()
             for i = 1, voices do
-                params:delta('clear '..i)
+                params:set('rec '..i, 0) 
             end
+            for b = 1, buffers do
+                sc.punch_in:clear(b)
+            end
+            sc.reset_slices()
         end
     }
     params:add{

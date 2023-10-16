@@ -79,25 +79,18 @@ function metaparam:new(args)
     --TODO: slew time data
     
     m.track_id = {}
-    m.track_setter = {}
     for t = 1,tracks do
         local id = (
             args.id
             ..'_track_'..t
         )
         m.track_id[t] = id
-        m.track_setter[t] = multipattern.wrap_set(
-            mpat, id, function(v) params:set(id, v) end
-        )
     end
     m.preset_id = {}
-    m.preset_setter = {}
     for t = 1,tracks do
         m.preset_id[t] = {}
-        m.preset_setter[t] = {}
         for b = 1,buffers do
             m.preset_id[t][b] = {}
-            m.preset_setter[t][b] = {}
             for p = 1, presets do
                 local id = (
                     args.id
@@ -106,10 +99,6 @@ function metaparam:new(args)
                     ..'_pre'..p
                 )
                 m.preset_id[t][b][p] = id
-                m.preset_setter[t][b][p] = multipattern.wrap_set(
-                    mpat, id, 
-                    function(v) params:set(id, v) end
-                )
             end
         end
     end
@@ -178,25 +167,35 @@ function metaparam:reset_presets(t, b)
         self.reset_func(self, p_id, t, b, p)
     end
 end
-            
-function metaparam:get_setter(track)
+
+function metaparam:get_id(track)
     local scope = self:get_scope()
-    local b = sc.buffer[track]
-    local p = preset:get(track)
 
     if scope == 'preset' then
-        --if ignore_pattern then return function(v) params:set(self.preset_id[track][b][p], v) end
-        return self.preset_setter[track][b][p] 
+        local b = sc.buffer[track]
+        local p = preset:get(track)
+
+        return self.preset_id[track][b][p]
     elseif scope == 'track' then
-        --if ignore_pattern then return function(v) params:set(self.base_id[track][b], v) end
-        return self.track_setter[track]
+        return self.track_id[track]
     elseif scope == 'global' then
-        return function(v) params:set(self.global_id, v) end
+        return self.global_id
     end
 end
-
+            
 function metaparam:set(track, v)
-    self:get_setter(track)(v)
+    local scope = self:get_scope()
+
+    if scope == 'preset' then
+        local b = sc.buffer[track]
+        local p = preset:get(track)
+
+        params:set(self.preset_id[track][b][p], v)
+    elseif scope == 'track' then
+        params:set(self.track_id[track], v)
+    elseif scope == 'global' then
+        params:set(self.global_id, v)
+    end
 end
 
 function metaparam:get(track, raw)
@@ -234,7 +233,7 @@ function metaparam:bang(track)
     self.args.action(track, self:get(track))
 end
 
-function metaparam:add_global_param()
+function metaparam:global_param_args()
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
 
@@ -246,19 +245,25 @@ function metaparam:add_global_param()
         end
     end
     
-    params:add(args)
+    return args
 end
-function metaparam:add_track_param(t)
+function metaparam:add_global_param()
+    params:add(self:global_param_args())
+end
+function metaparam:track_param_args(t)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
 
     args.id = self.track_id[t]
     args.name = self.args.name or self.args.id
     args.action = function() self:bang(t) end
-    
-    params:add(args)
+
+    return args
 end
-function metaparam:add_preset_param(t, b, p)
+function metaparam:add_track_param(t)
+    params:add(self:track_param_args(t))
+end
+function metaparam:preset_param_args(t, b, p)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
 
@@ -267,7 +272,10 @@ function metaparam:add_preset_param(t, b, p)
     args.name = self.args.name or self.args.id
     args.action = function() self:bang(t) end
 
-    params:add(args)
+    return args
+end
+function metaparam:add_preset_param(t, b, p)
+    params:add(self:preset_param_args(t, b, p))
 end
 
 local function set_visibility(id, v)
@@ -402,8 +410,8 @@ function metaparams:defaultize(track, id, buffer, preset, silent)
     return self.lookup[id]:defaultize(track, buffer, preset, silent)
 end
 
-function metaparams:get_setter(track, id)
-    return self.lookup[id]:get_setter(track)
+function metaparams:get_id(track, id)
+    return self.lookup[id]:get_id(track)
 end
 function metaparams:set(track, id, v)
     return self.lookup[id]:set(track, v)
@@ -433,18 +441,39 @@ function metaparams:get_raw(track, id)
 end
 
 function metaparams:global_params_count() return #self.list end
+function metaparams:global_param_args()
+    local args = {}
+    for _,m in ipairs(self.list) do 
+        table.insert(args, m:global_param_args())
+    end
+    return args
+end
 function metaparams:add_global_params()
     for _,m in ipairs(self.list) do 
         m:add_global_param() 
     end
 end
 function metaparams:track_params_count() return #self.list end
+function metaparams:track_param_args(t)
+    local args = {}
+    for _,m in ipairs(self.list) do 
+        table.insert(args, m:track_param_args(t))
+    end
+    return args
+end
 function metaparams:add_track_params(t)
     for _,m in ipairs(self.list) do
         m:add_track_param(t)
     end
 end
 function metaparams:preset_params_count() return #self.list end
+function metaparams:preset_param_args(t, b, p)
+    local args = {}
+    for _,m in ipairs(self.list) do 
+        table.insert(args, m:preset_param_args(t, b, p))
+    end
+    return args
+end
 function metaparams:add_preset_params(t, b, p)
     for _,m in ipairs(self.list) do
         m:add_preset_param(t, b, p)

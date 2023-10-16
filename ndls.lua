@@ -1,14 +1,15 @@
 -- ndls
 --
--- -- - -- --- -  ---- -- - ---  -- - - ---
--- -- - --- - --- - -- - --- - - - - - ---
---  --- --- -- - ---- -- - - -- - --- -----
--- -   --- - -- -- -- - -   -- - -- --- --
+-- . . . . @ @ . . . @ @ . . . . 
+-- . . . @ . . @ . @ . . @ . . . 
+-- . . . @ . . @ . @ . . @ . . . 
+-- . . . . @ @ . . . @ @ . . . . 
+-- . . . . . . @ @ @  . . . . . . 
 --
 -- 4-track tape looper, delay, 
 -- & sampler
 --
--- version 0.2.0-beta @andrew
+-- version 0.3.0 @andrew
 --
 -- required: grid 
 -- (128, 64, or midigrid)
@@ -41,21 +42,24 @@ varibright = true
 
 cs = require 'controlspec'
 filtergraph = require 'filtergraph'
+fileselect = require 'fileselect'
+textentry = require 'textentry'
 
 --git submodule libs
 
 include 'lib/crops/core'                                 --crops, a UI component framework
-_grid = include 'lib/crops/routines/grid'
-_arc = include 'lib/crops/routines/arc'
-_enc = include 'lib/crops/routines/enc'
-_key = include 'lib/crops/routines/key'
-_screen = include 'lib/crops/routines/screen'
-PatternRecorder = include 'lib/crops/components/grid/pattern_recorder'
+Grid = include 'lib/crops/components/grid'
+Arc = include 'lib/crops/components/arc'
+Enc = include 'lib/crops/components/enc'
+Key = include 'lib/crops/components/key'
+Screen = include 'lib/crops/components/screen'
 
-pattern_time = include 'lib/pattern_time/pattern_time'
-multipattern = include 'lib/nest/util/pattern-tools/multipattern' --TODO: update to new version
+pattern_time = include 'lib/pattern_time_extended/pattern_time_extended'
 
-cartographer, Slice = include 'lib/cartographer/cartographer'
+Produce = {}
+Produce.grid = include 'lib/produce/grid'                --some extra UI components
+
+cartographer = include 'lib/cartographer/cartographer'   --a buffer management library
 
 --script files
 
@@ -64,7 +68,7 @@ windowparams = include 'ndls/lib/windowparams'           --abstraction around pa
 include 'ndls/lib/globals'                               --global variables
 sc, reg = include 'ndls/lib/softcut'                     --softcut utilities
 include 'ndls/lib/params'                                --create (meta)params
-Components, _routines = include 'ndls/lib/ui/components' --UI components
+Components = include 'ndls/lib/ui/components'            --ndls's custom UI components
 App = {}
 App.grid = include 'ndls/lib/ui/grid'                    --grid UI
 App.arc = include 'ndls/lib/ui/arc'                      --arc UI

@@ -35,30 +35,62 @@ arc_view = tall and {
 --     end
 -- end
 
-pattern, mpat = {}, {}
+local function process_param(arg) 
+    local id, v, retrigger = table.unpack(arg)
+    if retrigger then
+        local silent = true
+        params:set(id, v, silent) 
+        params:lookup_param(id):bang()
+    else
+        params:set(id, v) 
+    end
+end
+
+pattern = {}
 for i = 1,16 do
     pattern[i] = pattern_time.new() 
-    mpat[i] = multipattern.new(pattern[i])
+    pattern[i].process = process_param 
+end
+
+set_param = function(id, v, retrigger)
+    local t = { id, v, retrigger }
+    process_param(t)
+    for i,pat in ipairs(pattern) do pat:watch(t) end
 end
 
 wparams = windowparams:new()
 mparams = metaparams:new()
 
-view_options = {}
+set_wparam = function(track, id, v)
+    local p_id = wparams:get_id(track, id)
+    set_param(p_id, v)
+end
+set_mparam = function(track, id, v) 
+    local p_id = mparams:get_id(track, id)
+    set_param(p_id, v)
+end
 
+function of_wparam(track, id, units, abs)
+    return { 
+        wparams:get(track, id, units, abs),
+        set_wparam, track, id,
+    }
+end
 function of_mparam(track, id)
     return { 
         mparams:get(track, id),
-        mparams:get_setter(track, id)
+        set_mparam, track, id,
     }
 end
 
+view_options = {}
+
 preset = { --[voice][buffer] = preset
     --TODO: depricate
-    set = function(s, n, b, v)
+    set = function(s, n, b, v, silent)
         local id = 'preset '..n..' buffer '..b
         params:set(id, v, true) 
-        params:lookup_param(id):bang()
+        if not silent then params:lookup_param(id):bang() end
     end,
     update = function(s, n, b)
         if b == sc.buffer[n] then
@@ -67,7 +99,7 @@ preset = { --[voice][buffer] = preset
             sc.trigger(n)
         end
     end,
-    reset = function(s, n)
+    reset = function(s, n, silent)
         local b = sc.buffer[n]
 
         for i = 1, voices do
@@ -75,7 +107,11 @@ preset = { --[voice][buffer] = preset
             wparams:reset_presets(i, b)
         end
 
-        s:set(n, b, 1)
+        s:set(n, b, 1, silent)
+    end,
+    bang = function(s, n, b)
+        local id = 'preset '..n..' buffer '..b
+        params:lookup_param(id):bang()
     end,
     get = function(s, n)
         local b = sc.buffer[n]
@@ -183,18 +219,26 @@ freeze_patrol = {
 --     end
 -- end)
 
-fileselect = require('fileselect')
-
 fileselect_dir = _path.audio
 
 function fileselect_callback(path)
-    sc.loadsample(view.modal_index, path)
+    local n = view.modal_index
+    local b = sc.buffer[n]
+
+    sc.loadsample(b, path)
     screen_clock = crops.connect_screen(_app.norns, fps.screen)
     for i = 1,tracks do
-        if params:get('buffer '..i) == view.modal_index then
+        if params:get('buffer '..i) == b then
             preset:reset(i)
             params:set('play '..i, 1)
             break
         end
     end
+end
+
+function textentry_callback(name)
+    local n = view.modal_index
+
+    sc.exportsample(n, name)
+    screen_clock = crops.connect_screen(_app.norns, fps.screen)
 end

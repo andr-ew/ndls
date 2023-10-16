@@ -1,11 +1,14 @@
 local Destinations = {}
 
 function Destinations.gain(n, x)
+    local _gain = Arc.control()
+    local _fill = Arc.control()
+
     return function(props) 
         local id = 'gain '..n
         local xx = { 42 - 4, 42 + 16 + 3 }
 
-        _arc.control{
+        _gain{
             n = tonumber(arc_vertical and n or x),
             sensitivity = 0.5, 
             controlspec = params:lookup_param(id).controlspec,
@@ -15,7 +18,7 @@ function Destinations.gain(n, x)
             x = xx,
         }
         if crops.mode == 'redraw' then
-            _arc.control{
+            _fill{
                 n = tonumber(arc_vertical and n or x),
                 controlspec = params:lookup_param(id).controlspec,
                 state = { 0 },
@@ -29,10 +32,11 @@ end
 
 function Destinations.cut(n, x)
     local _filt = Components.arc.filter()
+    local _cutoff = Arc.control()
 
     return function(props) 
         if crops.mode == 'input' then
-            _arc.control{
+            _cutoff{
                 n = tonumber(arc_vertical and n or x),
                 x = { 42, 24+64 }, sensitivity = 0.25, 
                 state = of_mparam(n, 'cut'),
@@ -44,6 +48,7 @@ function Destinations.cut(n, x)
             x = { 42, 24+64 },
             type = mparams:get(n, 'type'),
             cut = mparams:get(n, 'cut'),
+            controlspec = mparams:get_controlspec('cut'),
         }
     end
 end
@@ -60,18 +65,19 @@ function Destinations.st(n, x)
             levels = { 4, 15 },
             phase = sc.phase[n].rel,
             show_phase = sc.lvlmx[n].play == 1,
-            sensitivity = 1/1000,
+            sensitivity = 1/1000 * wparams.range,
             st = {
-                wparams:get('start', n), 
-                wparams:get_preset_setter('start', n)
+                wparams:get(n, 'start'), 
+                function(v) set_wparam(n, 'start', v) end
             },
-            en = { 
-                wparams:get('end', n), 
-                wparams:get_preset_setter('end', n)
+            len = { 
+                wparams:get(n, 'length'), 
+                function(v) set_wparam(n, 'length', v) end
             },
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,
-            reg = reg.rec[b],
+            reg = reg,
+            voice = n,
             rotated = props.rotated,
         }
     end
@@ -89,21 +95,22 @@ function Destinations.len(n, x)
             phase = sc.phase[n].rel,
             show_phase = sc.lvlmx[n].play == 1,
             nudge = alt,
-            sensitivity = 1/1000,
+            sensitivity = 1/1000 * wparams.range,
             level_st = alt and 15 or 4,
             level_en = alt and 4 or 15,
             level_ph = 4,
             st = {
-                wparams:get('start', n), 
-                wparams:get_preset_setter('start', n)
+                wparams:get(n, 'start'), 
+                function(v) set_wparam(n, 'start', v) end
             },
-            en = {
-                wparams:get('end', n), 
-                wparams:get_preset_setter('end', n)
+            len = { 
+                wparams:get(n, 'length'), 
+                function(v) set_wparam(n, 'length', v) end
             },
             recording = sc.punch_in[b].recording,
             recorded = sc.punch_in[b].recorded,
-            reg = reg.rec[b],
+            reg = reg,
+            voice = n,
             rotated = props.rotated,
         }
     end
