@@ -116,7 +116,7 @@ set the record _and playback_ direction and power-of-two rate multiple (AKA octa
 
 select which audio buffer (1-4) to record & play back from. multiple tracks can share the same buffer, for multi-octave polyphonic looping & decoupled record & play head delay systems. lots of possibilities!
 
-hold a buffer key in any track to access the [buffer](#buffers) screen, and to export/impor samples
+hold a buffer key in any track to access the [buffer](#buffers) screen, and to export/import samples
 
 ### preset
 
