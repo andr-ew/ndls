@@ -46,8 +46,8 @@ function Destinations.cut(n, x)
         _filt{
             n = tonumber(arc_vertical and n or x),
             x = { 42, 24+64 },
-            type = mparams:get(n, 'type'),
-            cut = mparams:get(n, 'cut'),
+            type = get_mparam(n, 'type'),
+            cut = get_mparam(n, 'cut'),
             controlspec = mparams:get_controlspec('cut'),
         }
     end
@@ -67,11 +67,11 @@ function Destinations.st(n, x)
             show_phase = sc.lvlmx[n].play == 1,
             sensitivity = 1/1000 * wparams.range,
             st = {
-                wparams:get(n, 'start'), 
+                get_wparam(n, 'start'), 
                 function(v) set_wparam(n, 'start', v) end
             },
             len = { 
-                wparams:get(n, 'length'), 
+                get_wparam(n, 'length'), 
                 function(v) set_wparam(n, 'length', v) end
             },
             recording = sc.punch_in[b].recording,
@@ -100,11 +100,11 @@ function Destinations.len(n, x)
             level_en = alt and 4 or 15,
             level_ph = 4,
             st = {
-                wparams:get(n, 'start'), 
+                get_wparam(n, 'start'), 
                 function(v) set_wparam(n, 'start', v) end
             },
             len = { 
-                wparams:get(n, 'length'), 
+                get_wparam(n, 'length'), 
                 function(v) set_wparam(n, 'length', v) end
             },
             recording = sc.punch_in[b].recording,

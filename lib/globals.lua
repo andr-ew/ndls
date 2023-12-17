@@ -57,6 +57,13 @@ set_param = function(id, v, retrigger)
     process_param(t)
     for i,pat in ipairs(pattern) do pat:watch(t) end
 end
+get_param = function(id, is_dest)
+    return (
+        (is_dest==false or crops.mode=='input') 
+            and params:get(id) 
+            or patcher.get_destination_plus_param(id)
+   )
+end
 
 wparams = windowparams:new()
 mparams = metaparams:new()
@@ -65,20 +72,36 @@ set_wparam = function(track, id, v)
     local p_id = wparams:get_id(track, id)
     set_param(p_id, v)
 end
+get_wparam = function(track, id)
+    local p_id = wparams:get_id(track, id)
+    return (
+        (crops.mode=='input') 
+            and params:get(p_id) 
+            or patcher.get_destination_plus_param(p_id)
+    )
+end
 set_mparam = function(track, id, v) 
     local p_id = mparams:get_id(track, id)
     set_param(p_id, v)
 end
+get_mparam = function(track, id, is_dest)
+    local p_id = mparams:get_id(track, id)
+    return (
+        (is_dest==false or crops.mode=='input') 
+            and params:get(p_id) 
+            or patcher.get_destination_plus_param(p_id)
+    )
+end
 
-function of_wparam(track, id, units, abs)
+function of_wparam(track, id)
     return { 
-        wparams:get(track, id, units, abs),
+        get_wparam(track, id),
         set_wparam, track, id,
     }
 end
-function of_mparam(track, id)
+function of_mparam(track, id, is_dest)
     return { 
-        mparams:get(track, id),
+        get_mparam(track, id, is_dest),
         set_mparam, track, id,
     }
 end

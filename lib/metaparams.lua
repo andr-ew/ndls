@@ -230,7 +230,7 @@ for _, name in ipairs{ 'min', 'max', 'default' } do
 end
 
 function metaparam:bang(track)
-    self.args.action(track, self:get(track))
+    self.args.action(track, self:get_id(track))
 end
 
 function metaparam:global_param_args()

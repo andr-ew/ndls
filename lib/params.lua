@@ -23,6 +23,11 @@ local function volt_amp(volt, db0val)
     return amp
 end
 
+local function add_param_dest(args)
+    params:add(args)
+    patcher.add_destination(args.id, args.action)
+end
+
 -- add metaparams
 do
     mparams:add{
@@ -32,7 +37,8 @@ do
         random_min_default = 0, random_max_default = 5,
         default_scope = 'track',
         default_reset_preset_action = 'default',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             sc.lvlmx[i].lvl = volt_amp(v, 4); sc.lvlmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
@@ -46,7 +52,8 @@ do
         default_scope = 'global',
         default_reset_preset_action = 'random',
         random_min_default = -5/2, random_max_default = 5/2,
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             sc.sprmx[i].spr = (v/5)*4; sc.sprmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
@@ -58,7 +65,8 @@ do
         random_min_default = 5/2, random_max_default = 5,
         default_scope = 'global',
         default_reset_preset_action = 'default',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             sc.oldmx[i].old = volt_amp(v, 5); sc.oldmx:update(i)
             crops.dirty.screen = true; crops.dirty.arc = true
         end
@@ -69,7 +77,8 @@ do
         random_min_default = 7/2, random_max_default = 7,
         default_scope = 'track',
         default_reset_preset_action = 'random',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             softcut.post_filter_fc(i, util.linexp(0, 1, 20, 22000, v/7))
             crops.dirty.screen = true; crops.dirty.arc = true
         end
@@ -80,7 +89,8 @@ do
         random_min_default = 0, random_max_default = 4,
         default_scope = 'global',
         default_reset_preset_action = 'default',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, (5 - v)/5))
             crops.dirty.screen = true; crops.dirty.arc = true
         end
@@ -90,7 +100,8 @@ do
         id = 'type', type = 'option', options = types, 
         default_scope = 'track',
         default_reset_preset_action = 'random',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
             softcut['post_filter_'..types[v]](i, 1)
             crops.dirty.screen = true; crops.dirty.arc = true
@@ -102,8 +113,9 @@ do
         default = 1, 
         default_scope = 'track',
         default_reset_preset_action = 'default',
-        action = function(n, v)
-            sc.loopmx[n].loop = v; sc.loopmx:update(n)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
+            sc.loopmx[i].loop = v; sc.loopmx:update(i)
 
             crops.dirty.grid = true
             crops.dirty.screen = true
@@ -119,7 +131,8 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
             crops.dirty.screen = true; crops.dirty.arc = true
         end
@@ -132,7 +145,8 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             sc.ratemx[i].oct = v; sc.ratemx:update(i)
             crops.dirty.grid = true
         end
@@ -144,7 +158,8 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
-        action = function(i, v) 
+        action = function(i, id) 
+            local v = patcher.get_destination_plus_param(id)
             sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
             crops.dirty.grid = true
         end
@@ -154,7 +169,8 @@ do
         controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
         default_scope = 'track', hidden = true,
         scope_id = 'rate_scope',
-        action = function(i, v)
+        action = function(i, id)
+            local v = patcher.get_destination_plus_param(id)
             sc.slew(i, v)
         end
     }
@@ -164,26 +180,10 @@ do
     
     params:add_separator('metaparams')
 
-    local function add_param(args)
-        -- local old_action = args.action
-
-        --TODO: round value depending on args.type
-        -- local new_action = function()
-        --     old_action(params:get(args.id) + patcher.get(id))
-        -- end
-        -- patcher.add_destination(args.id, new_action)
-
-        -- args.action = function(v)
-        --     new_action()
-        -- end
-        
-        params:add(args)
-    end    
-
     params:add_group('global', mparams:global_params_count())
     do
         local args = mparams:global_param_args()
-        for _,a in ipairs(args) do add_param(a) end
+        for _,a in ipairs(args) do add_param_dest(a) end
     end
 
     params:add_group('track', (mparams:track_params_count() + 1) * tracks)
@@ -193,7 +193,7 @@ do
         --TODO: wparams add track params
         
         local args = mparams:track_param_args(t)
-        for _,a in ipairs(args) do add_param(a) end
+        for _,a in ipairs(args) do add_param_dest(a) end
     end
     params:add_group(
         'preset',
@@ -206,11 +206,11 @@ do
                 params:add_separator('track '..t..', buffer '..b..', preset '..p)
                 do
                     local args = wparams:preset_param_args(t, b, p)
-                    for _,a in ipairs(args) do add_param(a) end
+                    for _,a in ipairs(args) do add_param_dest(a) end
                 end
                 do
                     local args = mparams:preset_param_args(t, b, p)
-                    for _,a in ipairs(args) do add_param(a) end
+                    for _,a in ipairs(args) do add_param_dest(a) end
                 end
             end
         end
@@ -334,22 +334,28 @@ do
     for i = 1, voices do
         params:add_separator('params_b&p_track_'..i, 'track '..i)
 
-        params:add{
-            name = 'buffer', id = 'buffer '..i,
-            type = 'number', min = 1, max = buffers, default = i,
-            action = function(v)
-                sc.buffer[i] = v; sc.buffer:update(i)
+        do
+            local id = 'buffer '..i
+            add_param_dest{
+                name = 'buffer', id = id,
+                type = 'number', min = 1, max = buffers, default = i,
+                action = function()
+                    local v = patcher.get_destination_plus_param(id)
+                    sc.buffer[i] = v; sc.buffer:update(i)
 
-                crops.dirty.arc = true
-                crops.dirty.screen = true
-                crops.dirty.grid = true
-            end
-        }
+                    crops.dirty.arc = true
+                    crops.dirty.screen = true
+                    crops.dirty.grid = true
+                end
+            }
+        end
         for b = 1,buffers do
-            params:add{
-                name = 'buffer '..b..' preset', id = 'preset '..i..' buffer '..b,
+            local id = 'preset '..i..' buffer '..b
+            add_param_dest{
+                name = 'buffer '..b..' preset', id = id,
                 type = 'number', min = 1, max = presets, default = 1,
                 action = function(v)
+                    local v = patcher.get_destination_plus_param(id)
                     preset[i][b] = v; preset:update(i, b)
 
                     crops.dirty.arc = true
@@ -578,6 +584,50 @@ do
 
     --TODO: rate glide enable/disable
 end
+
+--add LFO params
+for i = 1,2 do
+    params:add_separator('lfo '..i)
+    mod_src.lfos[i]:add_params('lfo_'..i)
+end
+
+--add source & destination params
+do
+    params:add_separator('patcher')
+
+    -- for i = 1,2 do
+    --     params:add{
+    --         id = 'patcher_source_'..i, name = 'source '..i,
+    --         type = 'option', options = patcher.sources,
+    --         default = tab.key(patcher.sources, 'crow in '..i)
+    --     }
+    -- end
+    for i = 1,2 do
+        params:add{
+            id = 'patcher_source_'..i, name = 'source '..i,
+            type = 'option', options = patcher.sources,
+            default = tab.key(patcher.sources, 'lfo '..i)
+        }
+    end
+    params:add{
+        id = 'patcher_source_3', name = 'source 3',
+        type = 'option', options = patcher.sources,
+        default = tab.key(patcher.sources, 'crow in 1')
+    }
+
+    local function action(dest, v)
+        mod_src.crow.update()
+
+        crops.dirty.grid = true
+        crops.dirty.screen = true
+        crops.dirty.arc = true
+    end
+
+    params:add_group('assignments', #patcher.destinations)
+
+    patcher.add_assginment_params()
+end
+
 
 --add pset params
 do

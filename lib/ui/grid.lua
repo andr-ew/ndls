@@ -167,11 +167,13 @@ local function Voice(args)
 
         _rec{
             x = 1, y = bottom,
+                --TODO: use modulated value
             state = { params:get('rec '..n), set_param, 'rec '..n },
         }
         if recorded or recording then
             _play{
                 x = 2, y = bottom, levels = shaded,
+                --TODO: use modulated value
                 state = { recorded and params:get('play '..n) or 0, set_param, 'play '..n }
             }
         else
@@ -184,7 +186,7 @@ local function Voice(args)
                 size = wide and (tall and 6 or 4) or 2,
                 wide = wide,
                 voice = n,
-                state = { params:get('buffer '..n), set_param, 'buffer '..n }
+                state = { get_param('buffer '..n), set_param, 'buffer '..n }
             }
         end
         
@@ -214,7 +216,7 @@ local function Voice(args)
             _rate{
                 x = rate_x, y = wide and top or bottom, size = rate_size,
                 state = { 
-                    mparams:get(n, 'rate') + off, 
+                    get_mparam(n, 'rate') + off, 
                     function(v) set_mparam(n, 'rate', v - off) end 
                 },
                 hold_action = function(t) 
@@ -233,12 +235,14 @@ local function Voice(args)
                 x = wide and (tall and 16 or 14) or 4, 
                 y = wide and (tall and top or bottom) or 4, 
                 levels = { 2, 15 },
+                --TODO: use modulated value
                 state = { params:get('send '..n), set_param, 'send '..n }
             }
             _ret{
                 x = wide and (tall and 16 or 15) or 5, 
                 y = wide and bottom or 4, 
                 levels = { 2, 15 },
+                --TODO: use modulated value
                 state = { params:get('return '..n), set_param, 'return '..n }
             }
         end

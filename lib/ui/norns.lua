@@ -97,9 +97,9 @@ local function Mparam()
                 [props.name or props.id] = alt and (
                     nicknames[scope]
                 ) or options and (
-                    options[mparams:get(props.voice, props.id)]
+                    options[get_mparam(props.voice, props.id)]
                 ) or (
-                    string.format('%.2f', mparams:get(props.voice, props.id))
+                    string.format('%.2f', get_mparam(props.voice, props.id))
                 )
             },
         }
@@ -329,11 +329,11 @@ local function Window(args)
                 local n, d = table.unpack(crops.args)
                
                 if n == 2 then
-                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens*wparams.range)
+                    set_wparam(voice, 'start', get_wparam(voice, 'start') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 elseif n == 3 then
-                    set_wparam(voice, 'length', wparams:get(voice, 'length') + d*sens*wparams.range)
+                    set_wparam(voice, 'length', get_wparam(voice, 'length') + d*sens*wparams.range)
 
                     crops.dirty.screen = true
                 end
@@ -575,7 +575,7 @@ local function App()
 
             _buffer{
                 x = x[1], y = y[4], levels = { 2, 4 }, flow = 'right',
-                focus = params:get('buffer '..n), margin = 2,
+                focus = get_param('buffer '..n), margin = 2,
                 text = tall and { 1, 2, 3, 4, 5, 6 } or { 1, 2, 3, 4 },
             }
             if recorded then
@@ -629,6 +629,7 @@ local function App()
                     ]],
                     levels = {
                         ['.'] = 0, 
+                        --TODO: display modulated value
                         ['#'] = params:get('send '..i)>0 and 6 or 2, 
                         ['@'] = params:get('return '..i)>0 and 6 or 2,
                     }
@@ -735,7 +736,7 @@ local function App()
                                     x = x, y = y, length = l, width = 1,
                                     levels = i==view.track and levels_focus or levels,
                                     amount = util.linlin(
-                                        spec.minval, spec.maxval, 0, 1, mparams:get(i, 'old')
+                                        spec.minval, spec.maxval, 0, 1, get_mparam(i, 'old')
                                     )
                                 }
                             end
@@ -778,15 +779,15 @@ local function App()
                         filter_type = ({ 
                             'lowpass', 'bandpass', 'highpass', 'bypass' 
                         })[
-                            mparams:get(n, 'type')
+                            get_mparam(n, 'type')
                         ],
                         freq = util.linexp(
                             cut_spec.minval, cut_spec.maxval, 
                             20, 20000, 
-                            mparams:get(n, 'cut')
+                            get_mparam(n, 'cut')
                         ),
                         -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
-                        resonance = q_spec:unmap(mparams:get(n, 'q')),
+                        resonance = q_spec:unmap(get_mparam(n, 'q')),
                     }
                 end
             end
