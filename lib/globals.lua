@@ -87,10 +87,10 @@ view_options = {}
 
 preset = { --[voice][buffer] = preset
     --TODO: depricate
-    set = function(s, n, b, v)
+    set = function(s, n, b, v, silent)
         local id = 'preset '..n..' buffer '..b
         params:set(id, v, true) 
-        params:lookup_param(id):bang()
+        if not silent then params:lookup_param(id):bang() end
     end,
     update = function(s, n, b)
         if b == sc.buffer[n] then
@@ -99,7 +99,7 @@ preset = { --[voice][buffer] = preset
             sc.trigger(n)
         end
     end,
-    reset = function(s, n)
+    reset = function(s, n, silent)
         local b = sc.buffer[n]
 
         for i = 1, voices do
@@ -107,7 +107,11 @@ preset = { --[voice][buffer] = preset
             wparams:reset_presets(i, b)
         end
 
-        s:set(n, b, 1)
+        s:set(n, b, 1, silent)
+    end,
+    bang = function(s, n, b)
+        local id = 'preset '..n..' buffer '..b
+        params:lookup_param(id):bang()
     end,
     get = function(s, n)
         local b = sc.buffer[n]
@@ -215,18 +219,26 @@ freeze_patrol = {
 --     end
 -- end)
 
-fileselect = require('fileselect')
-
 fileselect_dir = _path.audio
 
 function fileselect_callback(path)
-    sc.loadsample(view.modal_index, path)
+    local n = view.modal_index
+    local b = sc.buffer[n]
+
+    sc.loadsample(b, path)
     screen_clock = crops.connect_screen(_app.norns, fps.screen)
     for i = 1,tracks do
-        if params:get('buffer '..i) == view.modal_index then
+        if params:get('buffer '..i) == b then
             preset:reset(i)
             params:set('play '..i, 1)
             break
         end
     end
+end
+
+function textentry_callback(name)
+    local n = view.modal_index
+
+    sc.exportsample(n, name)
+    screen_clock = crops.connect_screen(_app.norns, fps.screen)
 end

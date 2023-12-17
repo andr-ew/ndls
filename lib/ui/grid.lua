@@ -77,7 +77,9 @@ local function Buffer(args)
 
                         local b = n
                         view.modal = 'buffer'
-                        view.modal_index = b
+                        view.modal_index = props.voice
+                        crops.dirty.screen = true
+                        crops.dirty.grid = true
                     end)
                 else
                     clock.cancel(clk)
@@ -87,6 +89,10 @@ local function Buffer(args)
 
             _buf{
                 x = props.x, y = props.y, size = props.size,
+                levels = { 
+                    0, 
+                    (view.modal == 'buffer' and view.modal_index == props.voice) and 4 or 15 
+                },
                 state = props.state,
                 input = input,
             }
@@ -103,7 +109,9 @@ local function Buffer(args)
 
                         local b = props.state[1]
                         view.modal = 'buffer'
-                        view.modal_index = b
+                        view.modal_index = props.voice
+                        crops.dirty.screen = true
+                        crops.dirty.grid = true
                         downstate = b
                     end)
                 else
@@ -116,6 +124,10 @@ local function Buffer(args)
 
             _buf{
                 x = props.x, y = props.y, size = props.size, 
+                levels = { 
+                    0, 
+                    (view.modal == 'buffer' and view.modal_index == props.voice) and 4 or 15 
+                },
                 edge = 'falling',
                 state = props.state,
                 input = input,
@@ -171,6 +183,7 @@ local function Voice(args)
                 x = wide and 3 or 6, y = wide and bottom or top, 
                 size = wide and (tall and 6 or 4) or 2,
                 wide = wide,
+                voice = n,
                 state = { params:get('buffer '..n), set_param, 'buffer '..n }
             }
         end

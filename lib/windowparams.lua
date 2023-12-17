@@ -4,6 +4,10 @@ local min_v = 0
 local max_v = 5
 local range_v = max_v - min_v
 
+windowparams.min_v = min_v
+windowparams.max_v = max_v
+windowparams.range_v = range_v
+
 function windowparams:new()
     local m = setmetatable({}, { __index = self })
 
@@ -71,7 +75,7 @@ function windowparams:defaultize(t, target, b, p, silent)
     do
         local silent = true
         if do_st then params:set(id_start, min_v, silent) end
-        if do_len then params:set(id_len, max_v, silent) end
+        if do_len then params:set(id_len, range_v, silent) end
     end
     
     if not silent then
