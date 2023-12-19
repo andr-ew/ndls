@@ -116,6 +116,12 @@ sc = {
                 sc.trigger(n)
             end
         end
+    },
+    filtermx = {
+        { fc = nil, rq = nil, typ = nil }
+    },
+    slewmx = {
+        { slew = nil }
     }
 }
 

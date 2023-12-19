@@ -36,8 +36,11 @@ do
         default_reset_preset_action = 'default',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            sc.lvlmx[i].lvl = volt_amp(v, 4); sc.lvlmx:update(i)
-            crops.dirty.screen = true; crops.dirty.arc = true
+            local lvl = volt_amp(v, 4)
+            if lvl ~= sc.lvlmx[i].lvl then
+                sc.lvlmx[i].lvl = lvl; sc.lvlmx:update(i)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
         end
     }
     mparams:add{
@@ -51,8 +54,11 @@ do
         random_min_default = -5/2, random_max_default = 5/2,
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            sc.sprmx[i].spr = (v/5)*4; sc.sprmx:update(i)
-            crops.dirty.screen = true; crops.dirty.arc = true
+            local spr = (v/5)*4
+            if spr ~= sc.sprmx[i].spr then
+                sc.sprmx[i].spr = spr; sc.sprmx:update(i)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
         end
     }
     mparams:add{
@@ -64,8 +70,11 @@ do
         default_reset_preset_action = 'default',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            sc.oldmx[i].old = volt_amp(v, 5); sc.oldmx:update(i)
-            crops.dirty.screen = true; crops.dirty.arc = true
+            local old = volt_amp(v, 5)
+            if old ~= sc.oldmx[i].old then
+                sc.oldmx[i].old = old; sc.oldmx:update(i)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
         end
     }
     mparams:add{
@@ -76,8 +85,12 @@ do
         default_reset_preset_action = 'random',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            softcut.post_filter_fc(i, util.linexp(0, 1, 20, 22000, v/7))
-            crops.dirty.screen = true; crops.dirty.arc = true
+            local fc = util.linexp(0, 1, 20, 22000, v/7)
+            if fc ~= sc.filtermx[i].fc then
+                sc.filtermx[i].fc = fc
+                softcut.post_filter_fc(i, fc)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
         end
     }
     mparams:add{
@@ -88,8 +101,12 @@ do
         default_reset_preset_action = 'default',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            softcut.post_filter_rq(i, util.linexp(0, 1, 0.01, 20, (5 - v)/5))
-            crops.dirty.screen = true; crops.dirty.arc = true
+            local rq = util.linexp(0, 1, 0.01, 20, (5 - v)/5)
+            if rq ~= sc.filtermx[i].rq then
+                sc.filtermx[i].rq = rq
+                softcut.post_filter_rq(i, rq)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
         end
     }
     local types = { 'lp', 'bp', 'hp', 'dry' }
@@ -99,9 +116,14 @@ do
         default_reset_preset_action = 'random',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
-            softcut['post_filter_'..types[v]](i, 1)
-            crops.dirty.screen = true; crops.dirty.arc = true
+            local typ = v
+            if typ ~= sc.filtermx[i].typ then
+                sc.filtermx[i].typ = typ
+
+                for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
+                softcut['post_filter_'..types[v]](i, 1)
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
         end
     }
     mparams:add{
@@ -112,10 +134,13 @@ do
         default_reset_preset_action = 'default',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            sc.loopmx[i].loop = v; sc.loopmx:update(i)
+            local loop = v
+            if loop ~= sc.loopmx[i].loop then
+                sc.loopmx[i].loop = loop; sc.loopmx:update(i)
 
-            crops.dirty.grid = true
-            crops.dirty.screen = true
+                crops.dirty.grid = true
+                crops.dirty.screen = true
+            end
         end
     }
     mparams:add{
@@ -130,8 +155,11 @@ do
         scope_id = 'rate_scope',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            sc.ratemx[i].bnd = v; sc.ratemx:update(i) 
-            crops.dirty.screen = true; crops.dirty.arc = true
+            local bnd = v
+            if bnd ~= sc.ratemx[i].bnd then
+                sc.ratemx[i].bnd = bnd; sc.ratemx:update(i) 
+                crops.dirty.screen = true; crops.dirty.arc = true
+            end
         end
     }
     mparams:add{
@@ -144,8 +172,11 @@ do
         scope_id = 'rate_scope',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            sc.ratemx[i].oct = v; sc.ratemx:update(i)
-            crops.dirty.grid = true
+            local oct = v
+            if oct ~= sc.ratemx[i].oct then
+                sc.ratemx[i].oct = oct; sc.ratemx:update(i)
+                crops.dirty.grid = true
+            end
         end
     }
     mparams:add{
@@ -157,8 +188,11 @@ do
         scope_id = 'rate_scope',
         action = function(i, id) 
             local v = patcher.get_destination_plus_param(id)
-            sc.ratemx[i].dir = v>0 and -1 or 1; sc.ratemx:update(i) 
-            crops.dirty.grid = true
+            local dir = v>0 and -1 or 1
+            if dir ~= sc.ratemx[i].dir then
+                sc.ratemx[i].dir = dir; sc.ratemx:update(i) 
+                crops.dirty.grid = true
+            end
         end
     }
     mparams:add{
@@ -168,7 +202,11 @@ do
         scope_id = 'rate_scope',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            sc.slew(i, v)
+            local slew = v
+            if slew ~= sc.slewmx[i].slew then
+                sc.slewmx[i].slew = slew
+                sc.slew(i, slew)
+            end
         end
     }
 
