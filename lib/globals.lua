@@ -9,6 +9,9 @@ slices = 9
 tracks = voices
 presets = slices
 
+src_count = 3
+active_src = 'none'
+
 arc_vertical = false
 arc_view = tall and {
     { 1, 1, 1, 1 },

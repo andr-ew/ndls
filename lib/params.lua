@@ -23,13 +23,10 @@ local function volt_amp(volt, db0val)
     return amp
 end
 
-local function add_param_dest(args)
-    params:add(args)
-    patcher.add_destination(args.id, args.action)
-end
-
 -- add metaparams
 do
+    --TODO: try checking for value changes before updating softcut
+
     mparams:add{
         id = 'lvl',
         type = 'control', 
@@ -183,7 +180,7 @@ do
     params:add_group('global', mparams:global_params_count())
     do
         local args = mparams:global_param_args()
-        for _,a in ipairs(args) do add_param_dest(a) end
+        for _,a in ipairs(args) do patcher.add_source_and_param(a) end
     end
 
     params:add_group('track', (mparams:track_params_count() + 1) * tracks)
@@ -193,7 +190,7 @@ do
         --TODO: wparams add track params
         
         local args = mparams:track_param_args(t)
-        for _,a in ipairs(args) do add_param_dest(a) end
+        for _,a in ipairs(args) do patcher.add_source_and_param(a) end
     end
     params:add_group(
         'preset',
@@ -206,11 +203,11 @@ do
                 params:add_separator('track '..t..', buffer '..b..', preset '..p)
                 do
                     local args = wparams:preset_param_args(t, b, p)
-                    for _,a in ipairs(args) do add_param_dest(a) end
+                    for _,a in ipairs(args) do patcher.add_source_and_param(a) end
                 end
                 do
                     local args = mparams:preset_param_args(t, b, p)
-                    for _,a in ipairs(args) do add_param_dest(a) end
+                    for _,a in ipairs(args) do patcher.add_source_and_param(a) end
                 end
             end
         end
@@ -336,7 +333,7 @@ do
 
         do
             local id = 'buffer '..i
-            add_param_dest{
+            patcher.add_source_and_param{
                 name = 'buffer', id = id,
                 type = 'number', min = 1, max = buffers, default = i,
                 action = function()
@@ -351,7 +348,7 @@ do
         end
         for b = 1,buffers do
             local id = 'preset '..i..' buffer '..b
-            add_param_dest{
+            patcher.add_source_and_param{
                 name = 'buffer '..b..' preset', id = id,
                 type = 'number', min = 1, max = presets, default = 1,
                 action = function(v)
