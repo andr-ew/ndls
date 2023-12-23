@@ -25,8 +25,6 @@ end
 
 -- add metaparams
 do
-    --TODO: try checking for value changes before updating softcut
-
     mparams:add{
         id = 'lvl',
         type = 'control', 
