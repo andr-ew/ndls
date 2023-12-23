@@ -439,7 +439,7 @@ local function Voice(args)
             _rand_spr{ n = 3 }
         elseif props.tab == 2 then
             _rate(mparams:get_id(n, 'bnd'), active_src, { 
-                id = 'bnd', name = 'rate', voice = n, n = 1 
+                id = 'bnd', name = 'rate', voice = n, n = 1, levels = { 4, 15 } 
             })
 
             if alt then

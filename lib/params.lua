@@ -144,10 +144,10 @@ do
     mparams:add{
         id = 'bnd', name = 'rate',
         type = 'control', controlspec = cs.def{ 
-            min = -10, max = 10, default = 0,
+            min = -10, max = 10, default = 1,
             quantum = 1/100/10,
         },
-        random_min_default = -1, random_max_default = 1,
+        random_min_default = 0.5, random_max_default = 2,
         default_scope = 'track',
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
@@ -672,10 +672,12 @@ do
             for i = 1, voices do
                 params:delta('clear '..i)
             end
-
+    
             for _,p in ipairs(params.params) do if p.save then
                 params:set(p.id, p.default or (p.controlspec and p.controlspec.default) or 0, true)
             end end
+            
+            mod_src.lfos.reset_params()
     
             params:bang()
         end
