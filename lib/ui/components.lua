@@ -473,7 +473,11 @@ function Components.grid.arc_focus()
                 local g = crops.handler
 
                 for i = 0,tall and 5 or 3 do for j = 0,3 do 
-                    g:led(props.x + j, props.y + i, props.levels[props.view[i + 1][j + 1] + 1])
+                    g:led(
+                        props.x + j, 
+                        props.y + i, 
+                        props.levels[j + 1][props.view[i + 1][j + 1] + 1]
+                    )
                 end end
             end
         end

@@ -261,8 +261,9 @@ local function App(args)
     local wide = args.wide
     local tall = args.tall
     local mid = varibright and 4 or 15
-    local low_shade = varibright and { 2, 8 } or { 0, 15 }
-    local mid_shade = varibright and { 4, 8 } or { 0, 15 }
+    local non_vb = { 0, 15 }
+    local low_shade = varibright and { 2, 8 } or non_vb
+    local mid_shade = varibright and { 4, 8 } or non_vb
 
     local small_page_focus = arc_connected or (not wide)
 
@@ -320,9 +321,18 @@ local function App(args)
         }
 
         if _arc_focus then
+            local gain_shade = varibright and { 1, 8 } or non_vb
+            local other_shade = varibright and { 
+                1, 
+                view.page==MIX and 4
+                or view.page==TAPE and 8
+                or view.page==FILTER and 15
+            } or non_vb
+            
             --TODO: refactor to use states more correctly
             _arc_focus{
-                x = 3, y = 1, levels = low_shade,
+                x = 3, y = 1, 
+                levels = { gain_shade, other_shade, other_shade, other_shade },
                 view = arc_view, tall = tall,
                 vertical = { arc_vertical, function(v) arc_vertical = v end },
                 action = function(vertical, x, y)

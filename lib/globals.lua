@@ -1,6 +1,7 @@
 alt = false
 view = { track = 1, page = 1, modal = 'none', modal_index = 1, }
 page_names = { 'm', 't', 'f' }
+MIX, TAPE, FILTER = 1,2,3
 
 voices = tall and 6 or 4
 buffers = voices

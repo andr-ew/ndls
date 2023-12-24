@@ -144,8 +144,8 @@ do
     mparams:add{
         id = 'bnd', name = 'rate',
         type = 'control', controlspec = cs.def{ 
-            min = -10, max = 10, default = 1,
-            quantum = 1/100/10,
+            min = -4, max = 4, default = 1,
+            quantum = 1/100/4,
         },
         random_min_default = 0.5, random_max_default = 2,
         default_scope = 'track',
