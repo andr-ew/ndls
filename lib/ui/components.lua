@@ -636,26 +636,26 @@ function Components.arc.filter()
             local t = props.type
 
             for x = props.x[1], props.x[2] do
-                a:led(
-                    props.n, 
-                    (x - 1) % 64 + 1, 
+                local lvl = (
                     t==1 and (               --lp
-                        (x < vv) and 4
-                        or (x == vv) and 15
+                        (x < vv) and props.levels[1]
+                        or (x == vv) and props.levels[2]
                         or 0
                     )
                     or t==2 and (            --bp
                         util.clamp(
-                            15 - math.abs(x - vv)*3,
+                            props.levels[2] - math.abs(x - vv)*3,
                         0, 15)
                     )
                     or t==3 and (            --hp
                         (x < vv) and 0
-                        or (x == vv) and 15
-                        or 4
+                        or (x == vv) and props.levels[2]
+                        or props.levels[1]
                     )
-                    or t==4 and 4            --dry
+                    or t==4 and props.levels[1] --dry
                 )
+
+                if lvl>0 then a:led(props.n, (x - 1) % 64 + 1, lvl) end
             end
         end
     end
@@ -708,7 +708,8 @@ function Components.arc.st()
                     )
                     local show = props.show_phase
                     for x = st,en do
-                        a:led(props.n, (x - 1) % 64 + 1 - off, props.levels[(x==ph and show) and 2 or 1])
+                        local lvl = props.levels[(x==ph and show) and 2 or 1]
+                        if lvl>0 then a:led(props.n, (x - 1) % 64 + 1 - off, lvl) end
                     end
                 end
             end
@@ -743,8 +744,8 @@ function Components.arc.len()
                         local en = props.x[1] - 1 + math.ceil(
                             reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                         )
-                        a:led(props.n, (st - 1) % 64 + 1 - off, props.level_st)
-                        a:led(props.n, (en - 1) % 64 + 1 - off, props.level_st)
+                        a:led(props.n, (st - 1) % 64 + 1 - off, props.levels[1])
+                        a:led(props.n, (en - 1) % 64 + 1 - off, props.levels[1])
                     end
                 else
                     local st = props.x[1] + math.ceil(
@@ -757,10 +758,14 @@ function Components.arc.len()
                         props.phase * (props.x[2] - props.x[1])
                     )
 
-                    a:led(props.n, (st - 1) % 64 + 1 - off, props.level_st)
-                    a:led(props.n, (en - 1) % 64 + 1 - off, props.level_en)
-                    if props.show_phase then 
-                        a:led(props.n, (ph - 1) % 64 + 1 - off, props.level_ph)
+                    if props.levels[1] > 0 then 
+                        a:led(props.n, (st - 1) % 64 + 1 - off, props.levels[1])
+                        if props.show_phase then 
+                            a:led(props.n, (ph - 1) % 64 + 1 - off, props.levels[1])
+                        end
+                    end
+                    if props.levels[2] > 0 then 
+                        a:led(props.n, (en - 1) % 64 + 1 - off, props.levels[2])
                     end
                 end
             end
