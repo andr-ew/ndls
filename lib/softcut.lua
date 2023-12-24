@@ -78,11 +78,11 @@ sc = {
         end
     },
     ratemx = {
-        { oct = 1, bnd = 0, dir = 1, rate = 1, recording = false },
+        { oct = 1, bnd = 1, dir = 1, rate = 1, recording = false },
         update = function(s, n)
             local dir = s[n].recording and math.abs(s[n].dir) or s[n].dir
 
-            s[n].rate = 2^s[n].oct * 2^(s[n].bnd) * dir
+            s[n].rate = 2^s[n].oct * (s[n].bnd) * dir
             sc.send('rate', n, s[n].rate)
 
             --set phase_quant to a constant when rate < 1
@@ -116,6 +116,12 @@ sc = {
                 sc.trigger(n)
             end
         end
+    },
+    filtermx = {
+        { fc = nil, rq = nil, typ = nil }
+    },
+    slewmx = {
+        { slew = nil }
     }
 }
 

@@ -93,13 +93,14 @@ local function Mparam()
             or scope=='preset' and _list_preset
         ){
             x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
+            levels = props.levels,
             text = { 
                 [props.name or props.id] = alt and (
                     nicknames[scope]
                 ) or options and (
-                    options[mparams:get(props.voice, props.id)]
+                    options[get_mparam(props.voice, props.id)]
                 ) or (
-                    string.format('%.2f', mparams:get(props.voice, props.id))
+                    string.format('%.2f', get_mparam(props.voice, props.id))
                 )
             },
         }
@@ -207,7 +208,7 @@ local function Rand(args)
     end
 end
 
-local function Window(args)
+local function Rands_window(args)
     local voice = args.voice
     local i = voice
 
@@ -322,38 +323,9 @@ local function Window(args)
     }
 
     return function(props)
-        local sens = 0.01
-        
         if sc.punch_in[sc.buffer[voice]].recorded then
-            if crops.device == 'enc' and crops.mode == 'input' then
-                local n, d = table.unpack(crops.args)
-               
-                if n == 2 then
-                    set_wparam(voice, 'start', wparams:get(voice, 'start') + d*sens*wparams.range)
-
-                    crops.dirty.screen = true
-                elseif n == 3 then
-                    set_wparam(voice, 'length', wparams:get(voice, 'length') + d*sens*wparams.range)
-
-                    crops.dirty.screen = true
-                end
-            end
-
-            _st{
-                x = e[2].x, y = e[2].y,
-                text = { 
-                    st = format_time(reg.play:get_start(voice, 'seconds'))
-                },
-            }
-            _len{
-                x = e[3].x, y = e[3].y,
-                text = { 
-                    len = format_time(reg.play:get_length(voice, 'seconds'))
-                },
-            }
-
             _actions{
-                n = { 2, 3 },
+                n = props.n,
                 state = { 
                     rand_wind_held, 
                     set_rand_wind_held,
@@ -361,14 +333,72 @@ local function Window(args)
             }
             _action.st.screen{
                 text =  holdblink_st and 'd' or 'x',
-                y = k[2].y, x = k[2].x,
-                level = ({ 4, 15 })[blink_level_st],
+                y = k[props.n[1]].y, x = k[props.n[1]].x,
+                level = props.levels[blink_level_st],
             }
             _action.len.screen{
                 text =  holdblink_en and 'd' or 'x',
-                y = k[3].y, x = k[3].x,
-                level = ({ 4, 15 })[blink_level_en],
+                y = k[props.n[2]].y, x = k[props.n[2]].x,
+                level = props.levels[blink_level_en],
             }
+        end
+    end
+end
+
+local function Start()
+    --TODO: adjust list style based on scope
+    local _st = Components.screen.list_underline()
+
+    return function(props)
+        local sens = props.sensitivity or 0.01
+        local voice = props.voice
+        
+        if sc.punch_in[sc.buffer[voice]].recorded then
+            if crops.device == 'enc' and crops.mode == 'input' then
+                local n, d = table.unpack(crops.args)
+               
+                if n == props.n then
+                    set_wparam(voice, 'start', get_wparam(voice, 'start') + d*sens*wparams.range)
+
+                    crops.dirty.screen = true
+                end
+            else
+                _st{
+                    x = e[props.n].x, y = e[props.n].y, levels = props.levels,
+                    text = { 
+                        st = format_time(reg.play:get_start(voice, 'seconds'))
+                    },
+                }
+            end
+        end
+    end
+end
+
+local function Length()
+    --TODO: adjust list style based on scope
+    local _len = Components.screen.list_underline()
+
+    return function(props)
+        local sens = props.sensitivity or 0.01
+        local voice = props.voice
+        
+        if sc.punch_in[sc.buffer[voice]].recorded then
+            if crops.device == 'enc' and crops.mode == 'input' then
+                local n, d = table.unpack(crops.args)
+
+                if n == props.n then
+                    set_wparam(voice, 'length', get_wparam(voice, 'length') + d*sens*wparams.range)
+
+                    crops.dirty.screen = true
+                end
+            else
+                _len{
+                    x = e[props.n].x, y = e[props.n].y, levels = props.levels,
+                    text = { 
+                        len = format_time(reg.play:get_length(voice, 'seconds'))
+                    },
+                }
+            end
         end
     end
 end
@@ -376,41 +406,65 @@ end
 local function Voice(args)
     local n = args.n
 
-    local _old = Mparam()
-    local _lvl = Mparam()
-    local _spr = Mparam()
+    local _old = Patcher.enc_screen.destination(Mparam())
+    local _lvl = Patcher.enc_screen.destination(Mparam())
+    local _spr = Patcher.enc_screen.destination(Mparam())
     local _rand_lvl = Rand{ voice = n, id = 'lvl' }
     local _rand_spr = Rand{ voice = n, id = 'spr' }
 
-    local _rate = Mparam()
-    local _window = Window{ voice = n }
+    local _rate = Patcher.enc_screen.destination(Mparam())
+    local _st = Patcher.enc_screen.destination(Start())
+    local _len = Patcher.enc_screen.destination(Length())
+    local _rands_window = Rands_window{ voice = n }
     local _loop = Mparam()
 
-    local _q = Mparam()
-    local _cut = Mparam()
-    local _typ = Mparam()
+    local _q = Patcher.enc_screen.destination(Mparam())
+    local _cut = Patcher.enc_screen.destination(Mparam())
+    local _typ = Patcher.enc_screen.destination(Mparam())
     local _rand_cut = Rand{ voice = n, id = 'cut' }
     local _rand_typ = Rand{ voice = n, id = 'type' }
 
     return function(props)
         if props.tab == 1 then
-            _old{ id = 'old', voice = n, n = 1 }
-            _lvl{ id = 'lvl', voice = n, n = 2 }
-            _spr{ id = 'spr', voice = n, n = 3 }
+            _old(mparams:get_id(n, 'old'), active_src, { 
+                id = 'old', voice = n, n = 1, levels = { 4, 15 } 
+            })
+            _lvl(mparams:get_id(n, 'lvl'), active_src, { 
+                id = 'lvl', voice = n, n = 2, levels = { 4, 15 } 
+            })
+            _spr(mparams:get_id(n, 'spr'), active_src, { 
+                id = 'spr', voice = n, n = 3, levels = { 4, 15 } 
+            })
             _rand_lvl{ n = 2 }
             _rand_spr{ n = 3 }
         elseif props.tab == 2 then
-            _rate{ id = 'bnd', name = 'rate', voice = n, n = 1 }
+            _rate(mparams:get_id(n, 'bnd'), active_src, { 
+                id = 'bnd', name = 'rate', voice = n, n = 1, levels = { 4, 15 } 
+            })
 
             if alt then
-                _loop{ id = 'loop', voice = n, n = 3 }
+                _loop(mparams:get_id(n, 'loop'), active_src, { 
+                    id = 'loop', voice = n, n = 3, levels = { 4, 15 } 
+                })
             else
-                _window()
+                _st(wparams:get_id(n, 'start'), active_src, { 
+                    voice = n, n = 2, levels = { 4, 15 } 
+                })
+                _len(wparams:get_id(n, 'length'), active_src, { 
+                    voice = n, n = 3, levels = { 4, 15 } 
+                })
+                _rands_window{ n = { 2, 3 }, levels = { 4, 15 } }
             end
         elseif props.tab == 3 then
-            _q{ id = 'q', voice = n, n = 1 }
-            _cut{ id = 'cut', voice = n, n = 2 }
-            _typ{ id = 'type', voice = n, n = 3 }
+            _q(mparams:get_id(n, 'q'), active_src, { 
+                id = 'q', voice = n, n = 1, levels = { 4, 15 } 
+            })
+            _cut(mparams:get_id(n, 'cut'), active_src, { 
+                id = 'cut', voice = n, n = 2, levels = { 4, 15 } 
+            })
+            _typ(mparams:get_id(n, 'type'), active_src, { 
+                id = 'type', voice = n, n = 3, levels = { 4, 15 } 
+            })
             _rand_cut{ n = 2 }
             _rand_typ{ n = 3 }
         end
@@ -575,7 +629,7 @@ local function App()
 
             _buffer{
                 x = x[1], y = y[4], levels = { 2, 4 }, flow = 'right',
-                focus = params:get('buffer '..n), margin = 2,
+                focus = get_param('buffer '..n), margin = 2,
                 text = tall and { 1, 2, 3, 4, 5, 6 } or { 1, 2, 3, 4 },
             }
             if recorded then
@@ -629,6 +683,7 @@ local function App()
                     ]],
                     levels = {
                         ['.'] = 0, 
+                        --TODO: display modulated value
                         ['#'] = params:get('send '..i)>0 and 6 or 2, 
                         ['@'] = params:get('return '..i)>0 and 6 or 2,
                     }
@@ -735,7 +790,7 @@ local function App()
                                     x = x, y = y, length = l, width = 1,
                                     levels = i==view.track and levels_focus or levels,
                                     amount = util.linlin(
-                                        spec.minval, spec.maxval, 0, 1, mparams:get(i, 'old')
+                                        spec.minval, spec.maxval, 0, 1, get_mparam(i, 'old')
                                     )
                                 }
                             end
@@ -778,15 +833,15 @@ local function App()
                         filter_type = ({ 
                             'lowpass', 'bandpass', 'highpass', 'bypass' 
                         })[
-                            mparams:get(n, 'type')
+                            get_mparam(n, 'type')
                         ],
                         freq = util.linexp(
                             cut_spec.minval, cut_spec.maxval, 
                             20, 20000, 
-                            mparams:get(n, 'cut')
+                            get_mparam(n, 'cut')
                         ),
                         -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
-                        resonance = q_spec:unmap(mparams:get(n, 'q')),
+                        resonance = q_spec:unmap(get_mparam(n, 'q')),
                     }
                 end
             end
