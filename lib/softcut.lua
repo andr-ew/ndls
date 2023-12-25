@@ -132,7 +132,38 @@ sc = {
 }
 
 sc.filtermx = {
-    { qual = nil, fc = nil, crv = nil },
+    { 
+        qual = -0.99999989, fc = 22000.00000000008, crv = -0.999999999879, 
+        lp = 0, bp = 0, hp = 0, dry = 0, q = 0 
+    },
+    update = function(s, n)
+        local wet = 1
+
+        if s[n].qual < 0 then 
+            s[n].dry = -1 * s[n].qual
+            wet = 1 + s[n].qual 
+            s[n].q = 0
+        else
+            s[n].dry = 0
+            s[n].q = s[n].qual
+        end
+
+        if s[n].crv <= 0 then
+            s[n].lp = (-1 * s[n].crv) * wet
+            s[n].bp = (1 + s[n].crv) * wet
+            s[n].hp = 0
+        else
+            s[n].lp = 0
+            s[n].bp = (1 - s[n].crv) * wet
+            s[n].hp = s[n].crv * wet
+        end
+
+        softcut.post_filter_rq(n, util.linexp(0, 1, 0.01, 20, 1 - s[n].q))
+        softcut.post_filter_dry(n, s[n].dry)
+        softcut.post_filter_lp(n, s[n].lp)
+        softcut.post_filter_bp(n, s[n].bp)
+        softcut.post_filter_hp(n, s[n].hp)
+    end
 }
 
 --shallow copy first index for each voice for objects above

@@ -91,7 +91,7 @@ do
             local v = patcher.get_destination_plus_param(id)
             local qual = v/5
             if qual ~= sc.filtermx[i].qual then
-                sc.filtermx[i].qual = qual
+                sc.filtermx[i].qual = qual; sc.filtermx:update(i)
                 crops.dirty.screen = true; crops.dirty.arc = true
             end
         end
@@ -106,7 +106,7 @@ do
             local v = patcher.get_destination_plus_param(id)
             local crv = v/5
             if crv ~= sc.filtermx[i].crv then
-                sc.filtermx[i].crv = crv
+                sc.filtermx[i].crv = crv; sc.filtermx:update(i)
                 crops.dirty.screen = true; crops.dirty.arc = true
             end
         end
