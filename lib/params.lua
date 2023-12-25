@@ -1,13 +1,3 @@
-local function volt_cutoff(volt)
-    return util.linexp(0, 7, 20, 20000, volt)
-end
--- local function cutoff_volt(cut)
---     return util.explin(20, 20000, 0, 7, cut)
--- end
-local function volt_q(volt, inverse)
-    return util.linexp(0, 1, 0.01, 1.5, (inverse and (5 - volt) or volt) / 5)
-end
-
 local function ampdb(amp) return math.log(amp, 10) * 20.0 end
 local function dbamp(db) return 10.0^(db*0.05) end
 
@@ -77,7 +67,7 @@ do
     }
     mparams:add{
         id = 'cut', type = 'control', 
-        controlspec = cs.def{ min = 0, max = 7, default = 7, units = 'v' },
+        controlspec = cs.def{ min = 0, max = 7, default = 4.2, units = 'v' },
         random_min_default = 7/2, random_max_default = 7,
         default_scope = 'track',
         default_reset_preset_action = 'random',
@@ -92,38 +82,52 @@ do
         end
     }
     mparams:add{
-        id = 'q', type = 'control', 
-        controlspec = cs.def{ min = 0, max = 5, default = 0, units = 'v' },
-        random_min_default = 0, random_max_default = 4,
-        default_scope = 'global',
+        id = 'qual', type = 'control', 
+        controlspec = cs.def{ min = -5, max = 5, default = -5, units = 'v' },
+        random_min_default = -5, random_max_default = 4,
+        default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            local rq = util.linexp(0, 1, 0.01, 20, (5 - v)/5)
-            if rq ~= sc.filtermx[i].rq then
-                sc.filtermx[i].rq = rq
-                softcut.post_filter_rq(i, rq)
+            local qual = v/5
+            if qual ~= sc.filtermx[i].qual then
+                sc.filtermx[i].qual = qual
                 crops.dirty.screen = true; crops.dirty.arc = true
             end
         end
     }
-    local types = { 'lp', 'bp', 'hp', 'dry' }
     mparams:add{
-        id = 'type', type = 'option', options = types, 
+        id = 'crv', type = 'control', 
+        controlspec = cs.def{ min = -5, max = 5, default = -5, units = 'v' },
+        random_min_default = -5, random_max_default = 5,
         default_scope = 'track',
-        default_reset_preset_action = 'random',
+        default_reset_preset_action = 'default',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            local typ = v
-            if typ ~= sc.filtermx[i].typ then
-                sc.filtermx[i].typ = typ
-
-                for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
-                softcut['post_filter_'..types[v]](i, 1)
+            local crv = v/5
+            if crv ~= sc.filtermx[i].crv then
+                sc.filtermx[i].crv = crv
                 crops.dirty.screen = true; crops.dirty.arc = true
             end
         end
     }
+    -- local types = { 'lp', 'bp', 'hp', 'dry' }
+    -- mparams:add{
+    --     id = 'type', type = 'option', options = types, 
+    --     default_scope = 'track',
+    --     default_reset_preset_action = 'random',
+    --     action = function(i, id)
+    --         local v = patcher.get_destination_plus_param(id)
+    --         local typ = v
+    --         if typ ~= sc.filtermx[i].typ then
+    --             sc.filtermx[i].typ = typ
+
+    --             for _,k in pairs(types) do softcut['post_filter_'..k](i, 0) end
+    --             softcut['post_filter_'..types[v]](i, 1)
+    --             crops.dirty.screen = true; crops.dirty.arc = true
+    --         end
+    --     end
+    -- }
     mparams:add{
         id = 'loop',
         type = 'binary', behavior = 'toggle', 
@@ -443,8 +447,8 @@ do
         mparams:add_scope_param('spr')
         mparams:add_scope_param('old')
         mparams:add_scope_param('cut')
-        mparams:add_scope_param('q')
-        mparams:add_scope_param('type')
+        mparams:add_scope_param('qual')
+        mparams:add_scope_param('crv')
         mparams:add_scope_param('loop')
         -- mparams:add_scope_param('bnd')
         -- mparams:add_scope_param('rate')

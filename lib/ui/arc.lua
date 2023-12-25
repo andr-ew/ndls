@@ -177,8 +177,10 @@ local function Voice()
     local _st = Patcher.arc.destination(Components.arc.st())
     local _len = Patcher.arc.destination(Components.arc.len())
     
-    local _q = Patcher.arc.destination(Old())
-    local _cut = Patcher.arc.destination(Cut())
+    local _qual = Patcher.arc.destination(Other())
+    -- local _cut = Patcher.arc.destination(Cut())
+    local _cut = Patcher.arc.destination(Other())
+    local _crv = Patcher.arc.destination(Other())
 
     --TODO: arc2 layout
     return function(props)
@@ -302,9 +304,9 @@ local function Voice()
         elseif view.page == FILTER then
             do
                 local x = 2
-                local id = 'q'
+                local id = 'qual'
                 if arc_view[n][x] > 0 then
-                    _q(mparams:get_id(n, id), active_src, { 
+                    _qual(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,
                         levels = { 4, 15 },
@@ -325,8 +327,22 @@ local function Voice()
                         rotated = rotated,
                         controlspec = mparams:get_controlspec(id),
                         state = of_mparam(n, id),
-                        type = get_mparam(n, 'type'),
-                        cut = get_mparam(n, id),
+                        -- type = get_mparam(n, 'type'),
+                        -- cut = get_mparam(n, id),
+                    })
+                end
+            end
+            do
+                local x = 4
+                local id = 'crv'
+                if arc_view[n][x] > 0 then
+                    _crv(mparams:get_id(n, id), active_src, { 
+                        n = tonumber(arc_vertical and n or x),
+                        voice = n,
+                        levels = { 4, 15 },
+                        rotated = rotated,
+                        controlspec = mparams:get_controlspec(id),
+                        state = of_mparam(n, id),
                     })
                 end
             end
