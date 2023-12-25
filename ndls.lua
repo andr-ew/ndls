@@ -43,7 +43,7 @@ varibright = true
 --system libs
 
 cs = require 'controlspec'
-filtergraph = require 'filtergraph'
+graph = require 'graph'
 fileselect = require 'fileselect'
 textentry = require 'textentry'
 lfos = require 'lfo'

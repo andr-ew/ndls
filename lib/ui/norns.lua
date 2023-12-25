@@ -557,10 +557,11 @@ function Modal.buffer()
     end
 end
 
+
 local function App()
     local _alt = Key.momentary()
 
-    local _waveform, _filtergraph
+    local _waveform
     do
         local left, right = x[1] + 1, x[3] - 1
         local top, bottom = y[2], y[3]
@@ -570,10 +571,14 @@ local function App()
             y = { top, bottom },
             --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
         }
-        _filtergraph = Components.screen.filtergraph{
-            x = left, w = right - left, 
-            y = top, h = bottom - top,
-        }
+        -- _filtergraph = Components.screen.filtergraph{
+        --     x = left, w = right - left, 
+        --     y = top, h = bottom - top,
+        -- }
+        
+        for i = 1,voices do
+            filtergraphs[i].graph:set_position_and_size(left, top, right - left, bottom - top)
+        end
     end
     
     local track_names = {}
@@ -843,6 +848,8 @@ local function App()
                     --     -- resonance = util.linexp(0, 1, 0.01, 20, mparams:get(n, 'q')),
                     --     resonance = q_spec:unmap(get_mparam(n, 'q')),
                     -- }
+
+                    filtergraphs[view.track].redraw()
                 end
             end
 

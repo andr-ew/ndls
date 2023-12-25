@@ -73,10 +73,13 @@ do
         default_reset_preset_action = 'random',
         action = function(i, id)
             local v = patcher.get_destination_plus_param(id)
-            local fc = util.linexp(0, 1, 20, 22000, v/7)
-            if fc ~= sc.filtermx[i].fc then
-                sc.filtermx[i].fc = fc
-                softcut.post_filter_fc(i, fc)
+            local cut = v/7
+            if cut ~= sc.filtermx[i].cut then
+                sc.filtermx[i].cut = cut
+
+                softcut.post_filter_fc(i, util.linexp(0, 1, 20, 22000, cut))
+        
+                filtergraphs[i].dirty = true
                 crops.dirty.screen = true; crops.dirty.arc = true
             end
         end

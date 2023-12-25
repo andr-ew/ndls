@@ -133,7 +133,7 @@ sc = {
 
 sc.filtermx = {
     { 
-        qual = -0.99999989, fc = 22000.00000000008, crv = -0.999999999879, 
+        qual = -0.99999989, cut = 0.99999989, crv = -0.999999999879, 
         lp = 0, bp = 0, hp = 0, dry = 0, q = 0 
     },
     update = function(s, n)
@@ -163,6 +163,8 @@ sc.filtermx = {
         softcut.post_filter_lp(n, s[n].lp)
         softcut.post_filter_bp(n, s[n].bp)
         softcut.post_filter_hp(n, s[n].hp)
+
+        filtergraphs[n].dirty = true
     end
 }
 
