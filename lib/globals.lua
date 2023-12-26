@@ -154,7 +154,7 @@ filtergraphs = {}
 for i = 1,voices do
     filtergraphs[i] = {}
     filtergraphs[i].dirty = true
-    filtergraphs[i].graph = graph.new(0, 5, 'lin', 0.2, 1.8, 'lin', 'line', true, true)
+    filtergraphs[i].graph = graph.new(0, 5, 'lin', 0.2, 1.8, 'lin', 'line', false, true)
 
     local sample_quality = 0.5
         
@@ -164,8 +164,7 @@ for i = 1,voices do
     -- https://www.desmos.com/calculator/ewwwbewtdw
     filtergraphs[i].graph:add_function(function(x) 
         local f = 10^x
-        local f2 = f^2
-        local f2_over_c2 = (f2 / c2)
+        local f2_over_c2 = (f^2 / c2)
         local f_over_qc = f / (qc)
         local denominator_stuff = math.sqrt(
             (1 - f2_over_c2)^2
@@ -182,7 +181,6 @@ for i = 1,voices do
 
     filtergraphs[i].redraw = function()
         if filtergraphs[i].dirty then
-
             d = util.linlin(0, 1, 0.1, 4.3, sc.filtermx[i].cut)
             q = 1.9*sc.filtermx[i].q + 0.1
             c = 10^d

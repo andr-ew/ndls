@@ -58,12 +58,12 @@ local function Cut()
             n = props.n,
             levels = props.levels,
             x = { 42, 24+64 },
-            -- type = get_mparam(n, 'type'),
-            -- cut = get_mparam(n, props.id),
-            type = props.type,
-            cut = props.cut,
-            -- controlspec = mparams:get_controlspec(props.id),
             controlspec = props.controlspec,
+            cut = props.cut,
+            dry = props.dry,
+            lp = props.lp,
+            bp = props.bp,
+            hp = props.hp,
         }
     end
 end
@@ -178,8 +178,8 @@ local function Voice()
     local _len = Patcher.arc.destination(Components.arc.len())
     
     local _qual = Patcher.arc.destination(Other())
-    -- local _cut = Patcher.arc.destination(Cut())
-    local _cut = Patcher.arc.destination(Other())
+    local _cut = Patcher.arc.destination(Cut())
+    -- local _cut = Patcher.arc.destination(Other())
     local _crv = Patcher.arc.destination(Other())
 
     --TODO: arc2 layout
@@ -323,12 +323,17 @@ local function Voice()
                     _cut(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,
-                        levels = { 4, 15 },
+                        levels = { 8, 15 },
                         rotated = rotated,
                         controlspec = mparams:get_controlspec(id),
                         state = of_mparam(n, id),
                         -- type = get_mparam(n, 'type'),
-                        -- cut = get_mparam(n, id),
+                        cut = get_mparam(n, id),
+                        -- cut = sc.filtermx[n].cut,
+                        dry = sc.filtermx[n].dry,
+                        lp = sc.filtermx[n].lp,
+                        bp = sc.filtermx[n].bp,
+                        hp = sc.filtermx[n].hp,
                     })
                 end
             end
