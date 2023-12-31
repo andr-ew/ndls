@@ -258,15 +258,10 @@ local function Voice()
                         levels = { 4, 15 },
                         phase = sc.phase[n].rel,
                         show_phase = sc.lvlmx[n].play == 1,
-                        sensitivity = 1/1000 * wparams.range,
-                        st = {
-                            get_wparam(n, 'start'), 
-                            function(v) set_wparam(n, 'start', v) end
-                        },
-                        len = { 
-                            get_wparam(n, 'length'), 
-                            function(v) set_wparam(n, 'length', v) end
-                        },
+                        -- sensitivity = 1/1000 * wparams.range,
+                        delta_seconds = 1/100,
+                        controlspec = wparams:get_controlspec('start'),
+                        state = of_wparam(n, 'start'),
                         recording = sc.punch_in[b].recording,
                         recorded = sc.punch_in[b].recorded,
                         reg = reg,
@@ -283,16 +278,11 @@ local function Voice()
                         x = { 33, 64+32 }, 
                         phase = sc.phase[n].rel,
                         show_phase = sc.lvlmx[n].play == 1,
-                        sensitivity = 1/1000 * wparams.range,
+                        -- sensitivity = 1/1000 * wparams.range,
+                        delta_seconds = 1/100,
+                        controlspec = wparams:get_controlspec('length'),
+                        state = of_wparam(n, 'length'),
                         levels = { 4, 15 },
-                        st = {
-                            get_wparam(n, 'start'), 
-                            function(v) set_wparam(n, 'start', v) end
-                        },
-                        len = { 
-                            get_wparam(n, 'length'), 
-                            function(v) set_wparam(n, 'length', v) end
-                        },
                         recording = sc.punch_in[b].recording,
                         recorded = sc.punch_in[b].recorded,
                         reg = reg,

@@ -687,15 +687,12 @@ function Components.arc.st()
             if crops.mode == 'input' then
                 local n, d = table.unpack(crops.args)
                 
-                if n == props.n then
-                    --props. 
-                    
-                    --local st, en = props.state[1].st, props.state[1].en
-                    local st = props.st[1]
-                    local len = props.len[1]
-                    props.st[2](props.st[1] + d * props.sensitivity * 2)
+                if n == props.n and recorded then
+                    local dur = reg.rec:get_length(props.voice, 'seconds')
+                    local spec = props.controlspec
+                    local delta = d * (props.delta_seconds / dur) * (spec.maxval - spec.minval)
 
-                    -- nest.arc.make_dirty()
+                    crops.delta_state(props.state, delta)
                 end
             elseif crops.mode == 'redraw' then
                 local a = crops.handler
@@ -743,11 +740,12 @@ function Components.arc.len()
             if crops.mode == 'input' then
                 local n, d = table.unpack(crops.args)
                 
-                if n == props.n then
-                    local len = props.len[1]
-                    props.len[2](props.len[1] + d * props.sensitivity * 2)
+                if n == props.n and recorded then
+                    local dur = reg.rec:get_length(props.voice, 'seconds')
+                    local spec = props.controlspec
+                    local delta = d * (props.delta_seconds / dur) * (spec.maxval - spec.minval)
 
-                    -- nest.arc.make_dirty()
+                    crops.delta_state(props.state, delta)
                 end
             elseif crops.mode == 'redraw' then
                 local a = crops.handler

@@ -173,20 +173,26 @@ function windowparams:set(track, id, v)
     params:set(self.preset_id[track][b][p][id], v)
 end
 
-local cs_preset_st = cs.def{ min = min_v, max = max_v, default = min_v, units = 'v' }
-local cs_preset_len = cs.def{ min = min_v, max = max_v, default = max_v, units = 'v' }
+local specs = {
+    start = cs.def{ min = min_v, max = max_v, default = min_v, units = 'v' },
+    length = cs.def{ min = min_v, max = max_v, default = max_v, units = 'v' }
+}
+
+function windowparams:get_controlspec(id)
+    return specs[id]
+end
 
 function windowparams:preset_params_count() return 2 end
 function windowparams:preset_param_args(t, b, p)
     return {
         {
             id = self.preset_id[t][b][p].start, name = 'start',
-            type = 'control', controlspec = cs_preset_st,
+            type = 'control', controlspec = specs.start,
             action = function() self:bang(t) end
         },
         {
             id = self.preset_id[t][b][p].length, name = 'length',
-            type = 'control', controlspec = cs_preset_len,
+            type = 'control', controlspec = specs.length,
             action = function() self:bang(t) end
         }
     }

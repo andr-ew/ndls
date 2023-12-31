@@ -426,11 +426,11 @@ local function Voice(args)
 
     return function(props)
         if props.tab == 1 then
-            _lvl(mparams:get_id(n, 'lvl'), active_src, { 
-                id = 'lvl', voice = n, n = 1, levels = { 4, 15 } 
-            })
             _old(mparams:get_id(n, 'old'), active_src, { 
-                id = 'old', voice = n, n = 2, levels = { 4, 15 } 
+                id = 'old', voice = n, n = 1, levels = { 4, 15 } 
+            })
+            _lvl(mparams:get_id(n, 'lvl'), active_src, { 
+                id = 'lvl', voice = n, n = 2, levels = { 4, 15 } 
             })
             _spr(mparams:get_id(n, 'spr'), active_src, { 
                 id = 'spr', voice = n, n = 3, levels = { 4, 15 } 
