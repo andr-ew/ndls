@@ -697,26 +697,31 @@ function Components.arc.st()
             elseif crops.mode == 'redraw' then
                 local a = crops.handler
 
-                if not recorded then
-                    if recording then
-                        local st = props.x[1]
-                        local en = props.x[1] - 1 + math.ceil(
-                            reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                        )
-                        for x = st,en do
-                            a:led(props.n, (x - 1) % 64 + 1 - off, props.levels[1])
-                        end
+                if not recorded and recording then
+                    local st = props.x[1]
+                    local en = props.x[1] - 1 + math.ceil(
+                        reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
+                    )
+                    for x = st,en do
+                        a:led(props.n, (x - 1) % 64 + 1 - off, props.levels[1])
                     end
                 else
-                    local st = props.x[1] + math.ceil(
-                        reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                    )
-                    local en = props.x[1] - 1 + math.ceil(
-                        reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                    )
-                    local ph = props.x[1] + util.round(
-                        props.phase * (props.x[2] - props.x[1])
-                    )
+                    local st, en, ph
+                    if recorded then
+                        st = props.x[1] - 1 + math.ceil(
+                            reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        en = props.x[1] - 1 + math.ceil(
+                            reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        ph = props.x[1] + util.round(
+                            props.phase * (props.x[2] - props.x[1])
+                        )
+                    else
+                        st = props.x[1] - 1
+                        en = props.x[1] - 1
+                    end
+
                     local show = props.show_phase
                     for x = st,en do
                         local lvl = props.levels[(x==ph and show) and 2 or 1]
@@ -750,29 +755,33 @@ function Components.arc.len()
             elseif crops.mode == 'redraw' then
                 local a = crops.handler
 
-                if not recorded then
-                    if recording then
-                        local st = props.x[1]
-                        local en = props.x[1] - 1 + math.ceil(
-                            reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                        )
-                        a:led(props.n, (st - 1) % 64 + 1 - off, props.levels[1])
-                        a:led(props.n, (en - 1) % 64 + 1 - off, props.levels[1])
-                    end
-                else
-                    local st = props.x[1] + math.ceil(
-                        reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                    )
+                if not recorded and recording then
+                    local st = props.x[1]
                     local en = props.x[1] - 1 + math.ceil(
-                        reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
+                        reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                     )
-                    local ph = props.x[1] + util.round(
-                        props.phase * (props.x[2] - props.x[1])
-                    )
+                    a:led(props.n, (st - 1) % 64 + 1 - off, props.levels[1])
+                    a:led(props.n, (en - 1) % 64 + 1 - off, props.levels[1])
+                else
+                    local st, en, ph
+                    if recorded then
+                        st = props.x[1] - 1 + math.ceil(
+                            reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        en = props.x[1] - 1 + math.ceil(
+                            reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        ph = props.x[1] + util.round(
+                            props.phase * (props.x[2] - props.x[1])
+                        )
+                    else
+                        st = props.x[1] - 1
+                        en = props.x[1] - 1
+                    end
 
                     if props.levels[1] > 0 then 
                         a:led(props.n, (st - 1) % 64 + 1 - off, props.levels[1])
-                        if props.show_phase then 
+                        if ph and props.show_phase then 
                             a:led(props.n, (ph - 1) % 64 + 1 - off, props.levels[1])
                         end
                     end
