@@ -687,7 +687,7 @@ function Components.arc.st()
             if crops.mode == 'input' then
                 local n, d = table.unpack(crops.args)
                 
-                if n == props.n and recorded then
+                if n == props.n then
                     local dur = reg.rec:get_length(props.voice, 'seconds')
                     local spec = props.controlspec
                     local delta = d * (props.delta_seconds / dur) * (spec.maxval - spec.minval)
@@ -740,7 +740,7 @@ function Components.arc.len()
             if crops.mode == 'input' then
                 local n, d = table.unpack(crops.args)
                 
-                if n == props.n and recorded then
+                if n == props.n then
                     local dur = reg.rec:get_length(props.voice, 'seconds')
                     local spec = props.controlspec
                     local delta = d * (props.delta_seconds / dur) * (spec.maxval - spec.minval)

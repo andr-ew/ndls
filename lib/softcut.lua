@@ -455,7 +455,6 @@ sc.punch_in = { -- [buf] = {}
         end end
     end,
     set = function(s, buf, v)
-
         if not s[buf].recorded then
             if v == 1 then
                 reg.rec[buf]:punch_in()
@@ -471,6 +470,19 @@ sc.punch_in = { -- [buf] = {}
                 s[buf].recording = false
             end
 
+            s:update_recording(buf)
+        end
+    end,
+    manual = function(s, buf, length)
+        if not s[buf].recorded then
+            local silent = true
+            reg.rec[buf]:set_length(length, 'seconds', silent)
+            
+            s[buf].play = 1; s:update_play(buf)
+
+            s[buf].recorded = true
+            s[buf].recording = false
+            
             s:update_recording(buf)
         end
     end,

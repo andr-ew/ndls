@@ -110,6 +110,23 @@ function of_mparam(track, id, is_dest)
     }
 end
 
+function manual_punch_in(track)
+    local buf = sc.buffer[track]
+    local silent = true
+
+    sc.punch_in:manual(buf, params:get('min buffer size'))
+            
+    -- params:set('rec '..track, 1)
+    params:set('play '..track, 1) 
+            
+    preset:reset(track, silent)
+                
+    local p = 1
+    params:set(wparams.preset_id[track][buf][p]['length'], 0, silent)
+            
+    preset:bang(track, buf)
+end
+
 view_options = {}
 
 preset = { --[voice][buffer] = preset

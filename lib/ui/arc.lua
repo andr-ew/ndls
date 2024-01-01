@@ -249,6 +249,8 @@ local function Voice()
             end
 
             local b = sc.buffer[n]
+            local recording = sc.punch_in[b].recording
+            local recorded = sc.punch_in[b].recorded
             do
                 local x = 3
                 if arc_view[n][x] > 0 then
@@ -262,8 +264,8 @@ local function Voice()
                         delta_seconds = 1/100,
                         controlspec = wparams:get_controlspec('start'),
                         state = of_wparam(n, 'start'),
-                        recording = sc.punch_in[b].recording,
-                        recorded = sc.punch_in[b].recorded,
+                        recording = recording,
+                        recorded = recorded,
                         reg = reg,
                         voice = n,
                         rotated = rotated,
@@ -273,22 +275,31 @@ local function Voice()
             do
                 local x = 4
                 if arc_view[n][x] > 0 then
-                    _len(wparams:get_id(n, 'length'), active_src, {
-                        n = tonumber(arc_vertical and n or x),
-                        x = { 33, 64+32 }, 
-                        phase = sc.phase[n].rel,
-                        show_phase = sc.lvlmx[n].play == 1,
-                        -- sensitivity = 1/1000 * wparams.range,
-                        delta_seconds = 1/100,
-                        controlspec = wparams:get_controlspec('length'),
-                        state = of_wparam(n, 'length'),
-                        levels = { 4, 15 },
-                        recording = sc.punch_in[b].recording,
-                        recorded = sc.punch_in[b].recorded,
-                        reg = reg,
-                        voice = n,
-                        rotated = props.rotated,
-                    })
+                    local nn = tonumber(arc_vertical and n or x)
+
+                    if (not recorded) and crops.mode == 'input' and crops.device == 'arc' then
+                        local nnn, d = table.unpack(crops.args)
+                        if nnn == nn and d>0 then
+                            manual_punch_in(n)
+                        end
+                    else
+                        _len(wparams:get_id(n, 'length'), active_src, {
+                            n = nn,
+                            x = { 33, 64+32 }, 
+                            phase = sc.phase[n].rel,
+                            show_phase = sc.lvlmx[n].play == 1,
+                            -- sensitivity = 1/1000 * wparams.range,
+                            delta_seconds = 1/100,
+                            controlspec = wparams:get_controlspec('length'),
+                            state = of_wparam(n, 'length'),
+                            levels = { 4, 15 },
+                            recording = recording,
+                            recorded = recorded,
+                            reg = reg,
+                            voice = n,
+                            rotated = props.rotated,
+                        })
+                    end
                 end
             end
         elseif view.page == FILTER then

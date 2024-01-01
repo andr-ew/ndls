@@ -350,7 +350,7 @@ local function Start()
     local _st = Components.screen.list_underline()
 
     return function(props)
-        local sens = props.sensitivity or 0.01
+        local delta_seconds = props.delta_seconds or 0.02
         local voice = props.voice
         
         if sc.punch_in[sc.buffer[voice]].recorded then
@@ -358,7 +358,11 @@ local function Start()
                 local n, d = table.unpack(crops.args)
                
                 if n == props.n then
-                    set_wparam(voice, 'start', get_wparam(voice, 'start') + d*sens*wparams.range)
+                    local dur = reg.rec:get_length(voice, 'seconds')
+                    local spec = wparams:get_controlspec('start')
+                    local delta = d * (delta_seconds / dur) * (spec.maxval - spec.minval)
+
+                    set_wparam(voice, 'start', get_wparam(voice, 'start') + delta)
 
                     crops.dirty.screen = true
                 end
@@ -379,26 +383,33 @@ local function Length()
     local _len = Components.screen.list_underline()
 
     return function(props)
-        local sens = props.sensitivity or 0.01
+        local delta_seconds = props.delta_seconds or 0.02
         local voice = props.voice
-        
-        if sc.punch_in[sc.buffer[voice]].recorded then
-            if crops.device == 'enc' and crops.mode == 'input' then
-                local n, d = table.unpack(crops.args)
+        local recorded = sc.punch_in[sc.buffer[voice]].recorded
 
-                if n == props.n then
-                    set_wparam(voice, 'length', get_wparam(voice, 'length') + d*sens*wparams.range)
+        if crops.device == 'enc' and crops.mode == 'input' then
+            local n, d = table.unpack(crops.args)
+
+            if n == props.n then
+                if recorded then
+                    local dur = reg.rec:get_length(voice, 'seconds')
+                    local spec = wparams:get_controlspec('length')
+                    local delta = d * (delta_seconds / dur) * (spec.maxval - spec.minval)
+
+                    set_wparam(voice, 'length', get_wparam(voice, 'length') + delta)
 
                     crops.dirty.screen = true
+                elseif d>0 then
+                    manual_punch_in(voice)
                 end
-            else
-                _len{
-                    x = e[props.n].x, y = e[props.n].y, levels = props.levels,
-                    text = { 
-                        len = format_time(reg.play:get_length(voice, 'seconds'))
-                    },
-                }
             end
+        else
+            _len{
+                x = e[props.n].x, y = e[props.n].y, levels = props.levels,
+                text = { 
+                    len = recorded and format_time(reg.play:get_length(voice, 'seconds')) or 0
+                },
+            }
         end
     end
 end
