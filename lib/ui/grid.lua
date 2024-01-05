@@ -165,8 +165,6 @@ local function Voice(args)
     }
 
     return function()
-        local rate_x = wide and 8 or 4
-        local rate_size = wide and 7 or 5
         local b = sc.buffer[n]
         local recorded = sc.punch_in[b].recorded
         local recording = sc.punch_in[b].recording
@@ -197,6 +195,9 @@ local function Voice(args)
             })
         end
         
+        local rate_x = wide and 9 or 4
+        local rate_size = wide and 6 or 5
+
         if sc.lvlmx[n].play == 1 and recorded then
             _phase{ 
                 x = rate_x, 
@@ -207,7 +208,7 @@ local function Voice(args)
             }
         end
         _rev(mparams:get_id(n, 'rev'), active_src, {
-            x = wide and 7 or 3, y = wide and top or bottom, 
+            x = rate_x - 1, y = wide and top or bottom, 
             levels = shaded,
             state = of_mparam(n, 'rev'),
             hold_time = 0,
@@ -219,7 +220,8 @@ local function Voice(args)
             end,
         })
         do
-            local off = wide and 5 or 4
+            -- local off = wide and 5 or 4
+            local off = 4
             _rate(mparams:get_id(n, 'rate'), active_src, {
                 x = rate_x, y = wide and top or bottom, size = rate_size,
                 state = { 
@@ -265,7 +267,7 @@ local function App(args)
     local low_shade = varibright and { 2, 8 } or non_vb
     local mid_shade = varibright and { 4, 8 } or non_vb
 
-    local small_page_focus = arc_connected or (not wide)
+    local small_page_focus = (not wide)
 
     local _track_focus = Grid.integer()
     local _page_focus = small_page_focus and Grid.momentary() or Grid.integer()
@@ -307,18 +309,6 @@ local function App(args)
     local prev_page = 0
 
     return function()
-        _track_focus{
-            x = 1, y = 1, size = voices, flow = 'down',
-            levels = low_shade,
-            state = { 
-                view.track, 
-                function(v) 
-                    view.track = v
-                    crops.dirty.screen = true 
-                    crops.dirty.grid = true
-                end 
-            }
-        }
 
         if _arc_focus then
             local gain_shade = varibright and { 1, 8 } or non_vb
@@ -331,7 +321,7 @@ local function App(args)
             
             --TODO: refactor to use states more correctly
             _arc_focus{
-                x = 3, y = 1, 
+                x = 1, y = 1, 
                 levels = { gain_shade, other_shade, other_shade, other_shade },
                 view = arc_view, tall = tall,
                 vertical = { arc_vertical, function(v) arc_vertical = v end },
@@ -342,11 +332,26 @@ local function App(args)
                     crops.dirty.grid = true
                 end
             }
-        elseif wide then
+        else
+            _track_focus{
+                x = 1, y = 1, size = voices, flow = 'down',
+                levels = low_shade,
+                state = { 
+                    view.track, 
+                    function(v) 
+                        view.track = v
+                        crops.dirty.screen = true 
+                        crops.dirty.grid = true
+                    end 
+                }
+            }
+        end
+            
+        if wide then
             _page_focus{
                 y = 1, 
-                x = _arc_focus and 2 or 3, 
-                flow = _arc_focus and 'down' or 'right',
+                x = _arc_focus and 5 or 3, 
+                flow = 'right',
                 size = #page_names,
                 levels = shaded,
                 state = { 
@@ -362,7 +367,7 @@ local function App(args)
         end
 
         _patcher_source{
-            x = small_page_focus and 2 or 3, y = 2, size = src_count, 
+            x = _arc_focus and 5 or (small_page_focus and 2 or 3), y = 2, size = src_count, 
             flow = small_page_focus and 'down' or 'right',
             levels = { 0, 4 },
             state = crops.of_variable(src_held, set_active_src)
