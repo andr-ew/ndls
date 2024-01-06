@@ -454,9 +454,7 @@ local function Voice(args)
             })
 
             if alt then
-                _loop(mparams:get_id(n, 'loop'), active_src, { 
-                    id = 'loop', voice = n, n = 3, levels = { 4, 15 } 
-                })
+                _loop{ id = 'loop', voice = n, n = 3, levels = { 4, 15 } }
             else
                 _st(wparams:get_id(n, 'start'), active_src, { 
                     voice = n, n = 2, levels = { 4, 15 } 
