@@ -159,7 +159,8 @@ do
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
         action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+            -- local v = patcher.get_destination_plus_param(id)
+            local v = params:get(id) + crow_in_value
             local bnd = v
             if bnd ~= sc.ratemx[i].bnd then
                 sc.ratemx[i].bnd = bnd; sc.ratemx:update(i) 

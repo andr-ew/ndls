@@ -1,5 +1,7 @@
 local src = {}
 
+crow_in_value = 0
+
 do
     src.crow = {}
 
@@ -33,11 +35,15 @@ do
         -- end end
         -- if not mapped[1] then re_enable_clock_source_crow() end
 
+        -- local action = params:lookup_param('bnd_track_1').action
 
         crow.input[1].mode('stream', 0.001)
         crow.input[1].stream = function(v)
             -- patcher.set_source('crow in '..i, v)
-            sc.ratemx[1].bnd = v + 1; sc.ratemx:update(1)
+            -- sc.ratemx[1].bnd = v + 1; sc.ratemx:update(1)
+            
+            crow_in_value = v
+            crow_in_action()
         end
     end
 

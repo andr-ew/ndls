@@ -103,6 +103,8 @@ crops.connect_enc(_app.norns)
 crops.connect_key(_app.norns)
 screen_clock = crops.connect_screen(_app.norns, fps.screen)
 
+crow_in_action = params:lookup_param('bnd_track_1').action
+
 --init/cleanup
 
 function init()
