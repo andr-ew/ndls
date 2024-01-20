@@ -17,24 +17,33 @@ do
     end
 
     function src.crow.update()
-        local mapped = { false, false }
+        -- local mapped = { false, false }
 
-        for _,dest in ipairs(patcher.destinations) do
-            local source = patcher.get_assignment(dest)
-            if source == 'crow in 1' then mapped[1] = true
-            elseif source == 'crow in 2' then mapped[2] = true end
-        end
+        -- for _,dest in ipairs(patcher.destinations) do
+        --     local source = patcher.get_assignment(dest)
+        --     if source == 'crow in 1' then mapped[1] = true
+        --     elseif source == 'crow in 2' then mapped[2] = true end
+        -- end
         
-        for i, map in ipairs(mapped) do if map then
-            crow.input[i].mode('stream', 0.01)
-            crow.input[i].stream = function(v)
-                patcher.set_source('crow in '..i, v)
-            end
-        end end
-        if not mapped[1] then re_enable_clock_source_crow() end
+        -- for i, map in ipairs(mapped) do if map then
+        --     crow.input[i].mode('stream', 0.01)
+        --     crow.input[i].stream = function(v)
+        --         patcher.set_source('crow in '..i, v)
+        --     end
+        -- end end
+        -- if not mapped[1] then re_enable_clock_source_crow() end
+
+
+        crow.input[1].mode('stream', 0.001)
+        crow.input[1].stream = function(v)
+            -- patcher.set_source('crow in '..i, v)
+            sc.ratemx[1].bnd = v + 1; sc.ratemx:update(1)
+        end
     end
 
     norns.crow.add = src.crow.update
+
+    src.crow.update()
 end
 
 do
