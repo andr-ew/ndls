@@ -243,7 +243,9 @@ local function Voice()
                         levels = { 4, 15 },
                         rotated = rotated,
                         controlspec = mparams:get_controlspec(id),
-                        state = of_mparam(n, id),
+                        state = {
+                            mparams:get(n, id) + crow_in_value
+                        },
                     })
                 end
             end

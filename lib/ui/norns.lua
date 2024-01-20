@@ -423,7 +423,8 @@ local function Voice(args)
     local _rand_lvl = Rand{ voice = n, id = 'lvl' }
     local _rand_spr = Rand{ voice = n, id = 'spr' }
 
-    local _rate = Patcher.enc_screen.destination(Mparam())
+    -- local _rate = Patcher.enc_screen.destination(Mparam())
+    local _rate = Components.screen.list_highlight()
     local _st = Patcher.enc_screen.destination(Start())
     local _len = Patcher.enc_screen.destination(Length())
     local _rands_window = Rands_window{ voice = n }
@@ -449,9 +450,24 @@ local function Voice(args)
             _rand_lvl{ n = 2 }
             _rand_spr{ n = 3 }
         elseif props.tab == 2 then
-            _rate(mparams:get_id(n, 'bnd'), active_src, { 
-                id = 'bnd', name = 'rate', voice = n, n = 1, levels = { 4, 15 } 
-            })
+            -- _rate(mparams:get_id(n, 'bnd'), active_src, { 
+            --     id = 'bnd', name = 'rate', voice = n, n = 1, levels = { 4, 15 } 
+            -- })
+            do
+                local props = { id = 'bnd', name = 'rate', voice = n, n = 1, levels = { 4, 15 } }
+                _rate{
+                    x = e[props.n].x, y = e[props.n].y, margin = 4, nudge = props.n==1,
+                    levels = props.levels,
+                    text = { 
+                        [props.name or props.id] = (
+                            string.format(
+                                '%.2f', 
+                                mparams:get(props.voice, props.id) + crow_in_value
+                            )
+                        )
+                    },
+                }
+            end
 
             if alt then
                 _loop{ id = 'loop', voice = n, n = 3, levels = { 4, 15 } }
