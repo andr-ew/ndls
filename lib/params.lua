@@ -627,32 +627,32 @@ end
 
 --add LFO params
 for i = 1,2 do
-    params:add_separator('lfo '..i)
-    mod_src.lfos[i]:add_params('lfo_'..i)
+    -- params:add_separator('lfo '..i)
+    -- mod_src.lfos[i]:add_params('lfo_'..i)
 end
 
 --add source & destination params
 do
     params:add_separator('patcher')
 
-    -- for i = 1,2 do
-    --     params:add{
-    --         id = 'patcher_source_'..i, name = 'source '..i,
-    --         type = 'option', options = patcher.sources,
-    --         default = tab.key(patcher.sources, 'crow in '..i)
-    --     }
-    -- end
     for i = 1,2 do
         params:add{
             id = 'patcher_source_'..i, name = 'source '..i,
             type = 'option', options = patcher.sources,
-            default = tab.key(patcher.sources, 'lfo '..i)
+            default = tab.key(patcher.sources, 'crow in '..i)
         }
     end
+    -- for i = 1,2 do
+    --     params:add{
+    --         id = 'patcher_source_'..i, name = 'source '..i,
+    --         type = 'option', options = patcher.sources,
+    --         default = tab.key(patcher.sources, 'lfo '..i)
+    --     }
+    -- end
     params:add{
         id = 'patcher_source_3', name = 'source 3',
         type = 'option', options = patcher.sources,
-        default = tab.key(patcher.sources, 'crow in 1')
+        default = tab.key(patcher.sources, 'midi')
     }
 
     local function action(dest, v)
