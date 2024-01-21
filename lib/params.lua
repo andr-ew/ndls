@@ -652,7 +652,7 @@ do
 
     params:add_group('assignments', #patcher.destinations)
 
-    patcher.add_assignment_params()
+    patcher.add_assignment_params(action)
 end
 
 

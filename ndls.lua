@@ -67,10 +67,9 @@ cartographer = include 'lib/cartographer/cartographer'   --a buffer management l
 patcher = include 'lib/patcher/patcher'                  --modulation maxtrix
 Patcher = include 'lib/patcher/ui'                       --mod matrix patching UI utilities
 
-bench = include 'lib/benchmarks'
-
 --script files
 
+-- bench = include 'lib/benchmarks'                      --benchmarks for the modulation system
 metaparams = include 'ndls/lib/metaparams'               --abstraction around params
 windowparams = include 'ndls/lib/windowparams'           --abstraction around params
 include 'ndls/lib/globals'                               --global variables
