@@ -28,7 +28,7 @@ function bench.bnd_min_param(data)
     end
 end
 
-function bench.bnd_patcher_current(data)
+function bench.bnd_patcher(data)
     patcher.set_source('benchmark_'..1, data)
 end
 

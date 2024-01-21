@@ -64,7 +64,7 @@ Produce.grid = include 'lib/produce/grid'                --some extra UI compone
 
 cartographer = include 'lib/cartographer/cartographer'   --a buffer management library
 
-patcher = include 'lib/patcher/patcher'                  --modulation maxtrix
+patcher = include 'lib/patcher2/patcher'                  --modulation maxtrix
 Patcher = include 'lib/patcher/ui'                       --mod matrix patching UI utilities
 
 patcher.add_source('benchmark_1')
@@ -110,7 +110,7 @@ screen_clock = crops.connect_screen(_app.norns, fps.screen)
 --init/cleanup
 
 function init()
-    -- mod_src.lfos.reset_params()
+    mod_src.lfos.reset_params()
 
     for i = 1,2 do mod_src.lfos[i]:start() end
 
@@ -127,15 +127,15 @@ function init()
         params:write(pset_default_slot, 'default')
     end
 
-    local its, steps = 5, 100
+    local its, steps = 5, 10000
 
     print('------ BENCH: bnd_min_param --------')
     tab.print(bench.perform(its, steps, bench.bnd_min_param))
 
 
-    print('------ BENCH: bnd_patcher_current --------')
+    print('------ BENCH: bnd_patcher --------')
     patcher.set_assignment('benchmark_1', 'bnd_track_1')
-    tab.print(bench.perform(its, steps, bench.bnd_patcher_current))
+    tab.print(bench.perform(its, steps, bench.bnd_patcher))
 end
 
 function cleanup()
