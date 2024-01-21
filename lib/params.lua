@@ -23,7 +23,8 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+            -- local v = patcher.get_destination_plus_param(id)
+            local v = params:get(id) + crow_in_values[2]
             local lvl = volt_amp(v, 4)
             if lvl ~= sc.lvlmx[i].lvl then
                 sc.lvlmx[i].lvl = lvl; sc.lvlmx:update(i)
@@ -160,7 +161,7 @@ do
         scope_id = 'rate_scope',
         action = function(i, id)
             -- local v = patcher.get_destination_plus_param(id)
-            local v = params:get(id) + crow_in_value
+            local v = params:get(id) + crow_in_values[1]
             local bnd = v
             if bnd ~= sc.ratemx[i].bnd then
                 sc.ratemx[i].bnd = bnd; sc.ratemx:update(i) 

@@ -1,6 +1,6 @@
 local src = {}
 
-crow_in_value = 0
+crow_in_values = { 0, 0 }
 
 do
     src.crow = {}
@@ -42,8 +42,17 @@ do
             -- patcher.set_source('crow in '..i, v)
             -- sc.ratemx[1].bnd = v + 1; sc.ratemx:update(1)
             
-            crow_in_value = v
-            crow_in_action()
+            crow_in_values[1] = v
+            crow_in_actions[1]()
+        end
+        
+        crow.input[2].mode('stream', 0.001)
+        crow.input[2].stream = function(v)
+            -- patcher.set_source('crow in '..i, v)
+            -- sc.ratemx[1].bnd = v + 1; sc.ratemx:update(1)
+            
+            crow_in_values[2] = v/5
+            crow_in_actions[2]()
         end
     end
 
