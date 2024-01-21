@@ -39,6 +39,12 @@ do
             -- patcher.set_source('crow in '..i, v)
             sc.ratemx[1].bnd = v + 1; sc.ratemx:update(1)
         end
+        
+        crow.input[2].mode('stream', 0.001)
+        crow.input[2].stream = function(v)
+            -- patcher.set_source('crow in '..i, v)
+            sc.lvlmx[1].lvl = (v/5) + 0.5; sc.lvlmx:update(1)
+        end
     end
 
     norns.crow.add = src.crow.update
