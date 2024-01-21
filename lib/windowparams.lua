@@ -50,8 +50,10 @@ function windowparams:bang(t)
 
     --TODO: track scope
 
-    local st = patcher.get_destination_plus_param(self.preset_id[t][b][p]['start'])/range_v
-    local len = patcher.get_destination_plus_param(self.preset_id[t][b][p]['length'])/range_v
+    -- local st = patcher.get_destination_plus_param(self.preset_id[t][b][p]['start'])/range_v
+    -- local len = patcher.get_destination_plus_param(self.preset_id[t][b][p]['length'])/range_v
+    local st = params:get(self.preset_id[t][b][p]['start'])/range_v
+    local len = params:get(self.preset_id[t][b][p]['length'])/range_v
 
     reg.play[b][t]:expand()
     reg.play[b][t]:set_start(st, 'fraction')

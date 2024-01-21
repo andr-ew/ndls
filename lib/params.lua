@@ -22,8 +22,7 @@ do
         random_min_default = 0, random_max_default = 5,
         default_scope = 'track',
         default_reset_preset_action = 'default',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local lvl = volt_amp(v, 4)
             if lvl ~= sc.lvlmx[i].lvl then
                 sc.lvlmx[i].lvl = lvl; sc.lvlmx:update(i)
@@ -40,8 +39,7 @@ do
         default_scope = 'global',
         default_reset_preset_action = 'random',
         random_min_default = -5/2, random_max_default = 5/2,
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local spr = (v/5)*4
             if spr ~= sc.sprmx[i].spr then
                 sc.sprmx[i].spr = spr; sc.sprmx:update(i)
@@ -56,8 +54,7 @@ do
         random_min_default = 5/2, random_max_default = 5,
         default_scope = 'global',
         default_reset_preset_action = 'default',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local old = volt_amp(v, 5)
             if old ~= sc.oldmx[i].old then
                 sc.oldmx[i].old = old; sc.oldmx:update(i)
@@ -71,8 +68,7 @@ do
         random_min_default = 7/2, random_max_default = 7,
         default_scope = 'track',
         default_reset_preset_action = 'random',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local cut = v/7
             if cut ~= sc.filtermx[i].cut then
                 sc.filtermx[i].cut = cut
@@ -90,8 +86,7 @@ do
         random_min_default = -5, random_max_default = 4,
         default_scope = 'track',
         default_reset_preset_action = 'default',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local qual = v/5
             if qual ~= sc.filtermx[i].qual then
                 sc.filtermx[i].qual = qual; sc.filtermx:update(i)
@@ -105,8 +100,7 @@ do
         random_min_default = -5, random_max_default = 5,
         default_scope = 'track',
         default_reset_preset_action = 'default',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local crv = v/5
             if crv ~= sc.filtermx[i].crv then
                 sc.filtermx[i].crv = crv; sc.filtermx:update(i)
@@ -137,8 +131,7 @@ do
         default = 1, 
         default_scope = 'track',
         default_reset_preset_action = 'default',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local loop = v
             if loop ~= sc.loopmx[i].loop then
                 sc.loopmx[i].loop = loop; sc.loopmx:update(i)
@@ -158,8 +151,7 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local bnd = v
             if bnd ~= sc.ratemx[i].bnd then
                 sc.ratemx[i].bnd = bnd; sc.ratemx:update(i) 
@@ -175,8 +167,7 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local oct = v
             if oct ~= sc.ratemx[i].oct then
                 sc.ratemx[i].oct = oct; sc.ratemx:update(i)
@@ -191,8 +182,7 @@ do
         default_scope = 'track',
         default_reset_preset_action = 'default',
         scope_id = 'rate_scope',
-        action = function(i, id) 
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v) 
             local dir = v>0 and -1 or 1
             if dir ~= sc.ratemx[i].dir then
                 sc.ratemx[i].dir = dir; sc.ratemx:update(i) 
@@ -205,8 +195,7 @@ do
         controlspec = cs.def{ min = 0, max = 2.5, default = 0 },
         default_scope = 'track', hidden = true,
         scope_id = 'rate_scope',
-        action = function(i, id)
-            local v = patcher.get_destination_plus_param(id)
+        action = function(i, v)
             local slew = v
             if slew ~= sc.slewmx[i].slew then
                 sc.slewmx[i].slew = slew
@@ -223,7 +212,7 @@ do
     params:add_group('global', mparams:global_params_count())
     do
         local args = mparams:global_param_args()
-        for _,a in ipairs(args) do patcher.add_source_and_param(a) end
+        for _,a in ipairs(args) do patcher.add_destination_and_param(a) end
     end
 
     params:add_group('track', (mparams:track_params_count() + 1) * tracks)
@@ -233,7 +222,7 @@ do
         --TODO: wparams add track params
         
         local args = mparams:track_param_args(t)
-        for _,a in ipairs(args) do patcher.add_source_and_param(a) end
+        for _,a in ipairs(args) do patcher.add_destination_and_param(a) end
     end
     params:add_group(
         'preset',
@@ -246,11 +235,11 @@ do
                 params:add_separator('track '..t..', buffer '..b..', preset '..p)
                 do
                     local args = wparams:preset_param_args(t, b, p)
-                    for _,a in ipairs(args) do patcher.add_source_and_param(a) end
+                    for _,a in ipairs(args) do patcher.add_destination_and_param(a) end
                 end
                 do
                     local args = mparams:preset_param_args(t, b, p)
-                    for _,a in ipairs(args) do patcher.add_source_and_param(a) end
+                    for _,a in ipairs(args) do patcher.add_destination_and_param(a) end
                 end
             end
         end
@@ -376,11 +365,10 @@ do
 
         do
             local id = 'buffer '..i
-            patcher.add_source_and_param{
+            patcher.add_destination_and_param{
                 name = 'buffer', id = id,
                 type = 'number', min = 1, max = buffers, default = i,
-                action = function()
-                    local v = patcher.get_destination_plus_param(id)
+                action = function(v)
                     sc.buffer[i] = v; sc.buffer:update(i)
 
                     crops.dirty.arc = true
@@ -391,11 +379,10 @@ do
         end
         for b = 1,buffers do
             local id = 'preset '..i..' buffer '..b
-            patcher.add_source_and_param{
+            patcher.add_destination_and_param{
                 name = 'buffer '..b..' preset', id = id,
                 type = 'number', min = 1, max = presets, default = 1,
                 action = function(v)
-                    local v = patcher.get_destination_plus_param(id)
                     preset[i][b] = v; preset:update(i, b)
 
                     crops.dirty.arc = true
@@ -627,8 +614,8 @@ end
 
 --add LFO params
 for i = 1,2 do
-    params:add_separator('lfo '..i)
-    mod_src.lfos[i]:add_params('lfo_'..i)
+    -- params:add_separator('lfo '..i)
+    -- mod_src.lfos[i]:add_params('lfo_'..i)
 end
 
 --add source & destination params
@@ -665,7 +652,7 @@ do
 
     params:add_group('assignments', #patcher.destinations)
 
-    patcher.add_assginment_params()
+    patcher.add_assignment_params()
 end
 
 
@@ -684,7 +671,7 @@ do
                 params:set(p.id, p.default or (p.controlspec and p.controlspec.default) or 0, true)
             end end
             
-            mod_src.lfos.reset_params()
+            -- mod_src.lfos.reset_params()
     
             params:bang()
         end

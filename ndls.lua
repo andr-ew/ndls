@@ -67,7 +67,7 @@ cartographer = include 'lib/cartographer/cartographer'   --a buffer management l
 patcher = include 'lib/patcher/patcher'                  --modulation maxtrix
 Patcher = include 'lib/patcher/ui'                       --mod matrix patching UI utilities
 
-patcher.add_source('benchmark_1')
+bench = include 'lib/benchmarks'
 
 --script files
 
@@ -82,9 +82,6 @@ App = {}
 App.grid = include 'ndls/lib/ui/grid'                    --grid UI
 App.arc = include 'ndls/lib/ui/arc'                      --arc UI
 App.norns = include 'ndls/lib/ui/norns'                  --norns UI
-
-bench = include 'lib/benchmarks'
-
 --create, connect UI components
 
 _app = {
@@ -110,9 +107,9 @@ screen_clock = crops.connect_screen(_app.norns, fps.screen)
 --init/cleanup
 
 function init()
-    mod_src.lfos.reset_params()
+    -- mod_src.lfos.reset_params()
 
-    for i = 1,2 do mod_src.lfos[i]:start() end
+    -- for i = 1,2 do mod_src.lfos[i]:start() end
 
     sc.init()
 

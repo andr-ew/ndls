@@ -47,9 +47,9 @@ function bench.bnd_min_param2(data)
     vals_actions.bnd(data + vals_dest.bnd)
 end
 
-function bench.bnd_patcher(data)
-    patcher.set_source('benchmark_'..1, data)
-end
+local bench_action = patcher.add_source('benchmark_1')
+
+bench.bnd_patcher = bench_action
 
 function bench.run()
     local its, steps = 5, 10000

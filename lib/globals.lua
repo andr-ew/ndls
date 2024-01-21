@@ -63,9 +63,10 @@ set_param = function(id, v, retrigger)
 end
 get_param = function(id, is_dest)
     return (
-        (is_dest==false or crops.mode=='input') 
-            and params:get(id) 
-            or patcher.get_destination_plus_param(id)
+        -- (is_dest==false or crops.mode=='input') 
+        --     and params:get(id) 
+        --     or patcher.get_destination_plus_param(id)
+        params:get(id)
    )
 end
 
@@ -79,9 +80,10 @@ end
 get_wparam = function(track, id)
     local p_id = wparams:get_id(track, id)
     return (
-        (crops.mode=='input') 
-            and params:get(p_id) 
-            or patcher.get_destination_plus_param(p_id)
+        -- (crops.mode=='input') 
+        --     and params:get(p_id) 
+        --     or patcher.get_destination_plus_param(p_id)
+        params:get(p_id)
     )
 end
 set_mparam = function(track, id, v) 
@@ -91,9 +93,10 @@ end
 get_mparam = function(track, id, is_dest)
     local p_id = mparams:get_id(track, id)
     return (
-        (is_dest==false or crops.mode=='input') 
-            and params:get(p_id) 
-            or patcher.get_destination_plus_param(p_id)
+        -- (is_dest==false or crops.mode=='input') 
+        --     and params:get(p_id) 
+        --     or patcher.get_destination_plus_param(p_id)
+        params:get(p_id)
     )
 end
 
