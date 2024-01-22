@@ -230,7 +230,7 @@ for _, name in ipairs{ 'min', 'max', 'default' } do
 end
 
 function metaparam:bang(track)
-    self.args.action(track, self:get(track))
+    self.args.action(track, self:get(track), self:get_id(track))
 end
 
 function metaparam:global_param_args()
@@ -239,9 +239,10 @@ function metaparam:global_param_args()
 
     args.id = self.global_id
     args.name = self.args.name or self.args.id
-    args.action = function() 
+    args.action = function(v) 
         for t = 1, tracks do
-            self:bang(t) 
+            -- self:bang(t) 
+            self.args.action(t, v)
         end
     end
     
@@ -256,13 +257,17 @@ function metaparam:track_param_args(t)
 
     args.id = self.track_id[t]
     args.name = self.args.name or self.args.id
-    args.action = function() self:bang(t) end
+    args.action = function(v) 
+        -- self:bang(t) 
+        self.args.action(t, v)
+    end
 
     return args
 end
 function metaparam:add_track_param(t)
     params:add(self:track_param_args(t))
 end
+
 function metaparam:preset_param_args(t, b, p)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
@@ -270,7 +275,9 @@ function metaparam:preset_param_args(t, b, p)
     args.id = self.preset_id[t][b][p]
     args.name = self.args.id
     args.name = self.args.name or self.args.id
-    args.action = function() self:bang(t) end
+    args.action = function(v) 
+        if preset:get(t) == p then self.args.action(t, v) end
+    end
 
     return args
 end

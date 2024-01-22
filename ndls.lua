@@ -27,13 +27,15 @@ tall = g and g.device and g.device.rows >= 16 or false
 arc2 = a and a.device and string.match(a.device.name, 'arc 2')
 arc_connected = not (a.name == 'none')
 
+--device testing flags
+
 -- test grid64
--- wide = false
--- arc2 = true
+    -- wide = false
+    -- arc2 = true
 -- end test
 -- test grid256
--- wide = true
--- tall = true
+    -- wide = true
+    -- tall = true
 -- end test
 
 varibright = true
@@ -41,9 +43,10 @@ varibright = true
 --system libs
 
 cs = require 'controlspec'
-filtergraph = require 'filtergraph'
+graph = require 'graph'
 fileselect = require 'fileselect'
 textentry = require 'textentry'
+lfos = require 'lfo'
 
 --git submodule libs
 
@@ -61,11 +64,16 @@ Produce.grid = include 'lib/produce/grid'                --some extra UI compone
 
 cartographer = include 'lib/cartographer/cartographer'   --a buffer management library
 
+patcher = include 'lib/patcher/patcher'                  --modulation maxtrix
+Patcher = include 'lib/patcher/ui'                       --mod matrix patching UI utilities
+
 --script files
 
+-- bench = include 'lib/benchmarks'                      --benchmarks for the modulation system
 metaparams = include 'ndls/lib/metaparams'               --abstraction around params
 windowparams = include 'ndls/lib/windowparams'           --abstraction around params
 include 'ndls/lib/globals'                               --global variables
+mod_src = include 'lib/modulation-sources'               --add modulation sources
 sc, reg = include 'ndls/lib/softcut'                     --softcut utilities
 include 'ndls/lib/params'                                --create (meta)params
 Components = include 'ndls/lib/ui/components'            --ndls's custom UI components
@@ -73,7 +81,6 @@ App = {}
 App.grid = include 'ndls/lib/ui/grid'                    --grid UI
 App.arc = include 'ndls/lib/ui/arc'                      --arc UI
 App.norns = include 'ndls/lib/ui/norns'                  --norns UI
-
 --create, connect UI components
 
 _app = {
@@ -99,6 +106,10 @@ screen_clock = crops.connect_screen(_app.norns, fps.screen)
 --init/cleanup
 
 function init()
+    mod_src.lfos.reset_params()
+
+    for i = 1,2 do mod_src.lfos[i]:start() end
+
     sc.init()
 
     if 

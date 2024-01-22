@@ -417,6 +417,7 @@ function Components.screen.filtergraph(args)
     end
 end
 
+--TODO: refactor to use states more correctly
 function Components.grid.arc_focus()
     local held = {}
 
@@ -472,7 +473,11 @@ function Components.grid.arc_focus()
                 local g = crops.handler
 
                 for i = 0,tall and 5 or 3 do for j = 0,3 do 
-                    g:led(props.x + j, props.y + i, props.levels[props.view[i + 1][j + 1] + 1])
+                    g:led(
+                        props.x + j, 
+                        props.y + i, 
+                        props.levels[j + 1][props.view[i + 1][j + 1] + 1]
+                    )
                 end end
             end
         end
@@ -632,29 +637,39 @@ function Components.arc.filter()
             local a = crops.handler
             local v = props.controlspec:unmap(props.cut)
             local vv = math.floor(v*(props.x[2] - props.x[1])) + props.x[1]
-            local t = props.type
 
             for x = props.x[1], props.x[2] do
-                a:led(
-                    props.n, 
-                    (x - 1) % 64 + 1, 
-                    t==1 and (               --lp
-                        (x < vv) and 4
-                        or (x == vv) and 15
-                        or 0
-                    )
-                    or t==2 and (            --bp
-                        util.clamp(
-                            15 - math.abs(x - vv)*3,
-                        0, 15)
-                    )
-                    or t==3 and (            --hp
-                        (x < vv) and 0
-                        or (x == vv) and 15
-                        or 4
-                    )
-                    or t==4 and 4            --dry
+                -- local lvl = (
+                --     t==1 and (               --lp
+                --         (x < vv) and props.levels[1]
+                --         or (x == vv) and props.levels[2]
+                --         or 0
+                --     )
+                --     or t==2 and (            --bp
+                --         util.clamp(
+                --             props.levels[2] - math.abs(x - vv)*3,
+                --         0, 15)
+                --     )
+                --     or t==3 and (            --hp
+                --         (x < vv) and 0
+                --         or (x == vv) and props.levels[2]
+                --         or props.levels[1]
+                --     )
+                --     or t==4 and props.levels[1] --dry
+                -- )
+
+                local cut = (x == vv) and props.levels[2] or 0
+                local dry = props.dry * props.levels[1]
+                local lp = (x < vv) and props.lp*props.levels[1] or 0
+                local bp = props.bp * util.clamp(
+                    props.levels[1] - math.abs(x - vv)*2, 0, props.levels[1]
                 )
+                local hp = (x > vv) and props.hp*props.levels[1] or 0
+
+                local filt = util.clamp(math.floor(dry + lp + bp + hp), 0, props.levels[1])
+                local lvl = util.clamp(filt + cut, 0, props.levels[2])
+
+                if lvl>0 then a:led(props.n, (x - 1) % 64 + 1, lvl) end
             end
         end
     end
@@ -673,41 +688,44 @@ function Components.arc.st()
                 local n, d = table.unpack(crops.args)
                 
                 if n == props.n then
-                    --props. 
-                    
-                    --local st, en = props.state[1].st, props.state[1].en
-                    local st = props.st[1]
-                    local len = props.len[1]
-                    props.st[2](props.st[1] + d * props.sensitivity * 2)
+                    local dur = reg.rec:get_length(props.voice, 'seconds')
+                    local spec = props.controlspec
+                    local delta = d * (props.delta_seconds / dur) * (spec.maxval - spec.minval)
 
-                    -- nest.arc.make_dirty()
+                    crops.delta_state(props.state, delta)
                 end
             elseif crops.mode == 'redraw' then
                 local a = crops.handler
 
-                if not recorded then
-                    if recording then
-                        local st = props.x[1]
-                        local en = props.x[1] - 1 + math.ceil(
-                            reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                        )
-                        for x = st,en do
-                            a:led(props.n, (x - 1) % 64 + 1 - off, props.levels[1])
-                        end
+                if not recorded and recording then
+                    local st = props.x[1]
+                    local en = props.x[1] - 1 + math.ceil(
+                        reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
+                    )
+                    for x = st,en do
+                        a:led(props.n, (x - 1) % 64 + 1 - off, props.levels[1])
                     end
                 else
-                    local st = props.x[1] + math.ceil(
-                        reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                    )
-                    local en = props.x[1] - 1 + math.ceil(
-                        reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                    )
-                    local ph = props.x[1] + util.round(
-                        props.phase * (props.x[2] - props.x[1])
-                    )
+                    local st, en, ph
+                    if recorded then
+                        st = props.x[1] - 1 + math.ceil(
+                            reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        en = props.x[1] - 1 + math.ceil(
+                            reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        ph = props.x[1] + util.round(
+                            props.phase * (props.x[2] - props.x[1])
+                        )
+                    else
+                        st = props.x[1] - 1
+                        en = props.x[1] - 1
+                    end
+
                     local show = props.show_phase
                     for x = st,en do
-                        a:led(props.n, (x - 1) % 64 + 1 - off, props.levels[(x==ph and show) and 2 or 1])
+                        local lvl = props.levels[(x==ph and show) and 2 or 1]
+                        if lvl>0 then a:led(props.n, (x - 1) % 64 + 1 - off, lvl) end
                     end
                 end
             end
@@ -728,38 +746,47 @@ function Components.arc.len()
                 local n, d = table.unpack(crops.args)
                 
                 if n == props.n then
-                    local len = props.len[1]
-                    props.len[2](props.len[1] + d * props.sensitivity * 2)
+                    local dur = reg.rec:get_length(props.voice, 'seconds')
+                    local spec = props.controlspec
+                    local delta = d * (props.delta_seconds / dur) * (spec.maxval - spec.minval)
 
-                    -- nest.arc.make_dirty()
+                    crops.delta_state(props.state, delta)
                 end
             elseif crops.mode == 'redraw' then
                 local a = crops.handler
 
-                if not recorded then
-                    if recording then
-                        local st = props.x[1]
-                        local en = props.x[1] - 1 + math.ceil(
-                            reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                        )
-                        a:led(props.n, (st - 1) % 64 + 1 - off, props.level_st)
-                        a:led(props.n, (en - 1) % 64 + 1 - off, props.level_st)
-                    end
-                else
-                    local st = props.x[1] + math.ceil(
-                        reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
-                    )
+                if not recorded and recording then
+                    local st = props.x[1]
                     local en = props.x[1] - 1 + math.ceil(
-                        reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
+                        reg.rec:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 2)
                     )
-                    local ph = props.x[1] + util.round(
-                        props.phase * (props.x[2] - props.x[1])
-                    )
+                    a:led(props.n, (st - 1) % 64 + 1 - off, props.levels[1])
+                    a:led(props.n, (en - 1) % 64 + 1 - off, props.levels[1])
+                else
+                    local st, en, ph
+                    if recorded then
+                        st = props.x[1] - 1 + math.ceil(
+                            reg.play:get_start(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        en = props.x[1] - 1 + math.ceil(
+                            reg.play:get_end(props.voice, 'fraction')*(props.x[2] - props.x[1] + 1)
+                        )
+                        ph = props.x[1] + util.round(
+                            props.phase * (props.x[2] - props.x[1])
+                        )
+                    else
+                        st = props.x[1] - 1
+                        en = props.x[1] - 1
+                    end
 
-                    a:led(props.n, (st - 1) % 64 + 1 - off, props.level_st)
-                    a:led(props.n, (en - 1) % 64 + 1 - off, props.level_en)
-                    if props.show_phase then 
-                        a:led(props.n, (ph - 1) % 64 + 1 - off, props.level_ph)
+                    if props.levels[1] > 0 then 
+                        a:led(props.n, (st - 1) % 64 + 1 - off, props.levels[1])
+                        if ph and props.show_phase then 
+                            a:led(props.n, (ph - 1) % 64 + 1 - off, props.levels[1])
+                        end
+                    end
+                    if props.levels[2] > 0 then 
+                        a:led(props.n, (en - 1) % 64 + 1 - off, props.levels[2])
                     end
                 end
             end
