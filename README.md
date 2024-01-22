@@ -19,6 +19,7 @@ a spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachr
 **also supported**
 
 - arc
+- [crow](https://monome.org/docs/crow/)
 - midi mapping
 
 ## install
@@ -151,6 +152,10 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 - double tap: overdub pattern
 - hold: clear pattern
 
+### sources
+
+hold to enter assignment mode for modulation sources 1-3. see [modulation](#modulation) for more info.
+
 ## norns UI
 
 across 3 pages, all 3 norns encoders are mapped to 9 [metaparams](#metaparams) for each track, with K2 & K3 mapped to randomizations of certain values. use the **track focus** + **page focus** components on the top left of the grid to switch between views. hold K1 on any page to assign [scopes](#metaparams). changes to any control can be pattern recorded using the grid.
@@ -209,41 +214,41 @@ hold to reset to full length of loop
 
 ![norns FILTER page documentation image. labelled image of the norns sreen. text descriptions below.](lib/doc/ndls_FILTER.png)
 
-#### E1: filter resonance
+#### E1: quality
 
-make stuff sound pointy. note that by default this is globally [scoped](#metaparams).
+from -5 to 0, smoothly engages the tracks filter, form bypass to the response set by curve. past 0, ressonance is increased.
 
-#### E2: filter cutoff
+#### E2: cutoff
 
 cutoff frequency, from 20 to 20k Hz.
 
-#### E3: filter type
+#### E3: curve
 
-select between lowpass (default), bandpass, highpass, and bypass (dry).
+select the response curve. smoothly crossfades between lowpass at -5, bandpass at 0, and highpass at 5.
 
 #### K2: randomize cutoff
 
 hold to reset to 1.
 
-#### K3: randomize type
+#### K3: randomize curve
 
 hold to reset to lowpass
 
 ## arc UI
 
-when arc is connected, the **arc focus** component will be visible to the right of **track focus**. the [norns](#norns-ui) section above contains more info about the available params & [metaparams](#metaparams) (**gain**, **cut**, **win**, **len**). any changes to these controls can be pattern recorded using the grid.
+when arc is connected, the **arc focus** component will be visible on the far left of the grid.
 
 ### horizontal orientation
 
 ![arc documentation image](lib/doc/ndls_arc_horizontal.png)
 
-by default, the arc will display four different metaparams from a single track – **gain**, **cut**, **win**, and **len**. press any **row** in the 4x4 grid with one finger to focus on another track.
+by default, the first ring of the arc is mapped to the **gain** control of the selected track, and rings 3-4 are mapped to the tree other metaparams associated with the current page (lvl from MIX is skipped, since gain is shown). tap a **row** on the arc focus component to focus on that track.
 
 ### vertical orientation
 
 ![arc documentation image](lib/doc/ndls_arc_vertical.png)
 
-to rotate to the **vertical** orientation, hold & release any two keys in the same **column** with two fingers. now, arc will display the same metaparam across all four tracks. press any **column** to focus on another metaparam ( **gain**, **cut**, **win**, or **len**).
+to rotate to the **vertical** orientation, hold & release any two keys in the same **column** with two fingers. now, arc will display the same metaparam across all four tracks. press any **column** to focus on another metaparam.
 
 ## metaparams
 
@@ -265,11 +270,11 @@ to change a scope, hold K1 on any page & turn the encoder associated with the me
 
 note that on the TAPE page, E1 sets the scope for all rate controls (**rate**, **rate: reverse**, and **rate: octave**), E2 sets the scope for both **window** and **length**, and E3 is left over to set the scope for **loop**
 
-**---------------------------------- BETA 0.2 NOTE --------------------------------------**
+**---------------------------------- BETA NOTE --------------------------------------**
 
 - window & length scopes are not yet editable at this time. they are fixed to **preset**
 
-**----------------------------------------------------------------------------------------**
+**-----------------------------------------------------------------------------------**
 
 ### preset initialization
 
@@ -287,11 +292,11 @@ in ndls, norns PSET system serves two important roles: [saving sessings](#saving
 
 ndls saves all session data, including buffer audio & pattern data, alongside your PSETs. just head to PARAMETERS > PSET and save a new PSET. note that the first two slots should already be in use. the first is the **default** slot, always loaded when launching the app. the second slot (**last session**) is always saved to when exiting the app. load this slot if you need to access your last session, but didn't save it.
 
-**---------------------------------- BETA 0.2 NOTE --------------------------------------**
+**---------------------------------- BETA NOTE --------------------------------------**
 
 any PSETs saved on a beta version may not load in full on a future version. you can always re-download an [older version](https://github.com/andr-ew/ndls/releases) of ndls to access obsolete PSETs.
 
-**----------------------------------------------------------------------------------------**
+**------------------------------------------------------------------------------------**
 
 ### overriding default values
 
@@ -318,12 +323,6 @@ a few more params can be accessed exclusively in the params menu
 - **input routing:** set whether mono audio input comes from the left or right channel
 - **alias:** when on, disables the antialiasing filter
 - **rec transistion:** set the slew time for the record input levels. can smooth out loop points.
-
-**---------------------------------- BETA 0.2 NOTE --------------------------------------**
-
-clock-sync forthcoming
-
-**----------------------------------------------------------------------------------------**
 
 ## buffers
 
@@ -354,3 +353,15 @@ tap K2 on the buffer screen to export the current loop window of the buffer/trac
 ### import
 
 load a sample into the buffer. see [max free space](#max-free-space) for sample length limitations.
+
+## modulation
+
+all metaparams can accept modulation from 1 of two internal LFOs, or the inputs of a connected crow. any any given time there are three **sources** available for mapping, the defaults are below, which can be changed in the params menu.
+
+| source 1 | source 2 | source 3 |
+| --       | --       | --       |
+| lfo 1    | lfo 2    | crow in 1|
+
+controls for the LFOs can be found in the params menu (midi-mapping reccommended)
+
+to assign a metaparam to a source, hold one of the three **source keys** on the grid, located right below **page focus**, and tap or turn any metaparam on the grid, norns, or arc. a source can be mapped to multiple metaparams.
