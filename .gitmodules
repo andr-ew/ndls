@@ -13,3 +13,6 @@
 [submodule "lib/patcher"]
 	path = lib/patcher
 	url = https://github.com/andr-ew/patcher
+[submodule "lib/patcher2"]
+	path = lib/patcher2
+	url = https://github.com/andr-ew/patcher

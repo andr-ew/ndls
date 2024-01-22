@@ -44,20 +44,37 @@ function windowparams:new()
     return m
 end
 
-function windowparams:bang(t)
-    local b = sc.buffer[t]
-    local p = sc.slice:get(t)
+-- local start = 0
+-- local length = 1
 
+-- local function update_slice(t)
+--     reg.play[b][t]:expand()
+--     reg.play[b][t]:set_start(st, 'fraction')
+--     reg.play[b][t]:set_length(len, 'fraction')
+-- end
+
+function windowparams:bang(t)
     --TODO: track scope
 
-    local st = patcher.get_destination_plus_param(self.preset_id[t][b][p]['start'])/range_v
-    local len = patcher.get_destination_plus_param(self.preset_id[t][b][p]['length'])/range_v
+    -- local st = patcher.get_destination_plus_param(self.preset_id[t][b][p]['start'])/range_v
+    -- local len = patcher.get_destination_plus_param(self.preset_id[t][b][p]['length'])/range_v
+    -- local st = params:get(self.preset_id[t][b][p]['start'])/range_v
+    -- local len = params:get(self.preset_id[t][b][p]['length'])/range_v
 
-    reg.play[b][t]:expand()
-    reg.play[b][t]:set_start(st, 'fraction')
-    reg.play[b][t]:set_length(len, 'fraction')
+    -- reg.play[b][t]:expand()
+    -- reg.play[b][t]:set_start(st, 'fraction')
+    -- reg.play[b][t]:set_length(len, 'fraction')
 
-    crops.dirty.screen = true; crops.dirty.arc = true
+    -- crops.dirty.screen = true; crops.dirty.arc = true
+
+    -- local len_id = self:get_id(t, 'length')
+    -- params:set(len_id, params:get(len_id))
+
+    local st_id = self:get_id(t, 'start')
+    params:lookup_param(st_id).action(params:get(st_id))
+
+    local len_id = self:get_id(t, 'length')
+    params:lookup_param(len_id).action(params:get(len_id))
 end
 
 function windowparams:defaultize(t, target, b, p, silent)
@@ -173,21 +190,39 @@ function windowparams:set(track, id, v)
     params:set(self.preset_id[track][b][p][id], v)
 end
 
-local cs_preset_st = cs.def{ min = min_v, max = max_v, default = min_v, units = 'v' }
-local cs_preset_len = cs.def{ min = min_v, max = max_v, default = max_v, units = 'v' }
+local specs = {
+    start = cs.def{ min = min_v, max = max_v, default = min_v, units = 'v' },
+    length = cs.def{ min = min_v, max = max_v, default = max_v, units = 'v' }
+}
+
+function windowparams:get_controlspec(id)
+    return specs[id]
+end
 
 function windowparams:preset_params_count() return 2 end
 function windowparams:preset_param_args(t, b, p)
     return {
         {
             id = self.preset_id[t][b][p].start, name = 'start',
-            type = 'control', controlspec = cs_preset_st,
-            action = function() self:bang(t) end
+            type = 'control', controlspec = specs.start,
+            action = function(st)
+                if preset:get(t) == p then
+                    sc.winmx[t].st = st/range_v; sc.winmx:update(t)
+                    
+                    crops.dirty.screen = true; crops.dirty.arc = true
+                end
+            end
         },
         {
             id = self.preset_id[t][b][p].length, name = 'length',
-            type = 'control', controlspec = cs_preset_len,
-            action = function() self:bang(t) end
+            type = 'control', controlspec = specs.length,
+            action = function(len)
+                if preset:get(t) == p then
+                    sc.winmx[t].len = len/range_v; sc.winmx:update(t)
+                    
+                    crops.dirty.screen = true; crops.dirty.arc = true
+                end
+            end
         }
     }
 end

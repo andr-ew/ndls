@@ -43,7 +43,7 @@ varibright = true
 --system libs
 
 cs = require 'controlspec'
-filtergraph = require 'filtergraph'
+graph = require 'graph'
 fileselect = require 'fileselect'
 textentry = require 'textentry'
 lfos = require 'lfo'
@@ -69,6 +69,7 @@ Patcher = include 'lib/patcher/ui'                       --mod matrix patching U
 
 --script files
 
+-- bench = include 'lib/benchmarks'                      --benchmarks for the modulation system
 metaparams = include 'ndls/lib/metaparams'               --abstraction around params
 windowparams = include 'ndls/lib/windowparams'           --abstraction around params
 include 'ndls/lib/globals'                               --global variables
@@ -80,7 +81,6 @@ App = {}
 App.grid = include 'ndls/lib/ui/grid'                    --grid UI
 App.arc = include 'ndls/lib/ui/arc'                      --arc UI
 App.norns = include 'ndls/lib/ui/norns'                  --norns UI
-
 --create, connect UI components
 
 _app = {
@@ -106,9 +106,9 @@ screen_clock = crops.connect_screen(_app.norns, fps.screen)
 --init/cleanup
 
 function init()
-    mod_src.lfos.reset_params()
+    -- mod_src.lfos.reset_params()
 
-    for i = 1,2 do mod_src.lfos[i]:start() end
+    -- for i = 1,2 do mod_src.lfos[i]:start() end
 
     sc.init()
 
