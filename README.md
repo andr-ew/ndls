@@ -358,7 +358,7 @@ load a sample into the buffer. see [max free space](#max-free-space) for sample 
 
 ## modulation
 
-all metaparams can accept modulation from 1 of two internal LFOs, or the inputs of a connected crow. any any given time there are three **sources** available for mapping, the defaults are below, which can be changed in the params menu.
+all metaparams can accept modulation from one of two internal LFOs, or an input of a connected crow. at any given time there are three **sources** available for mapping, the defaults are below, which can be changed in the params menu.
 
 | source 1 | source 2 | source 3 |
 | --       | --       | --       |
