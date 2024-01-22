@@ -620,7 +620,7 @@ end
 
 --add source & destination params
 do
-    params:add_separator('patcher')
+    params:add_separator('modulation')
 
     -- for i = 1,2 do
     --     params:add{
