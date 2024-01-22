@@ -47,7 +47,7 @@ local function Preset(args)
 
             if varibright then 
                 _fills{ x = x, y = y, wrap = wrap, size = size, level = 4 } 
-                _fill1{ x = x, y = y, lvl = 6 }
+                _fill1{ x = x, y = y, level = 8 }
             end
             
             if recd then 
@@ -391,36 +391,13 @@ local function App(args)
 
         for i, _voice in ipairs(_voices) do _voice() end
 
-        if wide then
-            for i = 1,(tall and 16 or 8) do
-                _patrecs[i]{
-                    x = tall and i or 16, 
-                    y = tall and 16 or i, 
-                    pattern = pattern[i], 
-                    varibright = varibright
-                }
-            end
-        else
-            -- _patrecs[1]{
-            --     x = 2, y = 2, 
-            --     pattern = pattern[1], 
-            --     varibright = varibright
-            -- }
-            -- _patrecs[2]{
-            --     x = 2, y = 3, 
-            --     pattern = pattern[2], 
-            --     varibright = varibright
-            -- }
-            -- _patrecs[3]{
-            --     x = 2, y = 4, 
-            --     pattern = pattern[3], 
-            --     varibright = varibright
-            -- }
-            -- _patrecs[4]{
-            --     x = 3, y = 4, 
-            --     pattern = pattern[4], 
-            --     varibright = varibright
-            -- }
+        for i = 1,(tall and 16 or (wide and 8 or 4)) do
+            _patrecs[i]{
+                x = tall and i or (wide and 16 or 8), 
+                y = tall and 16 or i, 
+                pattern = pattern[i], 
+                varibright = varibright
+            }
         end
 
         if crops.mode == 'redraw' and crops.device == 'grid' then 
