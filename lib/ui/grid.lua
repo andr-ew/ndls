@@ -1,4 +1,4 @@
-local shaded = { 4, 15 }
+-- local shaded = { 4, 15 }
 
 local function Preset(args)
     local varibright = args.varibright
@@ -176,12 +176,12 @@ local function Voice(args)
         }
         if recorded or recording then
             _play{
-                x = 2, y = bottom, levels = shaded,
+                x = 2, y = bottom, levels = { 4, 15 },
                 --TODO: use modulated value
                 state = { recorded and params:get('play '..n) or 0, set_param, 'play '..n }
             }
         else
-            _not_playing{ x = 2, y = bottom, level = shaded[1] }
+            _not_playing{ x = 2, y = bottom, level = 4 }
         end
 
         if not (crops.mode == 'input' and recording) then
@@ -209,7 +209,7 @@ local function Voice(args)
         end
         _rev(mparams:get_id(n, 'rev'), active_src, {
             x = rate_x - 1, y = wide and top or bottom, 
-            levels = shaded,
+            levels = { 4, 15 },
             state = of_mparam(n, 'rev'),
             hold_time = 0,
             hold_action = function(t)
@@ -224,6 +224,7 @@ local function Voice(args)
             local off = 4
             _rate(mparams:get_id(n, 'rate'), active_src, {
                 x = rate_x, y = wide and top or bottom, size = rate_size,
+                levels = { 0, 15 },
                 state = { 
                     get_mparam(n, 'rate') + off, 
                     function(v) set_mparam(n, 'rate', v - off) end 
@@ -235,7 +236,7 @@ local function Voice(args)
         end
         if wide or view.track == n then
             _loop(mparams:get_id(n, 'loop'), active_src, {
-                x = wide and 15 or 3, y = wide and top or 4, levels = shaded,
+                x = wide and 15 or 3, y = wide and top or 4, levels = { 4, 15 },
                 state = of_mparam(n, 'loop'),
             })
             _send{
@@ -353,7 +354,7 @@ local function App(args)
                 x = _arc_focus and 5 or 3, 
                 flow = 'right',
                 size = #page_names,
-                levels = shaded,
+                levels = { 4, 15 },
                 state = { 
                     view.page, 
                     function(v) 
