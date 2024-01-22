@@ -106,9 +106,9 @@ screen_clock = crops.connect_screen(_app.norns, fps.screen)
 --init/cleanup
 
 function init()
-    -- mod_src.lfos.reset_params()
+    mod_src.lfos.reset_params()
 
-    -- for i = 1,2 do mod_src.lfos[i]:start() end
+    for i = 1,2 do mod_src.lfos[i]:start() end
 
     sc.init()
 
