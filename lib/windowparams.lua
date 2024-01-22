@@ -206,18 +206,22 @@ function windowparams:preset_param_args(t, b, p)
             id = self.preset_id[t][b][p].start, name = 'start',
             type = 'control', controlspec = specs.start,
             action = function(st)
-                sc.winmx[t].st = st/range_v; sc.winmx:update(t)
-                
-                crops.dirty.screen = true; crops.dirty.arc = true
+                if preset:get(t) == p then
+                    sc.winmx[t].st = st/range_v; sc.winmx:update(t)
+                    
+                    crops.dirty.screen = true; crops.dirty.arc = true
+                end
             end
         },
         {
             id = self.preset_id[t][b][p].length, name = 'length',
             type = 'control', controlspec = specs.length,
             action = function(len)
-                sc.winmx[t].len = len/range_v; sc.winmx:update(t)
-                
-                crops.dirty.screen = true; crops.dirty.arc = true
+                if preset:get(t) == p then
+                    sc.winmx[t].len = len/range_v; sc.winmx:update(t)
+                    
+                    crops.dirty.screen = true; crops.dirty.arc = true
+                end
             end
         }
     }

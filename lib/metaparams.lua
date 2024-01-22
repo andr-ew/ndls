@@ -267,6 +267,7 @@ end
 function metaparam:add_track_param(t)
     params:add(self:track_param_args(t))
 end
+
 function metaparam:preset_param_args(t, b, p)
     local args = {}
     for k,v in pairs(self.args) do args[k] = v end
@@ -275,8 +276,7 @@ function metaparam:preset_param_args(t, b, p)
     args.name = self.args.id
     args.name = self.args.name or self.args.id
     args.action = function(v) 
-        -- self:bang(t) 
-        self.args.action(t, v)
+        if preset:get(t) == p then self.args.action(t, v) end
     end
 
     return args
