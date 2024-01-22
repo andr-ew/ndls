@@ -128,6 +128,16 @@ sc = {
     -- },
     slewmx = {
         { slew = nil },
+    },
+    winmx = {
+        { st = 0, len = 1 },
+        update = function(s, n)
+            local b = sc.buffer[n]
+
+            reg.play[b][n]:expand()
+            reg.play[b][n]:set_start(s[n].st, 'fraction')
+            reg.play[b][n]:set_length(s[n].len, 'fraction')
+        end
     }
 }
 

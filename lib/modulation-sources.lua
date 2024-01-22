@@ -7,8 +7,7 @@ do
     for i = 1,2 do
         streams[i] = patcher.add_source('crow in '..i, 0)
     end
-
-    src.crow.streams = streams
+    -- src.crow.streams = streams
 
     -- src: https://github.com/monome/norns/blob/e8ae36069937df037e1893101e73bbdba2d8a3db/lua/core/crow.lua#L14
     local function re_enable_clock_source_crow()
