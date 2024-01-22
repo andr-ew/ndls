@@ -5,7 +5,8 @@ local function Gain()
     return function(props) 
         local n = props.voice
         local id = props.id
-        local xx = { 42 - 4, 42 + 16 + 3 }
+        local off = props.rotated and 16 or 0
+        local xx = { 42 - 4 - off, 42 + 16 + 3 - off }
 
         _gain{
             -- n = tonumber(arc_vertical and n or x),
@@ -40,6 +41,7 @@ local function Cut()
 
     return function(props) 
         -- local n = props.voice
+        local off = props.rotated and 16 or 0
 
         if crops.mode == 'input' then
             _cutoff{
@@ -57,7 +59,7 @@ local function Cut()
             -- n = tonumber(arc_vertical and n or x),
             n = props.n,
             levels = props.levels,
-            x = { 42, 24+64 },
+            x = { 42 - off, 24+64 - off },
             controlspec = props.controlspec,
             cut = props.cut,
             dry = props.dry,
@@ -75,6 +77,7 @@ local function Old()
         -- local n = props.voice
         -- local spec = mparams:get_controlspec(props.id)
         local spec = props.controlspec
+        local off = props.rotated and 16 or 0
 
         _old{
             n = props.n,
@@ -83,7 +86,7 @@ local function Old()
             -- state = of_mparam(n, props.id),
             state = props.state,
             levels = { props.levels[1], props.levels[2], props.levels[2] },
-            x = { 42 - 4 + 4, 56 - 4 },
+            x = { 42 - 4 + 4 - off, 56 - 4 - off },
         }
     end
 end
@@ -154,8 +157,10 @@ local function Other()
         local n = props.voice
         -- local spec = mparams:get_controlspec(props.id)
         local spec = props.controlspec
+        local off = props.rotated and 16 or 0
 
         _ctl{
+            x = { 42 - off, 24 - off },
             levels = { 0, props.levels[1], props.levels[2] },
             n = props.n,
             sensitivity = spec.quantum*100, 
@@ -185,8 +190,9 @@ local function Voice()
     --TODO: arc2 layout
     return function(props)
         local n = props.voice
+        local rotated = props.rotated
 
-        do
+        if (not arc2) or view.page == MIX then
             local x = 1
             if arc_view[n][x] > 0 then
                 local x = 1
@@ -204,7 +210,7 @@ local function Voice()
 
         if view.page == MIX then
             do
-                local x = 3
+                local x = arc2 and 2 or 3
                 local id = 'old'
                 if arc_view[n][x] > 0 then
                     _old(mparams:get_id(n, id), active_src, { 
@@ -217,7 +223,7 @@ local function Voice()
                     })
                 end
             end
-            do
+            if not arc2 then
                 local x = 4
                 local id = 'spr'
                 if arc_view[n][x] > 0 then
@@ -233,7 +239,7 @@ local function Voice()
                 end
             end
         elseif view.page == TAPE then
-            do
+            if not arc2 then
                 local x = 2
                 local id = 'bnd'
                 if arc_view[n][x] > 0 then
@@ -252,7 +258,7 @@ local function Voice()
             local recording = sc.punch_in[b].recording
             local recorded = sc.punch_in[b].recorded
             do
-                local x = 3
+                local x = arc2 and 1 or 3
                 if arc_view[n][x] > 0 then
                     _st(wparams:get_id(n, 'start'), active_src, {
                         n = tonumber(arc_vertical and n or x),
@@ -273,7 +279,7 @@ local function Voice()
                 end
             end
             do
-                local x = 4
+                local x = arc2 and 2 or 4
                 if arc_view[n][x] > 0 then
                     local nn = tonumber(arc_vertical and n or x)
 
@@ -297,13 +303,13 @@ local function Voice()
                             recorded = recorded,
                             reg = reg,
                             voice = n,
-                            rotated = props.rotated,
+                            rotated = rotated,
                         })
                     end
                 end
             end
         elseif view.page == FILTER then
-            do
+            if not arc2 then
                 local x = 2
                 local id = 'qual'
                 if arc_view[n][x] > 0 then
@@ -318,7 +324,7 @@ local function Voice()
                 end
             end
             do
-                local x = 3
+                local x = arc2 and 1 or 3
                 local id = 'cut'
                 if arc_view[n][x] > 0 then
                     _cut(mparams:get_id(n, id), active_src, { 
@@ -339,7 +345,7 @@ local function Voice()
                 end
             end
             do
-                local x = 4
+                local x = arc2 and 2 or 4
                 local id = 'crv'
                 if arc_view[n][x] > 0 then
                     _crv(mparams:get_id(n, id), active_src, { 
@@ -367,7 +373,7 @@ local function App(args)
 
     return function()
         for n,_voice in ipairs(_voices) do
-            _voice{ voice = n }
+            _voice{ voice = n, rotated = rotated }
         end
     end
 end
