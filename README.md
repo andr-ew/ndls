@@ -154,6 +154,8 @@ the rightmost column contans 8 pattern recorders, these can record & play back a
 
 ### sources
 
+[ x: 3-5, y: 2 ]
+
 hold to enter assignment mode for modulation sources 1-3. see [modulation](#modulation) for more info.
 
 ## norns UI
