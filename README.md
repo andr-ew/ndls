@@ -13,7 +13,6 @@ a spiritual successor to [anachronism](https://github.com/andr-ew/prosody#anachr
 **required**
 
 - [norns](https://github.com/p3r7/awesome-monome-norns) (220802 or later)
-  - **the required norns version is recent, please be sure that your norns is up-to-date before launching**
 - [grid](https://monome.org/docs/grid/) (128, 64, 256, or midigrid)
 
 **also supported**
