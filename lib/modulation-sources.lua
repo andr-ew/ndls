@@ -18,6 +18,7 @@ do
         end
     end
 
+    --TODO: this pattern was causing a load fail when a preset was saved with something pre-patched to crow. see eggs/lib/modulation_sources for fix
     function src.crow.update()
         local mapped = { false, false }
 
