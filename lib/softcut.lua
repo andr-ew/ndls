@@ -44,7 +44,7 @@ sc = {
                 for src = 1,voices do if src ~= dst then
                     softcut.level_cut_cut(
                         src, dst,
-                        s[src].vol  * s[dst].old * s[src].send * s[dst].ret
+                        s[src].vol * s[src].send * s[dst].ret
                     )
                 end end
             end
