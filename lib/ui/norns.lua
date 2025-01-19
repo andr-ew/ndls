@@ -608,6 +608,9 @@ local function App()
     local _send_ret = {}
     for i = 1,tracks do _send_ret[i] = Screen.glyph() end
 
+    local _ex_send = Screen.text()
+    local _ex_ret = Screen.text()
+
     local _play = Screen.glyph()
     local _loop = Screen.glyph()
 
@@ -656,7 +659,7 @@ local function App()
                         -- 1, 2, 3, 4, 5, 6, 7
                         7, 6, 5, 4, 3, 2, 1
                     } or {
-                        --TODO
+                        9, 8, 7, 6, 5, 4, 3, 2, 1
                     },
                 }
             end
@@ -698,10 +701,29 @@ local function App()
                     levels = {
                         ['.'] = 0, 
                         --TODO: display modulated value
-                        ['#'] = params:get('send '..i)>0 and 6 or 2, 
-                        ['@'] = params:get('return '..i)>0 and 6 or 2,
+                        ['#'] = (
+                            params:get('exclusive send '..i)>0 and 0 
+                            or (params:get('send '..i)>0 and 6 or 2)
+                        ),
+                        ['@'] = (
+                            params:get('exclusive return '..i)>0 and 0 
+                            or params:get('return '..i)>0 and 6 or 2
+                        )
                     }
                 }
+
+                if params:get('exclusive send '..i)>0 then
+                    _ex_send{
+                        x = 128 - 12, y = y + 6 - 1, 
+                        level = params:get('send '..i)>0 and 6 or 2, text = 'E',
+                    }
+                end
+                if params:get('exclusive return '..i)>0 then
+                    _ex_ret{
+                        x = 128 - 12 + 7, y = y + 6 - 1, 
+                        level = params:get('return '..i)>0 and 6 or 2, text = 'E',
+                    }
+                end
 
                 y = y + 8
             end

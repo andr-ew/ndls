@@ -25,20 +25,24 @@ sc = {
         end
     },
     inmx = {
-        {},
-        route = 'left',
+        { route = 'left', ex_ret = 0 },
         update = function(s, n)
-            if s.route == 'left' then
-                softcut.level_input_cut(1, n, 1)
+            local lvl = 1 - s[n].ex_ret
+
+            if s[n].route == 'left' then
+                softcut.level_input_cut(1, n, lvl)
                 softcut.level_input_cut(2, n, 0)
-            elseif s.route == 'right' then
+            elseif s[n].route == 'right' then
                 softcut.level_input_cut(1, n, 0)
-                softcut.level_input_cut(2, n, 1)
+                softcut.level_input_cut(2, n, lvl)
+            elseif s[n].route == 'mix' then
+                softcut.level_input_cut(1, n, lvl)
+                softcut.level_input_cut(2, n, lvl)
             end
         end
     },
     sendmx = {
-        { vol = 1, old = 1, send = 0, ret = 1 },
+        { vol = 1, send = 0, ret = 1 },
         update = function(s)
             for dst = 1, voices do
                 for src = 1,voices do if src ~= dst then
@@ -53,14 +57,15 @@ sc = {
     lvlmx = {
         { 
             lvl = 0.987654321, gain = 0.987654321, 
-            amp = 1, db = 0, play = 0, recorded = 0, send = 1 
+            amp = 1, db = 0, play = 0, recorded = 0, send = 1,
+            ex_send = 0,
         },
         update = function(s, n)
             s[n].amp = s[n].lvl * s[n].gain
             s[n].db = ampdb(s[n].amp)
             local out = s[n].amp * s[n].play * s[n].recorded
 
-            sc.send('level', n, out)
+            sc.send('level', n, out * (1 - s[n].ex_send))
             sc.sendmx[n].vol = out; sc.sendmx:update(n)
         end
     },

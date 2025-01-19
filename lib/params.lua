@@ -393,20 +393,16 @@ do
         end
     end
     
-    params:add_group('send & return', (2 + 1) * tracks)
+    params:add_group('send & return', (4 + 1) * tracks)
     for i = 1, voices do
         params:add_separator('params_s&r_track_'..i, 'track '..i)
 
         params:add{
             name = 'send', id = 'send '..i,
             type = 'binary', behavior = 'toggle', default = 1,
-            action = function(v) 
+            action = function(v)
                 sc.sendmx[i].send = v; sc.sendmx:update() 
 
-                -- if v > 0 and params:get('return '..i) > 0 then
-                --     sc.sendmx[i].ret = 0; sc.sendmx:update() 
-                --     params:set('return '..i, 0, true)
-                -- end
                 crops.dirty.grid = true
             end
         }
@@ -416,10 +412,24 @@ do
             action = function(v) 
                 sc.sendmx[i].ret = v; sc.sendmx:update()
 
-                -- if v > 0 and params:get('send '..i) > 0 then
-                --     sc.sendmx[i].send = 0; sc.sendmx:update() 
-                --     params:set('send '..i, 0, true)
-                -- end
+                crops.dirty.grid = true
+            end
+        }
+        params:add{
+            name = 'exclusive send', id = 'exclusive send '..i,
+            type = 'binary', behavior = 'toggle', default = 0,
+            action = function(v) 
+                sc.lvlmx[i].ex_send = v; sc.lvlmx:update(i)
+
+                crops.dirty.grid = true
+            end
+        }
+        params:add{
+            name = 'exclusive return', id = 'exclusive return '..i,
+            type = 'binary', behavior = 'toggle', default = 0,
+            action = function(v) 
+                sc.inmx[i].ex_ret = v; sc.inmx:update(i)
+
                 crops.dirty.grid = true
             end
         }
@@ -557,8 +567,7 @@ end
 do
     params:add_separator('softcut options')
 
-    --TODO: input routing per-voice 🧠
-    local ir_op = { 'left', 'right' }
+    local ir_op = { 'left', 'right', 'mix' }
 
     params:add_group('input routing', voices)
     for i = 1,voices do 
@@ -566,7 +575,7 @@ do
             type = 'option', id = 'input_routing_'..i, name = 'track '..i,
             options = ir_op,
             action = function(v)
-                sc.inmx.route = ir_op[v]
+                sc.inmx[i].route = ir_op[v]
                 sc.inmx:update(i)
             end,
             allow_pmap = false,
@@ -591,6 +600,17 @@ do
         action = function(v)
             for i = 1, voices do
                 softcut.recpre_slew_time(i, v)
+            end
+        end
+    }
+    params:add{
+        type='control', id='fade',
+        controlspec = cs.def { 
+            default = 0.07, min = 0.0025, quantum = 1/100/10, step = 0, max = 0.5 
+        },
+        action = function(v)
+            for i = 1,tracks do
+                softcut.fade_time(i, v)
             end
         end
     }

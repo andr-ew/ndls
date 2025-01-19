@@ -191,10 +191,11 @@ local function Voice()
     return function(props)
         local n = props.voice
         local rotated = props.rotated
+        local focused64 = view.track==n
 
         if (not arc2) or view.page == MIX then
             local x = 1
-            if arc_view[n][x] > 0 then
+            if wide and arc_view[n][x]>0 or focused64 then
                 local x = 1
                 local id = 'gain '..n
                 _gain{ 
@@ -212,7 +213,7 @@ local function Voice()
             do
                 local x = arc2 and 2 or 3
                 local id = 'old'
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     _old(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,
@@ -226,7 +227,7 @@ local function Voice()
             if not arc2 then
                 local x = 4
                 local id = 'spr'
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     _spr(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,
@@ -242,7 +243,7 @@ local function Voice()
             if not arc2 then
                 local x = 2
                 local id = 'bnd'
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     _rate(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,
@@ -259,7 +260,7 @@ local function Voice()
             local recorded = sc.punch_in[b].recorded
             do
                 local x = arc2 and 1 or 3
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     _st(wparams:get_id(n, 'start'), active_src, {
                         n = tonumber(arc_vertical and n or x),
                         x = { 33, 64+32 }, 
@@ -280,7 +281,7 @@ local function Voice()
             end
             do
                 local x = arc2 and 2 or 4
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     local nn = tonumber(arc_vertical and n or x)
 
                     if (not recorded) and crops.mode == 'input' and crops.device == 'arc' then
@@ -312,7 +313,7 @@ local function Voice()
             if not arc2 then
                 local x = 2
                 local id = 'qual'
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     _qual(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,
@@ -326,7 +327,7 @@ local function Voice()
             do
                 local x = arc2 and 1 or 3
                 local id = 'cut'
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     _cut(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,
@@ -347,7 +348,7 @@ local function Voice()
             do
                 local x = arc2 and 2 or 4
                 local id = 'crv'
-                if arc_view[n][x] > 0 then
+                if wide and arc_view[n][x]>0 or focused64 then
                     _crv(mparams:get_id(n, id), active_src, { 
                         n = tonumber(arc_vertical and n or x),
                         voice = n,

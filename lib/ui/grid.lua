@@ -118,7 +118,8 @@ local function Buffer(args)
                     end)
                 else
                     clock.cancel(clk)
-                    if downstate then props.state[2](downstate) end
+                    print('downstate', downstate)
+                    if downstate then crops.set_state(props.state, downstate) end
                     downstate = nil
                     view.modal = 'none'
                 end
@@ -157,6 +158,8 @@ local function Voice(args)
     local _rate = Patcher.grid.destination(Components.grid.integerglide())
     local _loop = Patcher.grid.destination(Grid.toggle())
 
+    local _send_in = Produce.grid.multitrigger()
+    local _ret_in = Produce.grid.multitrigger()
     local _send = Grid.toggle()
     local _ret = Grid.toggle()
 
@@ -239,20 +242,56 @@ local function Voice(args)
                 x = wide and 15 or 3, y = wide and top or 4, levels = { 4, 15 },
                 state = of_mparam(n, 'loop'),
             })
-            _send{
-                x = wide and (tall and 16 or 14) or 4, 
-                y = wide and (tall and top or bottom) or 4, 
-                levels = { 2, 15 },
-                --TODO: use modulated value
-                state = { params:get('send '..n), set_param, 'send '..n }
-            }
-            _ret{
-                x = wide and (tall and 16 or 15) or 5, 
-                y = wide and bottom or 4, 
-                levels = { 2, 15 },
-                --TODO: use modulated value
-                state = { params:get('return '..n), set_param, 'return '..n }
-            }
+            if crops.device=='grid' then
+                do
+                    local xx = wide and (tall and 16 or 14) or 4
+                    local yy = wide and (tall and top or bottom) or 4
+                    local id = 'send '..n
+                    local id_ex = 'exclusive send '..n
+                    if crops.mode == 'redraw' then
+                        _send{
+                            x = xx, y = yy,
+                            levels = { 2, params:get(id_ex)==0 and 15 or 4 },
+                            --TODO: use modulated value
+                            state = { params:get(id), set_param, id },
+                        }
+                    elseif crops.mode == 'input' then
+                        _send_in{
+                            x = xx, y = yy,
+                            action_tap = function()
+                                params:set(id, 1 ~ params:get(id))
+                            end,
+                            action_hold = function()
+                                params:set(id_ex, 1 ~ params:get(id_ex))
+                            end
+                        }
+                    end
+                end
+                do
+                    local xx = wide and (tall and 16 or 15) or 5
+                    local yy = wide and bottom or 4
+                    local id = 'return '..n
+                    local id_ex = 'exclusive return '..n
+                    if crops.mode == 'redraw' then
+                        _ret{
+                            x = xx, y = yy,
+                            levels = { 2, params:get(id_ex)==0 and 15 or 4 },
+                            --TODO: use modulated value
+                            state = { params:get(id), set_param, id },
+                        }
+                    elseif crops.mode == 'input' then
+                        _ret_in{
+                            x = xx, y = yy,
+                            action_tap = function()
+                                params:set(id, 1 ~ params:get(id))
+                            end,
+                            action_hold = function()
+                                params:set(id_ex, 1 ~ params:get(id_ex))
+                            end
+                        }
+                    end
+                end
+            end
         end
 
         _preset()
