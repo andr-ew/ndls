@@ -127,5 +127,7 @@ end
 function cleanup()
     params:write(pset_last_session_slot, 'last session')
 
-    if params:string('autosave pset') == 'yes' then params:write(pset_default_slot, 'default') end
+    if params:string('autosave to default pset') == 'yes' then 
+        params:write(pset_default_slot, 'default') 
+    end
 end
