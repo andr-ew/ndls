@@ -332,18 +332,17 @@ function Components.screen.waveform(args)
 
     return function(props)
         if crops.device == 'screen' and crops.mode == 'redraw' then
-            local lvl = props.levels or { window = 15, phase = 4, wave = 1 }
+            -- local lvl = props.levels or { window = 15, phase = 4, wave = 1 }
+            local lvl = props.levels or { 1, 14 }
             local reg = props.reg
             local st, en = props.st, props.en
-            local ph = props.phase
             local recording = props.recording
             local recorded = props.recorded
-            local show_phase = props.show_phase
             local samples = props.samples
             local render = props.render or function() end
             --local rec_flag = props.rec_flag
 
-            screen.level(lvl.wave)
+            screen.level(lvl[1])
             screen.move(left, equator)
             screen.line_width(1)
             screen.line(right, equator)
@@ -351,7 +350,7 @@ function Components.screen.waveform(args)
 
             if not recorded then
                 if recording then
-                    screen.level(lvl.window)
+                    screen.level(lvl[2])
                     screen.move(left + width * reg:get_start('fraction'), equator)
                     screen.line_width(1)
                     screen.line(left + width * reg:get_end('fraction'), equator)
@@ -375,7 +374,7 @@ function Components.screen.waveform(args)
                     end
                 end
 
-                screen.level(lvl.window)
+                screen.level(lvl[2])
                 --st
                 screen.move(left + width * st, top)
                 screen.line_width(1)
@@ -386,17 +385,33 @@ function Components.screen.waveform(args)
                 screen.line_width(1)
                 screen.line(left + width * en, bottom)
                 screen.stroke()
-                --phase
-                if show_phase then
-                    screen.level(lvl.phase)
-                    screen.move(left + width * ph, top)
-                    screen.line_width(1)
-                    screen.line(left + width * ph, bottom)
-                    screen.stroke()
-                end
                 
                 render()
                 -- crops.dirty.screen = true 
+            end
+        end
+    end
+end
+
+function Components.screen.phase(args)
+    local left, right = args.x[1], args.x[2]
+    local width = right - left + 1
+    local top, bottom = args.y[1], args.y[2]
+    
+    return function(props)
+        if crops.device == 'screen' and crops.mode == 'redraw' then
+            -- local lvl = props.levels or { window = 15, phase = 4, wave = 1 }
+            local lvl = props.level or 4
+            local ph = props.phase
+            local recorded = props.recorded
+
+            if recorded then
+                --phase
+                screen.level(lvl)
+                screen.move(left + width * ph, top)
+                screen.line_width(1)
+                screen.line(left + width * ph, bottom)
+                screen.stroke()
             end
         end
     end

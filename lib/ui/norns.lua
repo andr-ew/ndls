@@ -571,6 +571,7 @@ local function App()
     local _alt = Key.momentary()
 
     local _waveform
+    local _phases = {}
     do
         local left, right = x[1] + 1, x[3] - 1
         local top, bottom = y[2], y[3]
@@ -578,15 +579,15 @@ local function App()
         _waveform = Components.screen.waveform{ 
             x = { left, right },
             y = { top, bottom },
-            --y = 64 / 2 + 1, amp = e[2].y - (64/2) - 2,
         }
-        -- _filtergraph = Components.screen.filtergraph{
-        --     x = left, w = right - left, 
-        --     y = top, h = bottom - top,
-        -- }
         
         for i = 1,voices do
             filtergraphs[i].graph:set_position_and_size(left, top, right - left, bottom - top)
+        
+            _phases[i] = Components.screen.phase{
+                x = { left, right },
+                y = { top, bottom },
+            }
         end
     end
     
@@ -852,15 +853,26 @@ local function App()
                         reg = reg.rec[b], samples = sc.samples[b],
                         st = reg.play:get_start(n, 'fraction'), 
                         en = reg.play:get_end(n, 'fraction'),
-                        phase = sc.phase[n].rel,
+                        -- phase = sc.phase[n].rel,
                         recording = recording,
                         recorded = recorded,
-                        show_phase = sc.lvlmx[n].play == 1,
+                        -- show_phase = sc.lvlmx[n].play == 1,
                         --rec_flag = params:get('rec '..n)
                         render = function()
                             sc.samples:render(b)
                         end
                     }
+                    for i = 1,voices do
+                        if sc.lvlmx[i].play==1 and sc.buffer[i]==sc.buffer[n] then
+                            _phases[i]{
+                                level = (i==n) and 8 or 2,
+                                st = reg.play:get_start(i, 'fraction'), 
+                                en = reg.play:get_end(i, 'fraction'),
+                                phase = sc.phase[i].rel,
+                                recorded = recorded,
+                            }
+                        end
+                    end
                 elseif tab == 3 then
                     -- local cut_spec = mparams:get_controlspec('cut')
                     -- local q_spec = mparams:get_controlspec('q')
