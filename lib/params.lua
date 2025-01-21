@@ -323,6 +323,9 @@ do
                 crops.dirty.screen = true
             end
         }
+        --TODO: recall the overdub state in the save file instead. but for now this be fine
+        params:set_save('rec '..i, false)
+
         params:add {
             name = 'play', id = 'play '..i,
             type = 'binary', behavior = 'toggle', 

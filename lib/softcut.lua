@@ -321,14 +321,15 @@ do
             local b = to_load.buf
             did_load[b] = sc.loadsample(b, dir..pfx..b..ext)
         end
-        for i = 1, voices do
-            if not did_load[sc.buffer[i]] then
-                params:set('rec '..i, 0)
-            end
-            for b = 1, buffers do
-                preset:update(i, b)
-            end
-        end
+        -- ????????? commented out but should i have ??
+        -- for i = 1, voices do
+        --     if not did_load[sc.buffer[i]] then
+        --         params:set('rec '..i, 0)
+        --     end
+        --     for b = 1, buffers do
+        --         preset:update(i, b)
+        --     end
+        -- end
     end
     sc.delete = function(slot)
         local name = 'pset-'..string.format("%02d", slot)
