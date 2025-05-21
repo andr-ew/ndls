@@ -215,7 +215,7 @@ end
 
 do
     function pattern_write(slot)
-        local name = 'pset-'..string.format("%02d", slot)
+        local name = 'ndls-'..string.format("%02d", slot)
         local data = {
             pattern = {},
         }
@@ -233,7 +233,7 @@ do
         tab.save(data, fname)
     end
     function pattern_read(slot)
-        local name = 'pset-'..string.format("%02d", slot)
+        local name = 'ndls-'..string.format("%02d", slot)
         local fname = norns.state.data..name..'.data'
         local data = tab.load(fname)
 
