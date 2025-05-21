@@ -1,3 +1,5 @@
+--TODO: split each block into a separate function; add "add_all" function
+
 local function ampdb(amp) return math.log(amp, 10) * 20.0 end
 local function dbamp(db) return 10.0^(db*0.05) end
 
@@ -13,8 +15,9 @@ local function volt_amp(volt, db0val)
     return amp
 end
 
--- add metaparams
-do
+local p = {}
+
+function p.add_metaparams()
     mparams:add{
         id = 'lvl',
         type = 'control', 
@@ -246,8 +249,7 @@ do
     end
 end
 
--- add other track params
-do
+function p.add_track_params()
     params:add_separator('params_sep', 'track params')
 
     params:add_group('gain', tracks)
@@ -439,8 +441,7 @@ do
     end
 end
 
--- add metaparam options
-do
+function p.add_metaparam_options()
     params:add_separator('metaparam options')
 
     do
@@ -566,8 +567,7 @@ do
     --TODO: slew group
 end
 
--- add softcut options
-do
+function p.add_softcut_options()
     params:add_separator('softcut options')
 
     local ir_op = { 'left', 'right', 'mix' }
@@ -635,14 +635,14 @@ do
     --TODO: rate glide enable/disable
 end
 
---add LFO params
-for i = 1,2 do
-    params:add_separator('lfo '..i)
-    mod_src.lfos[i]:add_params('lfo_'..i)
+function p.add_lfo_params()
+    for i = 1,2 do
+        params:add_separator('lfo '..i)
+        mod_src.lfos[i]:add_params('lfo_'..i)
+    end
 end
 
---add source & destination params
-do
+function p.add_patcher_params()
     params:add_separator('modulation')
 
     -- for i = 1,2 do
@@ -679,8 +679,7 @@ do
 end
 
 
---add pset params
-do
+function p.add_pset_params()
     params:add_separator('PSET options')
 
     params:add{
@@ -735,4 +734,12 @@ do
     }
 end
 
-return params_read, params_bang
+function p.add_audio_params()
+    p.add_metaparams()
+    p.add_track_params()
+    p.add_metaparam_options()
+    p.add_softcut_options()
+    p.add_lfo_params()
+end
+
+return p

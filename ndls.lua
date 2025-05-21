@@ -75,12 +75,19 @@ windowparams = include 'ndls/lib/windowparams'           --abstraction around pa
 include 'ndls/lib/globals'                               --global variables
 mod_src = include 'lib/modulation-sources'               --add modulation sources
 sc, reg = include 'ndls/lib/softcut'                     --softcut utilities
-include 'ndls/lib/params'                                --create (meta)params
+prms = include 'ndls/lib/params'                         --create (meta)params
 Components = include 'ndls/lib/ui/components'            --ndls's custom UI components
 App = {}
 App.grid = include 'ndls/lib/ui/grid'                    --grid UI
 App.arc = include 'ndls/lib/ui/arc'                      --arc UI
 App.norns = include 'ndls/lib/ui/norns'                  --norns UI
+
+--add params
+
+prms.add_audio_params()
+prms.add_patcher_params()
+prms.add_pset_params()
+
 --create, connect UI components
 
 _app = {
