@@ -199,11 +199,7 @@ function p.add_metaparams()
         default_scope = 'track', hidden = true,
         scope_id = 'rate_scope',
         action = function(i, v)
-            local slew = v
-            if slew ~= sc.slewmx[i].slew then
-                sc.slewmx[i].slew = slew
-                sc.slew(i, slew)
-            end
+            sc.slewmx:set(i, v)
         end
     }
 
@@ -362,6 +358,26 @@ function p.add_track_params()
             end
         }
 
+    end
+
+    params:add_group('playback', (1 + 1) * tracks)
+    for i = 1, voices do
+        params:add_separator('params_playback_track_'..i, 'track '..i)
+
+        do
+            local id = 'glide enable '..i
+            patcher.add_destination_and_param{
+                name = 'glide enable', id = id,
+                type = 'binary', behavior = 'toggle', default = 1,
+                action = function(v)
+                    sc.slewmx[i].glide = v>0; sc.slewmx:update(i)
+
+                    crops.dirty.arc = true
+                    crops.dirty.screen = true
+                    crops.dirty.grid = true
+                end
+            }
+        end
     end
 
     params:add_group('buffer & presets', (1 + buffers + 1) * tracks)

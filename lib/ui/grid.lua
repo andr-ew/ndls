@@ -157,6 +157,7 @@ local function Voice(args)
     local _rev = Patcher.grid.destination(Components.grid.togglehold())
     local _rate = Patcher.grid.destination(Components.grid.integerglide())
     local _loop = Patcher.grid.destination(Grid.toggle())
+    local _loop_in = Produce.grid.multitrigger()
 
     local _send_in = Produce.grid.multitrigger()
     local _ret_in = Produce.grid.multitrigger()
@@ -225,9 +226,10 @@ local function Voice(args)
         do
             -- local off = wide and 5 or 4
             local off = 4
+            local glide = sc.slewmx[n].glide
             _rate(mparams:get_id(n, 'rate'), active_src, {
                 x = rate_x, y = wide and top or bottom, size = rate_size,
-                levels = { 0, 15 },
+                levels = { 0, glide and 15 or 8 },
                 state = { 
                     get_mparam(n, 'rate') + off, 
                     function(v) set_mparam(n, 'rate', v - off) end 
@@ -238,11 +240,29 @@ local function Voice(args)
             })
         end
         if wide or view.track == n then
-            _loop(mparams:get_id(n, 'loop'), active_src, {
-                x = wide and 15 or 3, y = wide and top or 4, levels = { 4, 15 },
-                state = of_mparam(n, 'loop'),
-            })
             if crops.device=='grid' then
+                do
+                    local xx = wide and 15 or 3
+                    local yy = wide and top or 4
+                    local id = 'loop' 
+                    local id_hold = 'glide enable '..n
+                    if (active_src ~= 'none') or (crops.mode == 'redraw') then
+                        _loop(mparams:get_id(n, id), active_src, {
+                            x = xx, y = yy, levels = { 4, 15 },
+                            state = of_mparam(n, id),
+                        })
+                    elseif crops.mode == 'input' then
+                        _loop_in{
+                            x = xx, y = yy,
+                            action_tap = function()
+                                set_mparam(n, id, 1 ~ get_mparam(n, id))
+                            end,
+                            action_hold = function()
+                                params:set(id_hold, 1 ~ params:get(id_hold))
+                            end
+                        }
+                    end
+                end
                 do
                     local xx = wide and (tall and 16 or 14) or 4
                     local yy = wide and (tall and top or bottom) or 4

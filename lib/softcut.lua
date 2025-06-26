@@ -132,7 +132,20 @@ sc = {
     --     { fc = nil, rq = nil, typ = nil }
     -- },
     slewmx = {
-        { slew = nil },
+        { slew = nil, glide = true },
+        set = function(s, n, v)
+            local slew = s[n].glide and v or 0
+            if slew ~= s[n].slew then
+                s[n].slew = slew
+                sc.slew(n, slew)
+            end
+        end,
+        update = function(s, n)
+            local slew = s[n].glide and s[n].slew or 0
+            if slew ~= s[n].slew then
+                sc.slew(n, slew)
+            end
+        end
     },
     winmx = {
         { st = 0, len = 1 },
