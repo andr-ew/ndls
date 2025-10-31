@@ -191,7 +191,7 @@ local function Voice()
     return function(props)
         local n = props.voice
         local rotated = props.rotated
-        local focused64 = view.track==n
+        local focused64 = ((not wide) and view.track==n)
 
         if (not arc2) or view.page == MIX then
             local x = 1
